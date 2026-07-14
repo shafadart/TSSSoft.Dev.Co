@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Contact Us - T.S.S. Soft.</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary": "#ffb596",
+                      "on-surface-variant": "#c3c6d7",
+                      "background": "#11131b",
+                      "primary": "#b4c5ff",
+                      "surface": "#11131b",
+                      "on-secondary-container": "#a4b6f5",
+                      "secondary-container": "#33467e",
+                      "on-tertiary-fixed": "#360f00",
+                      "tertiary-container": "#bc4800",
+                      "on-primary": "#002a78",
+                      "inverse-surface": "#e1e2ed",
+                      "on-background": "#e1e2ed",
+                      "on-secondary-fixed-variant": "#31447b",
+                      "error-container": "#93000a",
+                      "on-error": "#690005",
+                      "on-primary-fixed-variant": "#003ea8",
+                      "surface-container-highest": "#32343d",
+                      "on-tertiary": "#581e00",
+                      "tertiary-fixed-dim": "#ffb596",
+                      "secondary-fixed-dim": "#b4c5ff",
+                      "tertiary-fixed": "#ffdbcd",
+                      "surface-container-high": "#282a32",
+                      "on-tertiary-container": "#ffede6",
+                      "error": "#ffb4ab",
+                      "on-surface": "#e1e2ed",
+                      "surface-dim": "#11131b",
+                      "inverse-on-surface": "#2e3039",
+                      "surface-tint": "#b4c5ff",
+                      "inverse-primary": "#0053db",
+                      "outline-variant": "#434655",
+                      "on-tertiary-fixed-variant": "#7d2d00",
+                      "on-secondary-fixed": "#00174b",
+                      "surface-variant": "#32343d",
+                      "secondary": "#b4c5ff",
+                      "surface-container": "#1d1f27",
+                      "on-primary-fixed": "#00174b",
+                      "surface-bright": "#373942",
+                      "primary-fixed-dim": "#b4c5ff",
+                      "primary-container": "#2563eb",
+                      "primary-fixed": "#dbe1ff",
+                      "outline": "#8d90a0",
+                      "on-secondary": "#182d63",
+                      "on-primary-container": "#eeefff",
+                      "secondary-fixed": "#dbe1ff",
+                      "surface-container-lowest": "#0c0e16",
+                      "on-error-container": "#ffdad6",
+                      "surface-container-low": "#191b23"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "section-gap": "8rem",
+                      "bento-gap": "1rem",
+                      "container-padding": "2rem",
+                      "gutter": "1.5rem"
+              },
+              "fontFamily": {
+                      "headline-lg": [
+                              "Hanken Grotesk"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Hanken Grotesk"
+                      ],
+                      "display-xl": [
+                              "Hanken Grotesk"
+                      ],
+                      "display-xl-mobile": [
+                              "Hanken Grotesk"
+                      ],
+                      "label-caps": [
+                              "Geist"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "letterSpacing": "0em",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "display-xl": [
+                              "72px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.04em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "display-xl-mobile": [
+                              "44px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.1em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.7",
+                                      "letterSpacing": "0em",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: #020617; /* slate-950 */
+            color: #e1e2ed; /* on-surface */
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .input-glass {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .input-glass:focus {
+            border-color: #b4c5ff; /* primary */
+            box-shadow: 0 0 0 1px #b4c5ff;
+            outline: none;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col relative overflow-x-hidden">
+<!-- Ambient Background Glow -->
+<div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+<div class="absolute -top-[30%] -right-[10%] w-[70vw] h-[70vw] rounded-full bg-primary/5 blur-[120px]"></div>
+<div class="absolute -bottom-[20%] -left-[10%] w-[60vw] h-[60vw] rounded-full bg-secondary-container/10 blur-[100px]"></div>
+</div>
+<!-- TopNavBar -->
+<nav class="fixed top-4 left-1/2 -translate-x-1/2 w-[90%] max-w-7xl rounded-full bg-surface/50 dark:bg-surface/50 backdrop-blur-md border border-white/10 shadow-xl z-50 flex justify-between items-center px-8 py-4">
+<div class="text-headline-lg-mobile font-headline-lg-mobile font-bold text-on-surface dark:text-on-surface">
+            T.S.S. Soft.
+        </div>
+<div class="hidden md:flex items-center space-x-8 font-body-md text-body-md">
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-white/10 hover:backdrop-blur-lg px-4 py-2 rounded-full transition-all duration-300" href="#">Home</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-white/10 hover:backdrop-blur-lg px-4 py-2 rounded-full transition-all duration-300" href="#">About</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-white/10 hover:backdrop-blur-lg px-4 py-2 rounded-full transition-all duration-300" href="#">Services</a>
+</div>
+<a class="text-primary font-bold border-b-2 border-primary pb-1 hover:bg-white/10 hover:backdrop-blur-lg px-4 py-2 rounded-full transition-transform duration-200 hover:scale-95 text-primary dark:text-primary font-body-md text-body-md" href="#">
+            Contact
+        </a>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow relative z-10 pt-40 pb-16">
+<!-- Hero Section -->
+<section class="max-w-7xl mx-auto px-container-padding text-center md:text-left mb-section-gap">
+<h1 class="font-display-xl-mobile md:font-display-xl text-display-xl-mobile md:text-display-xl text-on-surface max-w-4xl">
+                Let's Build Something <span class="text-primary">Extraordinary.</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-6 max-w-2xl">
+                Whether you have a fully scoped project or just a spark of an idea, we would love to hear from you.
+            </p>
+</section>
+<!-- Contact Section -->
+<section class="max-w-7xl mx-auto px-container-padding grid lg:grid-cols-2 gap-20 items-start">
+<!-- Left Column: Info Blocks -->
+<div class="space-y-12">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Get in Touch</h2>
+<div class="space-y-8">
+<!-- Block 1: Email -->
+<div class="group cursor-pointer">
+<p class="font-label-caps text-label-caps text-outline uppercase tracking-wider mb-2 group-hover:text-primary transition-colors">Email</p>
+<p class="font-body-lg text-body-lg text-on-surface text-2xl font-medium">hello@tsssoft.com</p>
+</div>
+<!-- Block 2: Location -->
+<div class="group cursor-pointer">
+<p class="font-label-caps text-label-caps text-outline uppercase tracking-wider mb-2 group-hover:text-primary transition-colors">Location</p>
+<p class="font-body-lg text-body-lg text-on-surface text-2xl font-medium">Kushtia, Bangladesh</p>
+</div>
+<!-- Block 3: Phone -->
+<div class="group cursor-pointer">
+<p class="font-label-caps text-label-caps text-outline uppercase tracking-wider mb-2 group-hover:text-primary transition-colors">Phone</p>
+<p class="font-body-lg text-body-lg text-on-surface text-2xl font-medium">+880 1XXX-XXXXXX</p>
+</div>
+</div>
+</div>
+<!-- Right Column: Glassmorphic Form Card -->
+<div class="glass-panel rounded-xl p-10 relative overflow-hidden">
+<!-- Subtle internal glow for the card -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+<form class="space-y-6 relative z-10 font-body-md text-body-md">
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase" for="name">Full Name</label>
+<input class="w-full input-glass rounded-lg px-5 py-4 text-on-surface placeholder:text-outline-variant" id="name" name="name" placeholder="John Doe" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase" for="email">Email Address</label>
+<input class="w-full input-glass rounded-lg px-5 py-4 text-on-surface placeholder:text-outline-variant" id="email" name="email" placeholder="john@example.com" type="email"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase" for="service">Service Interest</label>
+<select class="w-full input-glass rounded-lg px-5 py-4 text-on-surface appearance-none bg-surface/50" id="service" name="service">
+<option class="text-surface" disabled="" selected="" value="">Select a service</option>
+<option class="bg-surface text-on-surface" value="enterprise">Enterprise Software</option>
+<option class="bg-surface text-on-surface" value="web">Web Architecture</option>
+<option class="bg-surface text-on-surface" value="mobile">Mobile Solutions</option>
+<option class="bg-surface text-on-surface" value="consulting">Technical Consulting</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant uppercase" for="message">Message</label>
+<textarea class="w-full input-glass rounded-lg px-5 py-4 text-on-surface placeholder:text-outline-variant resize-none" id="message" name="message" placeholder="Tell us about your project..." rows="4"></textarea>
+</div>
+<button class="w-full bg-primary-container text-on-primary-container font-body-md text-body-md font-semibold rounded-full py-4 px-8 hover:scale-[0.98] hover:bg-primary transition-all duration-300 shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] mt-4" type="submit">
+                        Send Message
+                    </button>
+</form>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full rounded-t-lg bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-white/10 relative z-10 mt-section-gap">
+<div class="max-w-7xl mx-auto px-container-padding py-12 flex flex-col md:flex-row justify-between items-center gap-bento-gap">
+<div class="text-headline-lg-mobile font-headline-lg-mobile font-bold text-on-surface dark:text-on-surface">
+                T.S.S. Soft.
+            </div>
+<div class="flex flex-wrap justify-center gap-6 font-body-md text-body-md">
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">Terms of Service</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">LinkedIn</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-300" href="#">GitHub</a>
+</div>
+<div class="text-on-surface-variant font-body-md text-body-md text-center md:text-right">
+                © 2024 T.S.S. Soft. All rights reserved.
+            </div>
+</div>
+</footer>
+<!-- Simple interaction script for button -->
+<script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = 'Sending...';
+            btn.classList.add('opacity-80');
+            setTimeout(() => {
+                btn.innerText = 'Message Sent';
+                btn.classList.remove('bg-primary-container', 'text-on-primary-container');
+                btn.classList.add('bg-tertiary', 'text-on-tertiary');
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.classList.remove('bg-tertiary', 'text-on-tertiary', 'opacity-80');
+                    btn.classList.add('bg-primary-container', 'text-on-primary-container');
+                    this.reset();
+                }, 3000);
+            }, 1500);
+        });
+    </script>
+</body></html>
