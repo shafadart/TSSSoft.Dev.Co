@@ -1,9 +1,10 @@
 'use client';
 import { useState } from 'react';
+import { Mail, MapPin, Phone, Sparkles, Send } from 'lucide-react';
 
 export default function ContactPage() {
   const [btnText, setBtnText] = useState('Send Message');
-  const [btnClass, setBtnClass] = useState('bg-primary-container text-on-primary-container');
+  const [btnClass, setBtnClass] = useState('bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_0_25px_rgba(37,99,235,0.4)]');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = (e) => {
@@ -11,107 +12,107 @@ export default function ContactPage() {
     if (isSubmitting) return;
 
     setIsSubmitting(true);
-    const originalText = 'Send Message';
-    setBtnText('Sending...');
-    setBtnClass('bg-primary-container text-on-primary-container opacity-80');
+    setBtnText('Encrypting & Sending...');
+    setBtnClass('bg-blue-600/80 text-white opacity-80');
 
     setTimeout(() => {
-        setBtnText('Message Sent');
-        setBtnClass('bg-tertiary text-on-tertiary');
-        setTimeout(() => {
-            setBtnText(originalText);
-            setBtnClass('bg-primary-container text-on-primary-container');
-            setIsSubmitting(false);
-            e.target.reset();
-        }, 3000);
-    }, 1500);
+      setBtnText('✓ Message Received! We will respond shortly.');
+      setBtnClass('bg-emerald-600 text-white shadow-[0_0_25px_rgba(16,185,129,0.4)]');
+      setTimeout(() => {
+        setBtnText('Send Message');
+        setBtnClass('bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_0_25px_rgba(37,99,235,0.4)]');
+        setIsSubmitting(false);
+        e.target.reset();
+      }, 3500);
+    }, 1200);
   };
 
   return (
-    <>
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute -top-[30%] -right-[10%] w-[70vw] h-[70vw] rounded-full bg-primary/5 blur-[120px]"></div>
-        <div className="absolute -bottom-[20%] -left-[10%] w-[60vw] h-[60vw] rounded-full bg-secondary-container/10 blur-[100px]"></div>
-      </div>
+    <main className="flex-grow relative z-10 pt-16 md:pt-24 pb-16 min-h-screen overflow-hidden">
+      {/* Background Lighting */}
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[750px] h-[450px] bg-blue-600/15 rounded-full blur-[140px] pointer-events-none -z-10" />
 
-      <nav className="fixed top-4 left-1/2 -translate-x-1/2 w-[90%] max-w-7xl rounded-full bg-surface/50 dark:bg-surface/50 backdrop-blur-md border border-white/10 shadow-xl z-50 flex justify-between items-center px-8 py-4">
-        <div className="text-headline-lg-mobile font-headline-lg-mobile font-bold text-on-surface dark:text-on-surface">
-            T.S.S. Soft.
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center md:text-left pt-12 mb-16">
+        <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-blue-400 mb-4 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">
+          <Sparkles className="w-3.5 h-3.5" /> Direct Communications
         </div>
-        <div className="hidden md:flex items-center space-x-8 font-body-md text-body-md">
-          <a className="text-on-surface-variant hover:text-on-surface hover:bg-white/10 hover:backdrop-blur-lg px-4 py-2 rounded-full transition-all duration-300" href="/">Home</a>
-          <a className="text-on-surface-variant hover:text-on-surface hover:bg-white/10 hover:backdrop-blur-lg px-4 py-2 rounded-full transition-all duration-300" href="/about">About</a>
-          <a className="text-on-surface-variant hover:text-on-surface hover:bg-white/10 hover:backdrop-blur-lg px-4 py-2 rounded-full transition-all duration-300" href="/services">Services</a>
-          <a className="text-on-surface-variant hover:text-on-surface hover:bg-white/10 hover:backdrop-blur-lg px-4 py-2 rounded-full transition-all duration-300" href="/portfolio">Portfolio</a>
-        </div>
-        <a className="text-primary font-bold border-b-2 border-primary pb-1 hover:bg-white/10 hover:backdrop-blur-lg px-4 py-2 rounded-full transition-transform duration-200 hover:scale-95 text-primary dark:text-primary font-body-md text-body-md" href="/contact">
-            Contact
-        </a>
-      </nav>
+        <h1 className="text-4xl sm:text-6xl font-black text-white max-w-4xl tracking-tight leading-tight">
+          Let's Build Something <br className="hidden md:block" />
+          <span className="text-blue-400">Extraordinary.</span>
+        </h1>
+        <p className="text-lg sm:text-xl text-slate-300 mt-4 max-w-2xl font-light">
+          Whether you have a fully scoped enterprise project or are planning a high-growth startup MVP, we are ready to architect your solution.
+        </p>
+      </section>
 
-      <main className="flex-grow relative z-10 pt-24 pb-8 md:pt-40 md:pb-16 min-h-screen">
-        <section className="max-w-7xl mx-auto px-container-padding text-center md:text-left mb-12 md:mb-section-gap">
-          <h1 className="font-display-xl-mobile md:font-display-xl text-display-xl-mobile md:text-display-xl text-on-surface max-w-4xl">
-              Let's Build Something <span className="text-primary">Extraordinary.</span>
-          </h1>
-          <p className="font-body-lg text-body-lg text-on-surface-variant mt-6 max-w-2xl">
-              Whether you have a fully scoped project or just a spark of an idea, we would love to hear from you.
-          </p>
-        </section>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-start">
+        <div className="space-y-8">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-white">Direct Channel</h2>
+          <div className="space-y-6">
+            <div className="flex items-start gap-4 p-5 rounded-2xl bg-[#0b1026] border border-blue-500/20 hover:border-blue-500/50 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-center text-blue-400 flex-shrink-0">
+                <Mail className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-xs font-mono text-blue-400 uppercase tracking-widest mb-1">Email</p>
+                <a href="mailto:hello@tsssoft.com" className="text-xl font-bold text-white hover:text-blue-300 transition-colors">hello@tsssoft.com</a>
+              </div>
+            </div>
 
-        <section className="max-w-7xl mx-auto px-container-padding grid lg:grid-cols-2 gap-10 md:gap-20 items-start">
-          <div className="space-y-12">
-            <h2 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Get in Touch</h2>
-            <div className="space-y-8">
-              <div className="group cursor-pointer">
-                <p className="font-label-caps text-label-caps text-outline uppercase tracking-wider mb-2 group-hover:text-primary transition-colors">Email</p>
-                <p className="font-body-lg text-body-lg text-on-surface text-2xl font-medium">hello@tsssoft.com</p>
+            <div className="flex items-start gap-4 p-5 rounded-2xl bg-[#0b1026] border border-blue-500/20 hover:border-blue-500/50 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-center text-blue-400 flex-shrink-0">
+                <MapPin className="w-6 h-6" />
               </div>
-              <div className="group cursor-pointer">
-                <p className="font-label-caps text-label-caps text-outline uppercase tracking-wider mb-2 group-hover:text-primary transition-colors">Location</p>
-                <p className="font-body-lg text-body-lg text-on-surface text-2xl font-medium">Kushtia, Bangladesh</p>
+              <div>
+                <p className="text-xs font-mono text-blue-400 uppercase tracking-widest mb-1">Headquarters</p>
+                <p className="text-xl font-bold text-white">Kushtia, Bangladesh</p>
+                <p className="text-sm text-slate-400 mt-0.5">Operating Worldwide</p>
               </div>
-              <div className="group cursor-pointer">
-                <p className="font-label-caps text-label-caps text-outline uppercase tracking-wider mb-2 group-hover:text-primary transition-colors">Phone</p>
-                <p className="font-body-lg text-body-lg text-on-surface text-2xl font-medium">+880 1XXX-XXXXXX</p>
+            </div>
+
+            <div className="flex items-start gap-4 p-5 rounded-2xl bg-[#0b1026] border border-blue-500/20 hover:border-blue-500/50 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-blue-600/10 border border-blue-500/30 flex items-center justify-center text-blue-400 flex-shrink-0">
+                <Phone className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-xs font-mono text-blue-400 uppercase tracking-widest mb-1">Office Line</p>
+                <p className="text-xl font-bold text-white">+880 1XXX-XXXXXX</p>
               </div>
             </div>
           </div>
-          
-          <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-10 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
-            <form onSubmit={handleSubmit} className="space-y-6 relative z-10 font-body-md text-body-md">
-              <div className="space-y-2">
-                <label className="font-label-caps text-label-caps text-on-surface-variant uppercase" htmlFor="name">Full Name</label>
-                <input className="w-full bg-white/5 border border-white/10 rounded-lg px-5 py-4 text-on-surface placeholder:text-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" id="name" name="name" placeholder="John Doe" type="text" />
-              </div>
-              <div className="space-y-2">
-                <label className="font-label-caps text-label-caps text-on-surface-variant uppercase" htmlFor="email">Email Address</label>
-                <input className="w-full bg-white/5 border border-white/10 rounded-lg px-5 py-4 text-on-surface placeholder:text-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" id="email" name="email" placeholder="john@example.com" type="email" />
-              </div>
-              <div className="space-y-2">
-                <label className="font-label-caps text-label-caps text-on-surface-variant uppercase" htmlFor="service">Service Interest</label>
-                <select defaultValue="" className="w-full bg-white/5 border border-white/10 rounded-lg px-5 py-4 text-on-surface appearance-none focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" id="service" name="service">
-                  <option className="text-surface" disabled value="">Select a service</option>
-                  <option className="bg-surface text-on-surface" value="enterprise">Enterprise Software</option>
-                  <option className="bg-surface text-on-surface" value="web">Web Architecture</option>
-                  <option className="bg-surface text-on-surface" value="mobile">Mobile Solutions</option>
-                  <option className="bg-surface text-on-surface" value="consulting">Technical Consulting</option>
-                </select>
-              </div>
-              <div className="space-y-2">
-                <label className="font-label-caps text-label-caps text-on-surface-variant uppercase" htmlFor="message">Message</label>
-                <textarea className="w-full bg-white/5 border border-white/10 rounded-lg px-5 py-4 text-on-surface placeholder:text-outline-variant resize-none focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" id="message" name="message" placeholder="Tell us about your project..." rows="4"></textarea>
-              </div>
-              <button className={`w-full font-body-md text-body-md font-semibold rounded-full py-4 px-8 hover:scale-[0.98] transition-all duration-300 shadow-[0_0_20px_rgba(37,99,235,0.3)] mt-4 ${btnClass}`} type="submit" disabled={isSubmitting}>
-                  {btnText}
-              </button>
-            </form>
-          </div>
-        </section>
-      </main>
-
-      
-    </>
+        </div>
+        
+        <div className="bg-[#0a0f24] backdrop-blur-xl border border-blue-500/30 rounded-3xl p-8 sm:p-10 relative overflow-hidden shadow-[0_0_50px_rgba(37,99,235,0.15)]">
+          <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+            <div className="space-y-2">
+              <label className="text-xs font-mono uppercase tracking-widest text-slate-300" htmlFor="name">Full Name</label>
+              <input required className="w-full bg-[#050814] border border-white/10 rounded-xl px-5 py-3.5 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" id="name" name="name" placeholder="John Doe" type="text" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-mono uppercase tracking-widest text-slate-300" htmlFor="email">Email Address</label>
+              <input required className="w-full bg-[#050814] border border-white/10 rounded-xl px-5 py-3.5 text-white placeholder:text-slate-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" id="email" name="email" placeholder="john@example.com" type="email" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-mono uppercase tracking-widest text-slate-300" htmlFor="service">Service Interest</label>
+              <select defaultValue="" required className="w-full bg-[#050814] border border-white/10 rounded-xl px-5 py-3.5 text-white appearance-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" id="service" name="service">
+                <option disabled value="">Select a service category</option>
+                <option value="enterprise">Custom Enterprise Software</option>
+                <option value="web">Next-Gen Web Architecture</option>
+                <option value="mobile">Mobile Application (Flutter / React Native)</option>
+                <option value="consulting">Architecture &amp; Cloud Consulting</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-mono uppercase tracking-widest text-slate-300" htmlFor="message">Message</label>
+              <textarea required className="w-full bg-[#050814] border border-white/10 rounded-xl px-5 py-3.5 text-white placeholder:text-slate-500 resize-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" id="message" name="message" placeholder="Tell us about your project..." rows="4"></textarea>
+            </div>
+            <button className={`w-full font-semibold rounded-full py-4 px-8 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 mt-4 flex items-center justify-center gap-2 ${btnClass}`} type="submit" disabled={isSubmitting}>
+              <span>{btnText}</span>
+              {!isSubmitting && <Send className="w-4 h-4" />}
+            </button>
+          </form>
+        </div>
+      </section>
+    </main>
   );
 }

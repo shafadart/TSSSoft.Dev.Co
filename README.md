@@ -79,5 +79,5 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## 📄 License
 
-Copyright © 2026 T.S.S. Soft. Dev. Co. All rights reserved.
+Copyright © 2026 TSS Soft. All rights reserved.
 This repository is proprietary. Unauthorized copying, distribution, or modification is strictly prohibited.

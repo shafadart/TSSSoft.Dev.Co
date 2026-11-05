@@ -1,44 +1,27 @@
 'use client';
+import { FileText } from 'lucide-react';
 
 export default function TermsOfServicePage() {
   return (
-    <>
-      <nav className="fixed top-4 left-1/2 -translate-x-1/2 w-[90%] max-w-7xl rounded-full bg-surface/50 dark:bg-surface/50 backdrop-blur-md border border-white/10 shadow-xl z-50 flex justify-between items-center px-8 py-4">
-        <a href="/" className="text-headline-lg-mobile font-headline-lg-mobile font-bold text-on-surface dark:text-on-surface">T.S.S. Soft.</a>
-        <div className="hidden md:flex items-center space-x-8 font-body-md text-body-md">
-          <a className="text-on-surface-variant hover:text-on-surface hover:bg-white/10 hover:backdrop-blur-lg px-4 py-2 rounded-full transition-all duration-300" href="/">Home</a>
-          <a className="text-on-surface-variant hover:text-on-surface hover:bg-white/10 hover:backdrop-blur-lg px-4 py-2 rounded-full transition-all duration-300" href="/about">About</a>
-          <a className="text-on-surface-variant hover:text-on-surface hover:bg-white/10 hover:backdrop-blur-lg px-4 py-2 rounded-full transition-all duration-300" href="/services">Services</a>
-          <a className="text-on-surface-variant hover:text-on-surface hover:bg-white/10 hover:backdrop-blur-lg px-4 py-2 rounded-full transition-all duration-300" href="/portfolio">Portfolio</a>
-        </div>
-        <a className="text-on-surface-variant font-bold border-b-2 border-transparent pb-1 hover:bg-white/10 hover:backdrop-blur-lg px-4 py-2 rounded-full transition-transform duration-200 hover:scale-95 font-body-md text-body-md" href="/contact">Contact</a>
-      </nav>
-
-      <main className="max-w-4xl mx-auto pt-40 pb-20 px-4 min-h-screen">
-        <h1 className="text-5xl font-bold text-white mb-4">Terms of Service</h1>
-        <p className="text-sm text-slate-500 mb-12">Last updated: July 2026</p>
-        
-        <div className="text-slate-400 text-lg leading-relaxed space-y-6">
-          <p>By accessing and using the services of T.S.S. Soft, you accept and agree to be bound by the terms and provision of this agreement. Furthermore, when using these particular services, you shall be subject to any posted guidelines or rules applicable to such services.</p>
-          
-          <h2 className="text-white font-semibold text-2xl mt-10 mb-4">Intellectual Property Rights</h2>
-          <p>Other than the content you own, under these Terms, T.S.S. Soft and/or its licensors own all the intellectual property rights and materials contained in this Website. You are granted limited license only for purposes of viewing the material contained on this Website.</p>
-
-          <h2 className="text-white font-semibold text-2xl mt-10 mb-4">Restrictions</h2>
-          <p>You are specifically restricted from all of the following:</p>
-          <ul className="list-disc pl-6 space-y-2">
-            <li>Publishing any Website material in any other media</li>
-            <li>Selling, sublicensing and/or otherwise commercializing any Website material</li>
-            <li>Using this Website in any way that is or may be damaging to this Website</li>
-            <li>Engaging in any data mining, data harvesting, data extracting or any other similar activity</li>
-          </ul>
-
-          <h2 className="text-white font-semibold text-2xl mt-10 mb-4">Limitation of Liability</h2>
-          <p>In no event shall T.S.S. Soft, nor any of its officers, directors and employees, be held liable for anything arising out of or in any way connected with your use of this Website whether such liability is under contract. T.S.S. Soft, including its officers, directors and employees shall not be held liable for any indirect, consequential or special liability arising out of or in any way related to your use of this Website.</p>
-        </div>
-      </main>
-
+    <main className="max-w-4xl mx-auto pt-24 md:pt-32 pb-20 px-4 min-h-screen relative">
+      <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-blue-400 mb-4 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">
+        <FileText className="w-3.5 h-3.5" /> Terms &amp; Provisions
+      </div>
+      <h1 className="text-4xl sm:text-5xl font-black text-white mb-2 tracking-tight">Terms of Service</h1>
+      <p className="text-xs font-mono text-slate-500 mb-10">Last updated: July 2026 • TSS Soft.</p>
       
-    </>
+      <div className="text-slate-300 text-base leading-relaxed space-y-6 bg-[#0a0f24] p-8 sm:p-12 rounded-3xl border border-blue-500/20">
+        <p>By engaging with TSS Soft. or utilizing our digital engineering platforms, you accept and agree to be bound by the terms and provisions of this operational agreement.</p>
+        
+        <h2 className="text-white font-bold text-2xl mt-8 mb-3 text-blue-400">1. Intellectual Property &amp; Code Ownership</h2>
+        <p>All bespoke source code, architectures, and assets developed specifically for clients under contract become the property of the client upon final completion of delivery milestones and financial settlement, subject to standard non-exclusive libraries.</p>
+
+        <h2 className="text-white font-bold text-2xl mt-8 mb-3 text-blue-400">2. Professional Engagement</h2>
+        <p>TSS Soft commits to industry-best engineering standards, robust testing, and agile milestone reporting throughout the engagement lifecycle.</p>
+
+        <h2 className="text-white font-bold text-2xl mt-8 mb-3 text-blue-400">3. Limitation of Liability</h2>
+        <p>TSS Soft executes all technical deliveries with high architectural precision and standard warranties as established in project service-level agreements (SLAs).</p>
+      </div>
+    </main>
   );
 }
