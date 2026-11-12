@@ -344,6 +344,32 @@ CREATE POLICY "Allow full access applications" ON public.applications FOR ALL US
             </div>
           </div>
 
+          {/* Mode Switcher: Sign In vs Create Admin */}
+          <div className="flex items-center p-1 rounded-xl bg-white/[0.05] border border-white/10 mb-6">
+            <button
+              type="button"
+              onClick={() => { setAuthMode('signin'); setLoginError(null); setLoginSuccess(null); }}
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                authMode === 'signin'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => { setAuthMode('signup'); setLoginError(null); setLoginSuccess(null); }}
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                authMode === 'signup'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Create New Admin
+            </button>
+          </div>
+
           {/* Feedback Alerts */}
           {loginError && (
             <div className="mb-5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
@@ -362,7 +388,9 @@ CREATE POLICY "Allow full access applications" ON public.applications FOR ALL US
           {/* Login Form */}
           <form onSubmit={handleAuthSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-mono uppercase tracking-wider text-slate-300">Admin Email</label>
+              <label className="text-xs font-mono uppercase tracking-wider text-slate-300">
+                {authMode === 'signup' ? 'New Admin Email' : 'Admin Email'}
+              </label>
               <div className="relative">
                 <input
                   required
@@ -377,7 +405,9 @@ CREATE POLICY "Allow full access applications" ON public.applications FOR ALL US
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-mono uppercase tracking-wider text-slate-300">Password</label>
+              <label className="text-xs font-mono uppercase tracking-wider text-slate-300">
+                {authMode === 'signup' ? 'Create Password (min 6 chars)' : 'Password'}
+              </label>
               <div className="relative">
                 <input
                   required
@@ -399,10 +429,10 @@ CREATE POLICY "Allow full access applications" ON public.applications FOR ALL US
               {isSubmittingAuth ? (
                 <>
                   <RefreshCw size={16} className="animate-spin" />
-                  <span>Signing In...</span>
+                  <span>Processing...</span>
                 </>
               ) : (
-                <span>{authMode === 'signup' ? 'Create Admin Account' : 'Sign In with Supabase Auth'}</span>
+                <span>{authMode === 'signup' ? 'Create & Register Admin' : 'Sign In with Supabase Auth'}</span>
               )}
             </button>
           </form>
@@ -419,6 +449,26 @@ CREATE POLICY "Allow full access applications" ON public.applications FOR ALL US
             <p className="text-[10px] text-slate-400 mt-2">
               Instant access while configuring Supabase Authentication users.
             </p>
+          </div>
+
+          {/* Supabase Dashboard Setup Guide */}
+          <div className="mt-4 p-4 rounded-2xl bg-blue-500/[0.07] border border-blue-500/20 text-left text-xs">
+            <div className="font-semibold text-blue-300 flex items-center justify-between mb-2">
+              <span>Supabase Dashboard থেকে পাসওয়ার্ড সেটআপ:</span>
+              <a
+                href="https://supabase.com/dashboard/project/zhkkcherqhupogojgxky/auth/users"
+                target="_blank"
+                rel="noreferrer"
+                className="text-blue-400 hover:underline flex items-center gap-1 text-[11px]"
+              >
+                <span>Users Panel ↗</span>
+              </a>
+            </div>
+            <ol className="text-[11px] text-slate-300 list-decimal list-inside space-y-1 leading-relaxed">
+              <li>Supabase-এ <strong className="text-white">Add user → Create user</strong> চাপুন</li>
+              <li>ইমেইল এবং পছন্দমতো পাসওয়ার্ড লিখুন</li>
+              <li><strong className="text-emerald-300">Auto Confirm User?</strong> অন করে সেভ করুন</li>
+            </ol>
           </div>
         </motion.div>
       </main>
