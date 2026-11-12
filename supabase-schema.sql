@@ -50,3 +50,4 @@ CREATE POLICY "Allow full access to contacts" ON public.contacts
 DROP POLICY IF EXISTS "Allow full access to applications" ON public.applications;
 CREATE POLICY "Allow full access to applications" ON public.applications
   FOR ALL USING (true) WITH CHECK (true);
+
