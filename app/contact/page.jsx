@@ -73,7 +73,7 @@ export default function ContactPage() {
               </div>
               <div>
                 <p className="text-xs font-mono text-blue-400 uppercase tracking-widest mb-1">Office Line</p>
-                <p className="text-xl font-bold text-white">+880 1XXX-XXXXXX</p>
+                <a href="tel:+8801870955900" className="text-xl font-bold text-white hover:text-blue-300 transition-colors">+880 1870 955 900</a>
               </div>
             </div>
           </div>

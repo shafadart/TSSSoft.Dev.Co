@@ -70,6 +70,10 @@ export default function Footer() {
                 <Mail size={16} className="mt-0.5 flex-shrink-0 text-blue-400" />
                 <a href="mailto:hello@tsssoft.com" className="hover:text-white transition-colors font-mono text-xs">hello@tsssoft.com</a>
               </li>
+              <li className="flex items-start gap-2.5 text-slate-300">
+                <span className="material-symbols-outlined text-[16px] mt-0.5 text-blue-400">call</span>
+                <a href="tel:+8801870955900" className="hover:text-white transition-colors font-mono text-xs">+880 1870 955 900</a>
+              </li>
               <li className="flex items-start gap-2.5 text-slate-400">
                 <MapPin size={16} className="mt-0.5 flex-shrink-0 text-blue-400" />
                 <span className="text-xs">Kushtia, Bangladesh<br/><span className="text-slate-500">Operating Worldwide</span></span>

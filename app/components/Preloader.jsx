@@ -40,9 +40,18 @@ export default function Preloader() {
           className="fixed inset-0 z-[99999] bg-[#050916] flex flex-col items-center justify-center overflow-hidden select-none"
         >
           {/* Ambient Ethereal Mist Clouds */}
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[500px] bg-gradient-to-tr from-blue-700/25 via-blue-500/20 to-sky-400/10 rounded-full blur-[140px] animate-cloud-a" />
-            <div className="absolute inset-0 fluted-glass-pattern opacity-60" />
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            <div 
+              className="absolute -top-[10%] left-[10%] w-[1000px] h-[700px] opacity-75 mix-blend-screen animate-cloud-drift-1"
+              style={{
+                backgroundImage: "url('/clouds/cloud-1.webp')",
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                filter: 'contrast(125%) brightness(120%)',
+              }}
+            />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[500px] bg-gradient-to-tr from-blue-700/25 via-blue-500/20 to-sky-400/10 rounded-full blur-[140px] animate-cloud-drift-2" />
+            <div className="absolute inset-0 fluted-glass-pattern opacity-80" />
           </div>
 
           {/* Centered Brand Presentation */}
