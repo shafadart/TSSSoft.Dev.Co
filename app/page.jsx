@@ -34,34 +34,34 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:col-span-7 flex flex-col items-start text-left"
+            className="lg:col-span-7 flex flex-col items-start text-left relative z-10"
           >
             {/* Subtle Agency Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.07] border border-white/10 text-xs text-slate-300 font-medium mb-8 backdrop-blur-md">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-              <span>TSS Soft • Digital Engineering Agency</span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#081028]/80 border border-white/15 text-xs text-slate-200 font-medium mb-8 backdrop-blur-xl shadow-lg">
+              <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+              <span>TSS Soft • Digital Engineering &amp; Architecture</span>
             </div>
 
-            {/* Headline - Pure Luxury Editorial (Reference: "Weekends that feel like a month.") */}
-            <h1 className="text-4xl sm:text-6xl lg:text-[4.4rem] font-bold text-white tracking-tight leading-[1.08] mb-6 font-display-xl">
+            {/* Headline - Pure Luxury Editorial (High Contrast) */}
+            <h1 className="text-4xl sm:text-6xl lg:text-[4.5rem] font-bold text-white tracking-tight leading-[1.08] mb-6 font-display-xl drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)]">
               Software that <br className="hidden sm:block" />
               scales beyond <br className="hidden sm:block" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-sky-200 to-white">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-sky-100 to-white drop-shadow-[0_0_35px_rgba(147,197,253,0.35)]">
                 horizons.
               </span>
             </h1>
 
-            {/* Subtitle - Poetic, Direct, Professional */}
-            <p className="text-base sm:text-lg text-slate-300/85 max-w-xl font-light leading-relaxed mb-10">
+            {/* Subtitle - Crisp, Legible, High-Contrast */}
+            <p className="text-base sm:text-lg text-slate-200 max-w-xl font-normal leading-relaxed mb-10 drop-shadow-[0_2px_14px_rgba(0,0,0,0.85)]">
               Bespoke web architectures, native mobile platforms, and resilient cloud systems. 
-              Engineered with boutique craft in Kushtia, delivering high-impact solutions for enterprise partners globally.
+              Engineered with boutique precision in Kushtia, delivering high-impact solutions for enterprise partners globally.
             </p>
 
             {/* Action Buttons (Matching Reference: Crisp White Pill + Ghost Link) */}
             <div className="flex flex-wrap items-center gap-5 sm:gap-6">
               <Link
                 href="/contact"
-                className="bg-white text-slate-950 font-semibold px-7 py-3.5 rounded-full text-sm hover:bg-slate-100 hover:shadow-[0_0_35px_rgba(255,255,255,0.4)] transition-all duration-300 flex items-center gap-2 group active:scale-95"
+                className="bg-white text-slate-950 font-semibold px-7 py-3.5 rounded-full text-sm hover:bg-slate-100 hover:shadow-[0_0_35px_rgba(255,255,255,0.45)] transition-all duration-300 flex items-center gap-2 group active:scale-95"
               >
                 <span>Start a Project</span>
                 <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -69,7 +69,7 @@ export default function LandingPage() {
 
               <Link
                 href="/portfolio"
-                className="text-sm font-medium text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 group py-2"
+                className="text-sm font-medium text-slate-200 hover:text-white transition-colors flex items-center gap-1.5 group py-2 drop-shadow-sm"
               >
                 <span>See selected works</span>
                 <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform text-slate-400 group-hover:text-white" />
@@ -77,70 +77,106 @@ export default function LandingPage() {
             </div>
           </motion.div>
 
-          {/* Right Column: Floating Frosted Glass Card (Matching the Reference Widget) */}
+          {/* Right Column: Interactive Agency Visual Animation & Architecture Core (Replacing Project Card) */}
           <motion.div 
             initial={{ opacity: 0, scale: 0.94, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
             className="lg:col-span-5 flex justify-center lg:justify-end"
           >
-            <div className="w-full max-w-md bg-[#0a122e]/60 backdrop-blur-2xl border border-white/15 rounded-3xl p-6 sm:p-7 shadow-[0_20px_50px_rgba(0,0,0,0.55)] relative overflow-hidden group hover:border-white/25 transition-all duration-300">
+            <div className="w-full max-w-md bg-[#070e26]/80 backdrop-blur-2xl border border-white/20 rounded-3xl p-6 sm:p-7 shadow-[0_25px_60px_rgba(0,0,0,0.7)] relative overflow-hidden group hover:border-white/30 transition-all duration-300">
               
-              {/* Subtle Ambient Card Glow */}
-              <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/15 rounded-full blur-3xl pointer-events-none" />
+              {/* Soft Ambient Internal Glow */}
+              <div className="absolute top-0 right-0 w-56 h-56 bg-blue-500/15 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-sky-400/10 rounded-full blur-3xl pointer-events-none" />
 
-              {/* Card Header (Reference: "Point Reyes, two hours north") */}
-              <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-5">
-                <div className="flex items-center gap-2 text-xs text-slate-300 font-mono">
-                  <MapPin className="w-3.5 h-3.5 text-blue-400" />
-                  <span>Kushtia, BD • Global Delivery</span>
+              {/* Card Header: Agency Architecture Core */}
+              <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-6">
+                <div className="flex items-center gap-2 text-xs text-slate-200 font-mono">
+                  <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+                  <span>CORE ARCHITECTURE MATRIX</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-[11px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                <div className="flex items-center gap-1.5 text-[11px] font-mono text-emerald-300 bg-emerald-500/15 px-2.5 py-0.5 rounded-full border border-emerald-500/25">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Sprint Active</span>
+                  <span>Production Ready</span>
                 </div>
               </div>
 
-              {/* Card Row 1: Featured Project / Architecture */}
-              <div className="bg-white/[0.04] border border-white/5 hover:border-white/15 rounded-2xl p-4 mb-3 transition-colors">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-white font-semibold text-sm">Tutors Kushtia Platform</h4>
-                  <span className="text-[11px] font-mono text-slate-400">4.98 Rating ★</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
-                  <div>
-                    <span className="block text-[10px] uppercase font-mono text-slate-500">Architecture</span>
-                    <span className="text-slate-200 font-medium">Next.js &amp; Edge API</span>
+              {/* Kinetic Floating Capabilities Core (Smooth Agency Animation) */}
+              <div className="space-y-3 mb-6">
+                
+                {/* Capability 1 */}
+                <motion.div 
+                  whileHover={{ x: 4 }}
+                  className="bg-white/[0.05] border border-white/10 hover:border-white/25 rounded-2xl p-3.5 flex items-center justify-between transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-blue-500/15 border border-blue-400/20 flex items-center justify-center text-blue-300">
+                      <Code2 className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-white text-xs font-semibold">Bespoke Software Engines</h4>
+                      <p className="text-[11px] text-slate-300 font-light">Zero templates • 100% custom engineered</p>
+                    </div>
                   </div>
-                  <div>
-                    <span className="block text-[10px] uppercase font-mono text-slate-500">Performance</span>
-                    <span className="text-blue-400 font-semibold">99.98% Uptime</span>
+                  <span className="text-[10px] font-mono font-medium text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md border border-blue-400/20">
+                    Next-Gen
+                  </span>
+                </motion.div>
+
+                {/* Capability 2 */}
+                <motion.div 
+                  whileHover={{ x: 4 }}
+                  className="bg-white/[0.05] border border-white/10 hover:border-white/25 rounded-2xl p-3.5 flex items-center justify-between transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-sky-500/15 border border-sky-400/20 flex items-center justify-center text-sky-300">
+                      <Zap className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-white text-xs font-semibold">Sub-50ms Global Edge</h4>
+                      <p className="text-[11px] text-slate-300 font-light">Distributed serverless &amp; edge caching</p>
+                    </div>
                   </div>
-                </div>
+                  <span className="text-[10px] font-mono font-medium text-sky-300 bg-sky-500/10 px-2 py-0.5 rounded-md border border-sky-400/20">
+                    &lt; 50ms
+                  </span>
+                </motion.div>
+
+                {/* Capability 3 */}
+                <motion.div 
+                  whileHover={{ x: 4 }}
+                  className="bg-white/[0.05] border border-white/10 hover:border-white/25 rounded-2xl p-3.5 flex items-center justify-between transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-indigo-500/15 border border-indigo-400/20 flex items-center justify-center text-indigo-300">
+                      <ShieldCheck className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-white text-xs font-semibold">High-Concurrency Resiliency</h4>
+                      <p className="text-[11px] text-slate-300 font-light">Fault-tolerant distributed architectures</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-mono font-medium text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-400/20">
+                    99.98% SLA
+                  </span>
+                </motion.div>
               </div>
 
-              {/* Card Row 2: Digital Wellness Mobile App */}
-              <div className="bg-white/[0.04] border border-white/5 hover:border-white/15 rounded-2xl p-4 mb-5 transition-colors">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-white font-semibold text-sm">Anti Dopamine Engine</h4>
-                  <span className="text-[11px] font-mono text-slate-400">4.95 Rating ★</span>
+              {/* Agency Discipline Metrics Strip */}
+              <div className="grid grid-cols-3 gap-2 pt-4 border-t border-white/10 text-center">
+                <div className="bg-white/[0.03] rounded-xl py-2 px-1">
+                  <div className="text-white font-bold text-sm tracking-tight">100%</div>
+                  <div className="text-[10px] text-slate-400 uppercase font-mono">Custom Code</div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
-                  <div>
-                    <span className="block text-[10px] uppercase font-mono text-slate-500">Platform</span>
-                    <span className="text-slate-200 font-medium">iOS &amp; Android</span>
-                  </div>
-                  <div>
-                    <span className="block text-[10px] uppercase font-mono text-slate-500">Encryption</span>
-                    <span className="text-blue-400 font-semibold">Zero-Knowledge</span>
-                  </div>
+                <div className="bg-white/[0.03] rounded-xl py-2 px-1">
+                  <div className="text-white font-bold text-sm tracking-tight">&lt; 24h</div>
+                  <div className="text-[10px] text-slate-400 uppercase font-mono">Response</div>
                 </div>
-              </div>
-
-              {/* Card Footer Metric */}
-              <div className="flex items-center justify-between pt-3 border-t border-white/10 text-xs">
-                <span className="text-slate-400 font-light">Response Guarantee</span>
-                <span className="text-white font-medium">&lt; 12 Hours Onboarding</span>
+                <div className="bg-white/[0.03] rounded-xl py-2 px-1">
+                  <div className="text-white font-bold text-sm tracking-tight">Global</div>
+                  <div className="text-[10px] text-slate-400 uppercase font-mono">Enterprise</div>
+                </div>
               </div>
 
             </div>
@@ -153,55 +189,55 @@ export default function LandingPage() {
             
             {/* Feature 1 */}
             <div className="space-y-1">
-              <div className="flex items-center gap-2 text-xs font-semibold text-white">
+              <div className="flex items-center gap-2 text-xs font-semibold text-white drop-shadow-sm">
                 <Code2 className="w-3.5 h-3.5 text-blue-400" />
                 <span>Bespoke Code</span>
               </div>
-              <p className="text-[11px] text-slate-400 font-light leading-snug">
+              <p className="text-[11px] text-slate-300 font-light leading-snug">
                 Handcrafted from first principles
               </p>
             </div>
 
             {/* Feature 2 */}
             <div className="space-y-1">
-              <div className="flex items-center gap-2 text-xs font-semibold text-white">
+              <div className="flex items-center gap-2 text-xs font-semibold text-white drop-shadow-sm">
                 <Zap className="w-3.5 h-3.5 text-blue-400" />
                 <span>Sub-50ms Speed</span>
               </div>
-              <p className="text-[11px] text-slate-400 font-light leading-snug">
+              <p className="text-[11px] text-slate-300 font-light leading-snug">
                 Edge runtime optimized deployments
               </p>
             </div>
 
             {/* Feature 3 */}
             <div className="space-y-1">
-              <div className="flex items-center gap-2 text-xs font-semibold text-white">
+              <div className="flex items-center gap-2 text-xs font-semibold text-white drop-shadow-sm">
                 <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
                 <span>Zero-Trust Security</span>
               </div>
-              <p className="text-[11px] text-slate-400 font-light leading-snug">
+              <p className="text-[11px] text-slate-300 font-light leading-snug">
                 Enterprise confidentiality standards
               </p>
             </div>
 
             {/* Feature 4 */}
             <div className="space-y-1">
-              <div className="flex items-center gap-2 text-xs font-semibold text-white">
+              <div className="flex items-center gap-2 text-xs font-semibold text-white drop-shadow-sm">
                 <Globe className="w-3.5 h-3.5 text-blue-400" />
                 <span>Global Reach</span>
               </div>
-              <p className="text-[11px] text-slate-400 font-light leading-snug">
+              <p className="text-[11px] text-slate-300 font-light leading-snug">
                 Built in Kushtia, scaled worldwide
               </p>
             </div>
 
             {/* Feature 5 */}
             <div className="space-y-1 col-span-2 sm:col-span-1">
-              <div className="flex items-center gap-2 text-xs font-semibold text-white">
+              <div className="flex items-center gap-2 text-xs font-semibold text-white drop-shadow-sm">
                 <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
                 <span>100% IP Handover</span>
               </div>
-              <p className="text-[11px] text-slate-400 font-light leading-snug">
+              <p className="text-[11px] text-slate-300 font-light leading-snug">
                 Clean ownership &amp; documentation
               </p>
             </div>

@@ -4,13 +4,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowUpRight, Clock, Menu, X } from 'lucide-react';
+import { ArrowUpRight, Menu, X } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [timeStr, setTimeStr] = useState('06:00 PM');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,22 +17,8 @@ export default function Navbar() {
     };
     window.addEventListener('scroll', handleScroll);
 
-    // Update Kushtia/BST Time
-    const updateTime = () => {
-      const now = new Date();
-      setTimeStr(now.toLocaleTimeString('en-US', {
-        timeZone: 'Asia/Dhaka',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      }));
-    };
-    updateTime();
-    const timer = setInterval(updateTime, 30000);
-
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      clearInterval(timer);
     };
   }, []);
 
@@ -100,15 +85,8 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* Right Section: Time / Status Pill + CTA (Matching Reference) */}
+        {/* Right Section: Start Project CTA */}
         <div className="flex items-center gap-2.5 relative z-10">
-          
-          {/* Subtle Kushtia Local Time Widget */}
-          <div className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#080d22]/60 backdrop-blur-xl border border-white/10 text-[11px] text-slate-300 font-mono shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Kushtia {timeStr}</span>
-          </div>
-
           {/* Start Project Pill Button */}
           <Link
             href="/contact"
