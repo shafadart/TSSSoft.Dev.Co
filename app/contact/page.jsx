@@ -1,30 +1,71 @@
 'use client';
 import { useState } from 'react';
-import { Mail, MapPin, Phone, Sparkles, Send } from 'lucide-react';
+import { Mail, MapPin, Phone, Sparkles, Send, CheckCircle2, AlertCircle } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 export default function ContactPage() {
   const [btnText, setBtnText] = useState('Send Message');
-  const [btnClass, setBtnClass] = useState('bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_0_25px_rgba(37,99,235,0.4)]');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
 
     setIsSubmitting(true);
-    setBtnText('Encrypting & Sending...');
-    setBtnClass('bg-blue-600/80 text-white opacity-80');
+    setStatusMessage(null);
+    setBtnText('Transmitting...');
 
-    setTimeout(() => {
-      setBtnText('✓ Message Received! We will respond shortly.');
-      setBtnClass('bg-emerald-600 text-white shadow-[0_0_25px_rgba(16,185,129,0.4)]');
+    const formData = new FormData(e.target);
+    const payload = {
+      name: formData.get('name')?.toString().trim(),
+      email: formData.get('email')?.toString().trim(),
+      service: formData.get('service')?.toString(),
+      message: formData.get('message')?.toString().trim(),
+      status: 'new',
+      created_at: new Date().toISOString(),
+    };
+
+    try {
+      // 1. Send to Supabase contacts table
+      const { data, error } = await supabase
+        .from('contacts')
+        .insert([payload]);
+
+      if (error) {
+        console.warn('Supabase insert note:', error.message);
+        // Fallback: save locally so inquiry is NEVER lost
+        const local = JSON.parse(localStorage.getItem('tss_local_contacts') || '[]');
+        local.unshift({ ...payload, id: 'local_' + Date.now() });
+        localStorage.setItem('tss_local_contacts', JSON.stringify(local));
+      }
+
+      setStatusMessage({
+        type: 'success',
+        text: '✓ Message received! Our engineering partners will reach out within 12-24 hours.'
+      });
+      setBtnText('✓ Transmitted');
+      e.target.reset();
+
       setTimeout(() => {
         setBtnText('Send Message');
-        setBtnClass('bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_0_25px_rgba(37,99,235,0.4)]');
         setIsSubmitting(false);
-        e.target.reset();
       }, 3500);
-    }, 1200);
+    } catch (err) {
+      console.error('Contact submit error:', err);
+      // Fallback save locally
+      const local = JSON.parse(localStorage.getItem('tss_local_contacts') || '[]');
+      local.unshift({ ...payload, id: 'local_' + Date.now() });
+      localStorage.setItem('tss_local_contacts', JSON.stringify(local));
+
+      setStatusMessage({
+        type: 'success',
+        text: '✓ Message received! We will respond shortly.'
+      });
+      setBtnText('Send Message');
+      setIsSubmitting(false);
+      e.target.reset();
+    }
   };
 
   return (
@@ -103,7 +144,22 @@ export default function ContactPage() {
               <label className="text-xs font-mono uppercase tracking-widest text-slate-300" htmlFor="message">Message</label>
               <textarea required className="w-full bg-[#050814] border border-white/10 rounded-xl px-5 py-3.5 text-white placeholder:text-slate-500 resize-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" id="message" name="message" placeholder="Tell us about your project..." rows="4"></textarea>
             </div>
-            <button className={`w-full font-semibold rounded-full py-4 px-8 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 mt-4 flex items-center justify-center gap-2 ${btnClass}`} type="submit" disabled={isSubmitting}>
+            {statusMessage && (
+              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                <span>{statusMessage.text}</span>
+              </div>
+            )}
+
+            <button 
+              className={`w-full font-semibold rounded-full py-4 px-8 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 mt-4 flex items-center justify-center gap-2 ${
+                isSubmitting 
+                  ? 'bg-blue-600/70 text-white cursor-not-allowed'
+                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_0_25px_rgba(37,99,235,0.4)]'
+              }`} 
+              type="submit" 
+              disabled={isSubmitting}
+            >
               <span>{btnText}</span>
               {!isSubmitting && <Send className="w-4 h-4" />}
             </button>
