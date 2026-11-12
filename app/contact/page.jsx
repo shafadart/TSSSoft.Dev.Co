@@ -28,20 +28,17 @@ export default function ContactPage() {
   };
 
   return (
-    <main className="flex-grow relative z-10 pt-16 md:pt-24 pb-16 min-h-screen overflow-hidden">
-      {/* Background Lighting */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[750px] h-[450px] bg-blue-600/15 rounded-full blur-[140px] pointer-events-none -z-10" />
-
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center md:text-left pt-12 mb-16">
-        <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-blue-400 mb-4 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">
+    <main className="flex-grow relative z-10 px-4 sm:px-8 max-w-7xl mx-auto pb-24">
+      <section className="pt-8 pb-16 text-center max-w-4xl mx-auto">
+        <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-blue-400 mb-4 bg-white/[0.06] border border-white/10 px-3 py-1 rounded-full backdrop-blur-md">
           <Sparkles className="w-3.5 h-3.5" /> Direct Communications
         </div>
-        <h1 className="text-4xl sm:text-6xl font-black text-white max-w-4xl tracking-tight leading-tight">
-          Let's Build Something <br className="hidden md:block" />
-          <span className="text-blue-400">Extraordinary.</span>
+        <h1 className="text-4xl sm:text-6xl font-bold text-white mb-6 tracking-tight leading-tight font-display-xl">
+          Let's Build Something <br className="hidden sm:block" />
+          <span className="text-slate-400 font-normal">Extraordinary.</span>
         </h1>
-        <p className="text-lg sm:text-xl text-slate-300 mt-4 max-w-2xl font-light">
-          Whether you have a fully scoped enterprise project or are planning a high-growth startup MVP, we are ready to architect your solution.
+        <p className="text-base sm:text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed">
+          Whether you have a fully scoped enterprise platform or are planning a high-growth startup MVP, we are ready to architect your solution.
         </p>
       </section>
 

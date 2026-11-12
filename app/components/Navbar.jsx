@@ -4,27 +4,46 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowUpRight, Clock, Menu, X } from 'lucide-react';
 
 export default function Navbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [timeStr, setTimeStr] = useState('06:00 PM');
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    // Update Kushtia/BST Time
+    const updateTime = () => {
+      const now = new Date();
+      setTimeStr(now.toLocaleTimeString('en-US', {
+        timeZone: 'Asia/Dhaka',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      }));
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 30000);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearInterval(timer);
+    };
   }, []);
 
   const navLinks = [
-    { name: 'Home', href: '/' },
-    { name: 'About', href: '/about' },
+    { name: 'Overview', href: '/' },
     { name: 'Services', href: '/services' },
     { name: 'Portfolio', href: '/portfolio' },
+    { name: 'About', href: '/about' },
     { name: 'Careers', href: '/careers' },
-    { name: 'Blog', href: '/blog' },
+    { name: 'Contact', href: '/contact' },
   ];
 
   const isActive = (href) => {
@@ -34,96 +53,91 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed top-4 left-1/2 -translate-x-1/2 w-[92%] max-w-7xl z-50 transition-all duration-300">
+      <header className="fixed top-5 left-0 right-0 z-50 px-4 sm:px-8 max-w-7xl mx-auto flex items-center justify-between transition-all duration-300">
+        
+        {/* Brand: New TSS Soft Main Logo */}
+        <Link href="/" className="flex items-center gap-2 group relative z-10">
+          <div className="h-8 sm:h-9 relative flex items-center">
+            <img
+              src="/brand/logo-white-cropped.png"
+              alt="TSS Soft."
+              className="h-full w-auto object-contain filter drop-shadow-[0_2px_10px_rgba(59,130,246,0.3)] group-hover:opacity-90 transition-opacity"
+            />
+          </div>
+        </Link>
+
+        {/* Center: Frosted Glass Floating Nav Pill (Matching Reference) */}
         <nav 
-          className={`w-full rounded-full backdrop-blur-xl border transition-all duration-300 flex justify-between items-center px-5 sm:px-8 py-3 sm:py-3.5 shadow-2xl ${
-            scrolled 
-              ? 'bg-[#050814]/85 border-blue-500/30 shadow-[0_10px_35px_rgba(0,0,0,0.6)]' 
-              : 'bg-[#070b1a]/70 border-white/10 hover:border-blue-500/25 shadow-[0_8px_30px_rgba(0,50,200,0.1)]'
+          className={`hidden md:flex items-center gap-1 px-3 py-1.5 rounded-full border transition-all duration-300 ${
+            scrolled
+              ? 'bg-[#080d22]/80 backdrop-blur-2xl border-white/15 shadow-[0_12px_40px_rgba(0,0,0,0.6)]'
+              : 'bg-[#09112a]/55 backdrop-blur-xl border-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.35)]'
           }`}
         >
-          {/* Brand Logo with Icon + Mark */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="relative w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white flex items-center justify-center p-1 border-2 border-blue-500 shadow-[0_0_16px_rgba(37,99,235,0.45)] group-hover:scale-105 transition-all duration-300 overflow-hidden">
-              <img
-                src="/logo-icon-bg.png"
-                alt="TSS Soft."
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-1.5">
-                <span className="font-mono text-xs font-bold text-blue-400 tracking-tighter">&lt;/&gt;</span>
-                <span className="font-headline-lg-mobile font-extrabold text-white text-lg sm:text-xl tracking-tight group-hover:text-blue-300 transition-colors">
-                  TSS Soft<span className="text-blue-500">.</span>
-                </span>
-              </div>
-              <span className="hidden sm:block text-[9px] font-mono tracking-[0.2em] text-slate-400 uppercase -mt-0.5">
-                Software Agency
-              </span>
-            </div>
+          {navLinks.map((link) => {
+            const active = isActive(link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`relative px-4 py-1.5 rounded-full text-xs font-medium tracking-wide transition-all duration-200 flex items-center gap-1.5 ${
+                  active
+                    ? 'text-white font-semibold'
+                    : 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
+                }`}
+              >
+                {active && (
+                  <motion.div
+                    layoutId="navbarActiveIndicator"
+                    className="absolute inset-0 rounded-full bg-white/15 border border-white/20 -z-10 shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
+                {active && <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>}
+                <span>{link.name}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Right Section: Time / Status Pill + CTA (Matching Reference) */}
+        <div className="flex items-center gap-2.5 relative z-10">
+          
+          {/* Subtle Kushtia Local Time Widget */}
+          <div className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#080d22]/60 backdrop-blur-xl border border-white/10 text-[11px] text-slate-300 font-mono shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Kushtia {timeStr}</span>
+          </div>
+
+          {/* Start Project Pill Button */}
+          <Link
+            href="/contact"
+            className="hidden sm:inline-flex items-center gap-1.5 bg-white text-slate-950 font-semibold px-4 sm:px-5 py-2 rounded-full text-xs hover:bg-slate-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.4)] transition-all duration-200 active:scale-95"
+          >
+            <span>Start a Project</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
 
-          {/* Desktop Navigation Links */}
-          <div className="hidden lg:flex items-center gap-1.5 p-1 rounded-full bg-white/[0.03] border border-white/5">
-            {navLinks.map((link) => {
-              const active = isActive(link.href);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`relative px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                    active
-                      ? 'text-white font-semibold'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  {active && (
-                    <motion.div
-                      layoutId="activePill"
-                      className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-600/80 to-blue-500/80 shadow-[0_0_16px_rgba(37,99,235,0.5)] border border-blue-400/40 -z-10"
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                    />
-                  )}
-                  {link.name}
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* Right Action Button & Mobile Toggle */}
-          <div className="flex items-center gap-3">
-            <Link
-              href="/contact"
-              className="hidden md:inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 text-white px-6 py-2 rounded-full text-sm font-semibold hover:shadow-[0_0_25px_rgba(37,99,235,0.6)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 border border-blue-400/30"
-            >
-              <span>Start a Project</span>
-              <span className="text-blue-200 font-bold">&rarr;</span>
-            </Link>
-
-            {/* Mobile Hamburger */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-200 hover:text-white hover:border-blue-500/40 transition-colors"
-              aria-label="Toggle Navigation"
-            >
-              <span className="material-symbols-outlined text-2xl">
-                {mobileMenuOpen ? 'close' : 'menu'}
-              </span>
-            </button>
-          </div>
-        </nav>
+          {/* Mobile Menu Toggle */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden w-9 h-9 rounded-full bg-white/10 backdrop-blur-md border border-white/15 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+            aria-label="Toggle Navigation"
+          >
+            {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        </div>
       </header>
 
-      {/* Mobile Drawer Navigation */}
+      {/* Mobile Drawer Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -15 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="fixed inset-x-4 top-20 z-40 lg:hidden rounded-3xl bg-[#070b1a]/95 backdrop-blur-2xl border border-blue-500/30 shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-6 overflow-hidden"
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-x-4 top-20 z-40 md:hidden rounded-3xl bg-[#070e24]/95 backdrop-blur-2xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-6 overflow-hidden"
           >
             <div className="flex flex-col gap-2">
               {navLinks.map((link) => {
@@ -133,13 +147,14 @@ export default function Navbar() {
                     key={link.href}
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`px-5 py-3 rounded-2xl text-base font-semibold transition-all ${
+                    className={`px-4 py-3 rounded-2xl text-sm font-semibold transition-all flex items-center justify-between ${
                       active
-                        ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]'
+                        ? 'bg-white/15 text-white'
                         : 'text-slate-300 hover:text-white hover:bg-white/5'
                     }`}
                   >
-                    {link.name}
+                    <span>{link.name}</span>
+                    {active && <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>}
                   </Link>
                 );
               })}
@@ -148,12 +163,13 @@ export default function Navbar() {
                 <Link
                   href="/contact"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="w-full text-center bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-full font-semibold shadow-[0_0_20px_rgba(37,99,235,0.5)]"
+                  className="w-full text-center bg-white text-slate-950 py-3 rounded-full font-semibold text-sm shadow-lg flex items-center justify-center gap-1.5"
                 >
-                  Start a Project &rarr;
+                  <span>Start a Project</span>
+                  <ArrowUpRight className="w-4 h-4" />
                 </Link>
-                <div className="text-center text-xs font-mono text-slate-400 mt-2">
-                  hello@tsssoft.com // Kushtia, BD
+                <div className="text-center text-xs font-mono text-slate-400 mt-1">
+                  hello@tsssoft.com • Kushtia, Bangladesh
                 </div>
               </div>
             </div>
@@ -163,4 +179,3 @@ export default function Navbar() {
     </>
   );
 }
-

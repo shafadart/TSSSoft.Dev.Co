@@ -1,3 +1,64 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .fluted-glass-pattern {
+    background-image: repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.035) 0px,
+      rgba(255, 255, 255, 0.035) 1px,
+      transparent 1px,
+      transparent 7px
+    );
+  }
+}
+
+@keyframes cloudDriftA {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.4;
+  }
+  33% {
+    transform: translate3d(50px, -30px, 0) scale(1.15);
+    opacity: 0.6;
+  }
+  66% {
+    transform: translate3d(-30px, 20px, 0) scale(0.95);
+    opacity: 0.45;
+  }
+}
+
+@keyframes cloudDriftB {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1.1);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate3d(-60px, -35px, 0) scale(1.25);
+    opacity: 0.55;
+  }
+}
+
+@keyframes cloudDriftC {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(0.9);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translate3d(40px, 40px, 0) scale(1.1);
+    opacity: 0.45;
+  }
+}
+
+.animate-cloud-a {
+  animation: cloudDriftA 22s ease-in-out infinite;
+}
+
+.animate-cloud-b {
+  animation: cloudDriftB 28s ease-in-out infinite;
+}
+
+.animate-cloud-c {
+  animation: cloudDriftC 34s ease-in-out infinite;
+}

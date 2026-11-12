@@ -5,21 +5,18 @@ import Link from 'next/link';
 
 export default function ServicesPage() {
   return (
-    <main className="w-full pt-16 md:pt-24 relative overflow-hidden">
-      {/* Ambient Glow */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-blue-600/15 rounded-full blur-[140px] pointer-events-none -z-10" />
-
+    <main className="w-full relative z-10 px-4 sm:px-8 max-w-7xl mx-auto pb-24">
       {/* Hero */}
-      <section className="pt-16 pb-12 md:pt-24 md:pb-20 px-4 sm:px-6 flex flex-col items-center justify-center text-center relative">
-        <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-blue-400 mb-4 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">
+      <section className="pt-8 pb-16 text-center max-w-4xl mx-auto">
+        <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-blue-400 mb-4 bg-white/[0.06] border border-white/10 px-3 py-1 rounded-full backdrop-blur-md">
           <Sparkles className="w-3.5 h-3.5" /> High-Performance Engineering
         </div>
         <div className="max-w-4xl mx-auto z-10">
-          <h1 className="text-4xl sm:text-6xl font-black text-white mb-6 tracking-tight">
+          <h1 className="text-4xl sm:text-6xl font-bold text-white mb-6 tracking-tight leading-tight font-display-xl">
             World-Class Engineering.<br/>
-            <span className="text-blue-400">Tailored Solutions.</span>
+            <span className="text-slate-400 font-normal">Tailored Solutions.</span>
           </h1>
-          <p className="text-lg sm:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed font-light">
+          <p className="text-base sm:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed font-light">
             From cross-platform mobile apps to scalable cloud platforms, we engineer high-impact digital systems that drive long-term value.
           </p>
         </div>
