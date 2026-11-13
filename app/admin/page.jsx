@@ -1762,8 +1762,8 @@ export default function AdminPage() {
           const invDue = Number(viewInvoice.due_amount !== undefined ? viewInvoice.due_amount : Math.max(0, invTotal - invPaid));
 
           return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/75 backdrop-blur-sm overflow-y-auto invoice-modal-backdrop">
-              <div className="relative w-full max-w-3xl my-4 flex flex-col">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/75 backdrop-blur-sm overflow-y-auto invoice-modal-backdrop print:p-0 print:m-0 print:static print:block print:bg-white">
+              <div className="relative w-full max-w-3xl my-4 flex flex-col print:my-0 print:p-0 print:static print:w-full print:max-w-none print:block">
                 
                 {/* 1. Modal Toolbar (STRICTLY OUTSIDE INVOICE - NEVER APPEARS IN PRINT) */}
                 <div className="flex items-center justify-between p-3 mb-3 bg-[#080d22] border border-white/10 rounded-xl text-white shadow-xl no-print">
@@ -1790,7 +1790,7 @@ export default function AdminPage() {
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.98 }}
-                  className="bg-white text-slate-800 rounded-xl p-8 sm:p-12 shadow-2xl overflow-hidden invoice-printable border border-slate-200 flex flex-col justify-between min-h-[860px]"
+                  className="bg-white text-slate-800 rounded-xl p-8 sm:p-12 shadow-2xl overflow-hidden invoice-printable border border-slate-200 flex flex-col justify-between min-h-[860px] print:border-none print:shadow-none print:rounded-none print:p-0 print:m-0"
                 >
 
                 {/* Minimal, Professional Invoice Body */}

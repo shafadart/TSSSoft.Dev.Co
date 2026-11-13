@@ -90,35 +90,68 @@
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
-    height: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
   
-  /* Strictly hide everything with .no-print */
-  .no-print,
-  .no-print * {
+  /* Strictly collapse all non-print elements to 0 height so they don't push the invoice down */
+  header, footer, nav, aside, main, .no-print, .no-print * {
     display: none !important;
-    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
   }
 
-  body * {
-    visibility: hidden;
+  /* Reset all outer containers */
+  body > div,
+  .min-h-screen {
+    min-height: 0 !important;
+    height: auto !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
   }
 
-  .invoice-printable,
-  .invoice-printable * {
-    visibility: visible;
+  /* Reset modal overlay containers so they do not center or add margins */
+  .invoice-modal-backdrop {
+    position: static !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    inset: auto !important;
   }
 
-  .invoice-printable {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
+  .invoice-modal-backdrop > div {
+    position: static !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
-    min-height: 275mm !important;
-    height: 275mm !important;
+  }
+
+  /* Invoice document starts immediately at the top and anchors signatures at the bottom of A4 */
+  .invoice-printable {
+    position: static !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 255mm !important;
+    height: 255mm !important;
+    max-height: 258mm !important;
     margin: 0 !important;
     padding: 0 !important;
     background: #ffffff !important;
@@ -126,8 +159,18 @@
     border: none !important;
     box-shadow: none !important;
     border-radius: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
+    transform: none !important;
+    filter: none !important;
+    animation: none !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-inside: avoid !important;
+    break-after: avoid !important;
+  }
+
+  .invoice-printable * {
+    transform: none !important;
+    filter: none !important;
+    animation: none !important;
   }
 }
