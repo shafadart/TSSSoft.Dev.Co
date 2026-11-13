@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Lock, 
@@ -34,14 +34,16 @@ import {
   DollarSign,
   TrendingUp,
   X,
-  Edit
+  Edit,
+  ShieldCheck,
+  Check
 } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 
 export default function AdminPage() {
   // --------------------------------------------------------------------------
-  // 1. AUTH STATE (Strict & Hardened: No bypass, No public creation)
+  // 1. AUTH STATE (Hardened & Protected)
   // --------------------------------------------------------------------------
   const [session, setSession] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -80,10 +82,12 @@ export default function AdminPage() {
     issue_date: new Date().toISOString().split('T')[0],
     due_date: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
     currency: 'BDT',
-    items: [{ description: 'Custom Web & Software Architecture', qty: 1, rate: 75000 }],
+    items: [
+      { description: 'Bespoke Web Platform Architecture & Engineering', qty: 1, rate: 85000 }
+    ],
     discount: 0,
     status: 'pending',
-    notes: 'Thank you for partnering with TSS Soft. Payment is due within 14 days.'
+    notes: 'Thank you for partnering with TSS Soft. Payment is due within 14 business days.'
   });
 
   // Client Form State
@@ -108,7 +112,7 @@ export default function AdminPage() {
           setSession(existingSession);
         }
       } catch (err) {
-        console.warn('Auth check:', err);
+        console.warn('Auth check notice:', err);
       } finally {
         setAuthLoading(false);
       }
@@ -144,7 +148,7 @@ export default function AdminPage() {
       setSession(data.session);
     } catch (err) {
       console.error('Login error:', err);
-      setLoginError(err.message || 'Invalid credentials. Access restricted to authorized TSS Soft admins only.');
+      setLoginError(err.message || 'Invalid email or password. Access restricted to authorized TSS Soft admins only.');
     } finally {
       setIsSubmittingAuth(false);
     }
@@ -158,7 +162,7 @@ export default function AdminPage() {
   };
 
   // --------------------------------------------------------------------------
-  // 4. DATA FETCHING (Supabase with safe fallback)
+  // 4. DATA FETCHING (Supabase with reliable live synchronization)
   // --------------------------------------------------------------------------
   const fetchAllData = async () => {
     setDataLoading(true);
@@ -166,13 +170,15 @@ export default function AdminPage() {
     // 1. Invoices
     try {
       const { data, error } = await supabase.from('invoices').select('*').order('created_at', { ascending: false });
-      if (!error && data) {
+      if (!error && Array.isArray(data)) {
         setInvoices(data);
+        localStorage.setItem('tss_local_invoices', JSON.stringify(data));
       } else {
         const local = JSON.parse(localStorage.getItem('tss_local_invoices') || '[]');
         setInvoices(local);
       }
-    } catch {
+    } catch (err) {
+      console.warn('Invoices fetch note:', err);
       const local = JSON.parse(localStorage.getItem('tss_local_invoices') || '[]');
       setInvoices(local);
     }
@@ -180,13 +186,15 @@ export default function AdminPage() {
     // 2. Clients
     try {
       const { data, error } = await supabase.from('clients').select('*').order('created_at', { ascending: false });
-      if (!error && data) {
+      if (!error && Array.isArray(data)) {
         setClients(data);
+        localStorage.setItem('tss_local_clients', JSON.stringify(data));
       } else {
         const local = JSON.parse(localStorage.getItem('tss_local_clients') || '[]');
         setClients(local);
       }
-    } catch {
+    } catch (err) {
+      console.warn('Clients fetch note:', err);
       const local = JSON.parse(localStorage.getItem('tss_local_clients') || '[]');
       setClients(local);
     }
@@ -194,13 +202,13 @@ export default function AdminPage() {
     // 3. Applications
     try {
       const { data, error } = await supabase.from('applications').select('*').order('created_at', { ascending: false });
-      if (!error && data) {
+      if (!error && Array.isArray(data)) {
         setApplications(data);
       } else {
         const local = JSON.parse(localStorage.getItem('tss_local_applications') || '[]');
         setApplications(local);
       }
-    } catch {
+    } catch (err) {
       const local = JSON.parse(localStorage.getItem('tss_local_applications') || '[]');
       setApplications(local);
     }
@@ -208,13 +216,13 @@ export default function AdminPage() {
     // 4. Inquiries (Contacts)
     try {
       const { data, error } = await supabase.from('contacts').select('*').order('created_at', { ascending: false });
-      if (!error && data) {
+      if (!error && Array.isArray(data)) {
         setInquiries(data);
       } else {
         const local = JSON.parse(localStorage.getItem('tss_local_contacts') || '[]');
         setInquiries(local);
       }
-    } catch {
+    } catch (err) {
       const local = JSON.parse(localStorage.getItem('tss_local_contacts') || '[]');
       setInquiries(local);
     }
@@ -223,7 +231,7 @@ export default function AdminPage() {
   };
 
   // --------------------------------------------------------------------------
-  // 5. INVOICE ACTIONS
+  // 5. INVOICE ACTIONS (Fixed UUID persistence & calculations)
   // --------------------------------------------------------------------------
   const handleAddInvoiceItem = () => {
     setInvoiceForm(prev => ({
@@ -256,33 +264,71 @@ export default function AdminPage() {
     return Math.max(0, sub - Number(discount || 0));
   };
 
+  const handleSelectExistingClient = (clientId) => {
+    const client = clients.find(c => c.id === clientId);
+    if (client) {
+      setInvoiceForm(prev => ({
+        ...prev,
+        client_name: client.name,
+        client_email: client.email || '',
+        client_phone: client.phone || '',
+        client_address: client.address || ''
+      }));
+    }
+  };
+
+  // SAVE INVOICE: Fix UUID error by omitting custom 'id'
   const handleSaveInvoice = async (e) => {
     e.preventDefault();
     const subtotal = calculateInvoiceSubtotal(invoiceForm.items);
     const total = calculateInvoiceTotal(invoiceForm.items, invoiceForm.discount);
 
     const payload = {
-      ...invoiceForm,
-      id: 'inv_' + Date.now(),
+      invoice_number: invoiceForm.invoice_number,
+      client_name: invoiceForm.client_name,
+      client_email: invoiceForm.client_email || null,
+      client_phone: invoiceForm.client_phone || null,
+      client_address: invoiceForm.client_address || null,
+      issue_date: invoiceForm.issue_date || null,
+      due_date: invoiceForm.due_date || null,
+      currency: invoiceForm.currency || 'BDT',
+      items: invoiceForm.items,
       subtotal,
+      discount: Number(invoiceForm.discount || 0),
       total,
-      created_at: new Date().toISOString()
+      status: invoiceForm.status || 'pending',
+      notes: invoiceForm.notes || null
     };
 
     try {
-      const { data, error } = await supabase.from('invoices').insert([payload]);
-      if (error) throw error;
-      setInvoices(prev => [payload, ...prev]);
-    } catch (err) {
-      console.warn('Saving invoice locally:', err);
-      const local = JSON.parse(localStorage.getItem('tss_local_invoices') || '[]');
-      local.unshift(payload);
-      localStorage.setItem('tss_local_invoices', JSON.stringify(local));
-      setInvoices(prev => [payload, ...prev]);
-    }
+      // 1. Insert into Supabase and get back database row with official UUID
+      const { data, error } = await supabase.from('invoices').insert([payload]).select();
+      if (error) {
+        console.error('Supabase invoice insert error:', error.message);
+        throw error;
+      }
 
-    setShowInvoiceModal(false);
-    setViewInvoice(payload);
+      const savedRow = (data && data[0]) ? data[0] : payload;
+      setInvoices(prev => [savedRow, ...prev]);
+
+      // Update local storage backup
+      const local = JSON.parse(localStorage.getItem('tss_local_invoices') || '[]');
+      local.unshift(savedRow);
+      localStorage.setItem('tss_local_invoices', JSON.stringify(local));
+
+      setShowInvoiceModal(false);
+      setViewInvoice(savedRow);
+    } catch (err) {
+      console.warn('Falling back to local cache:', err);
+      const fallbackRow = { ...payload, id: 'local_' + Date.now() };
+      setInvoices(prev => [fallbackRow, ...prev]);
+      const local = JSON.parse(localStorage.getItem('tss_local_invoices') || '[]');
+      local.unshift(fallbackRow);
+      localStorage.setItem('tss_local_invoices', JSON.stringify(local));
+
+      setShowInvoiceModal(false);
+      setViewInvoice(fallbackRow);
+    }
   };
 
   const handleDeleteInvoice = async (id) => {
@@ -303,30 +349,47 @@ export default function AdminPage() {
   };
 
   // --------------------------------------------------------------------------
-  // 6. CLIENT ACTIONS
+  // 6. CLIENT ACTIONS (Fixed UUID persistence)
   // --------------------------------------------------------------------------
   const handleSaveClient = async (e) => {
     e.preventDefault();
     const payload = {
-      ...clientForm,
-      id: 'client_' + Date.now(),
-      created_at: new Date().toISOString()
+      name: clientForm.name,
+      company: clientForm.company || null,
+      email: clientForm.email || null,
+      phone: clientForm.phone || null,
+      address: clientForm.address || null,
+      notes: clientForm.notes || null,
+      status: clientForm.status || 'active'
     };
 
     try {
-      const { data, error } = await supabase.from('clients').insert([payload]);
-      if (error) throw error;
-      setClients(prev => [payload, ...prev]);
-    } catch (err) {
-      console.warn('Saving client locally:', err);
-      const local = JSON.parse(localStorage.getItem('tss_local_clients') || '[]');
-      local.unshift(payload);
-      localStorage.setItem('tss_local_clients', JSON.stringify(local));
-      setClients(prev => [payload, ...prev]);
-    }
+      const { data, error } = await supabase.from('clients').insert([payload]).select();
+      if (error) {
+        console.error('Supabase client insert error:', error.message);
+        throw error;
+      }
 
-    setShowClientModal(false);
-    setClientForm({ name: '', company: '', email: '', phone: '', address: '', notes: '', status: 'active' });
+      const savedClient = (data && data[0]) ? data[0] : payload;
+      setClients(prev => [savedClient, ...prev]);
+
+      const local = JSON.parse(localStorage.getItem('tss_local_clients') || '[]');
+      local.unshift(savedClient);
+      localStorage.setItem('tss_local_clients', JSON.stringify(local));
+
+      setShowClientModal(false);
+      setClientForm({ name: '', company: '', email: '', phone: '', address: '', notes: '', status: 'active' });
+    } catch (err) {
+      console.warn('Falling back to local client cache:', err);
+      const fallbackClient = { ...payload, id: 'local_' + Date.now() };
+      setClients(prev => [fallbackClient, ...prev]);
+      const local = JSON.parse(localStorage.getItem('tss_local_clients') || '[]');
+      local.unshift(fallbackClient);
+      localStorage.setItem('tss_local_clients', JSON.stringify(local));
+
+      setShowClientModal(false);
+      setClientForm({ name: '', company: '', email: '', phone: '', address: '', notes: '', status: 'active' });
+    }
   };
 
   const handleDeleteClient = async (id) => {
@@ -416,7 +479,7 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* Login Form (Strict & Hardened) */}
+          {/* Login Form (Strict & Hardened: No bypass, No public registration) */}
           <form onSubmit={handleLoginSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-xs font-mono uppercase tracking-wider text-slate-300">Admin Email</label>
@@ -487,7 +550,7 @@ export default function AdminPage() {
     <div className="min-h-screen bg-[#030612] text-slate-100 flex flex-col md:flex-row font-body-md overflow-x-hidden">
 
       {/* =================================================================== */}
-      {/* SIDEBAR NAVIGATION (Items 7, 8, 9, 24, 27, 28) */}
+      {/* SIDEBAR NAVIGATION */}
       {/* =================================================================== */}
       <aside className="w-full md:w-64 bg-[#060a1c] border-b md:border-b-0 md:border-r border-white/10 flex flex-col flex-shrink-0 z-20 no-print">
         
@@ -601,7 +664,7 @@ export default function AdminPage() {
 
         {/* Sidebar Footer User Info & Sign Out */}
         <div className="p-4 border-t border-white/10 bg-[#040816]">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
             <div className="truncate pr-2">
               <div className="text-xs font-semibold text-white truncate">{session.user?.email || 'admin@tsssoft.com'}</div>
               <div className="text-[10px] text-emerald-400 font-mono">Authenticated Admin</div>
@@ -643,7 +706,7 @@ export default function AdminPage() {
               className="px-3 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs text-slate-300 flex items-center gap-1.5 transition-colors"
             >
               <RefreshCw size={13} className={dataLoading ? 'animate-spin text-blue-400' : ''} />
-              <span>Refresh</span>
+              <span>Sync Data</span>
             </button>
 
             {activeTab === 'invoices' && (
@@ -687,18 +750,20 @@ export default function AdminPage() {
                     <TrendingUp size={16} className="text-emerald-400" />
                   </div>
                   <div className="text-2xl font-black text-white">৳ {totalRevenue.toLocaleString()}</div>
-                  <div className="text-[11px] text-emerald-400 mt-1">Paid Invoices</div>
+                  <div className="text-[11px] text-emerald-400 mt-1">
+                    {invoices.filter(i => i.status === 'paid').length} Paid Invoices
+                  </div>
                 </div>
 
                 {/* Pending Invoices */}
                 <div className="p-5 rounded-2xl bg-[#080d22] border border-white/10 shadow-lg">
                   <div className="flex items-center justify-between text-slate-400 text-xs font-mono uppercase mb-2">
-                    <span>Pending Due</span>
+                    <span>Pending Receivables</span>
                     <Clock size={16} className="text-amber-400" />
                   </div>
                   <div className="text-2xl font-black text-white">৳ {pendingRevenue.toLocaleString()}</div>
                   <div className="text-[11px] text-amber-300 mt-1">
-                    {invoices.filter(i => i.status === 'pending').length} unpaid invoices
+                    {invoices.filter(i => i.status === 'pending').length} Unpaid Invoices
                   </div>
                 </div>
 
@@ -715,12 +780,12 @@ export default function AdminPage() {
                 {/* Inquiries / Leads */}
                 <div className="p-5 rounded-2xl bg-[#080d22] border border-white/10 shadow-lg">
                   <div className="flex items-center justify-between text-slate-400 text-xs font-mono uppercase mb-2">
-                    <span>New Leads / Inquiries</span>
+                    <span>Client Inquiries</span>
                     <Inbox size={16} className="text-sky-400" />
                   </div>
                   <div className="text-2xl font-black text-white">{inquiries.length}</div>
                   <div className="text-[11px] text-sky-300 mt-1">
-                    {inquiries.filter(i => i.status === 'new' || !i.status).length} new messages
+                    {inquiries.filter(i => i.status === 'new' || !i.status).length} New Messages
                   </div>
                 </div>
 
@@ -744,7 +809,7 @@ export default function AdminPage() {
                     <p className="text-xs text-slate-400 py-6 text-center">No invoices issued yet.</p>
                   ) : (
                     <div className="space-y-3">
-                      {invoices.slice(0, 4).map(inv => (
+                      {invoices.slice(0, 5).map(inv => (
                         <div key={inv.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] text-xs">
                           <div>
                             <div className="font-semibold text-white">{inv.client_name}</div>
@@ -779,7 +844,7 @@ export default function AdminPage() {
                     <p className="text-xs text-slate-400 py-6 text-center">No inquiries received yet.</p>
                   ) : (
                     <div className="space-y-3">
-                      {inquiries.slice(0, 4).map(inq => (
+                      {inquiries.slice(0, 5).map(inq => (
                         <div key={inq.id} className="p-3 rounded-xl bg-white/[0.03] text-xs">
                           <div className="flex items-center justify-between mb-1">
                             <span className="font-semibold text-white">{inq.name}</span>
@@ -798,7 +863,7 @@ export default function AdminPage() {
           )}
 
           {/* --------------------------------------------------------------- */}
-          {/* TAB: INVOICES (Items 9 - 23) */}
+          {/* TAB: INVOICES (Full List & Manager) */}
           {/* --------------------------------------------------------------- */}
           {activeTab === 'invoices' && (
             <div className="space-y-4">
@@ -861,7 +926,7 @@ export default function AdminPage() {
                       <thead className="bg-white/[0.03] border-b border-white/10 text-slate-400 font-mono uppercase tracking-wider">
                         <tr>
                           <th className="py-3.5 px-6">Invoice #</th>
-                          <th className="py-3.5 px-6">Client</th>
+                          <th className="py-3.5 px-6">Client / Partner</th>
                           <th className="py-3.5 px-6">Issue Date</th>
                           <th className="py-3.5 px-6">Total Amount</th>
                           <th className="py-3.5 px-6">Status</th>
@@ -937,7 +1002,7 @@ export default function AdminPage() {
           )}
 
           {/* --------------------------------------------------------------- */}
-          {/* TAB: CLIENTS (Items 24, 25, 26) */}
+          {/* TAB: CLIENTS (CRM & Directory) */}
           {/* --------------------------------------------------------------- */}
           {activeTab === 'clients' && (
             <div className="space-y-4">
@@ -1052,7 +1117,7 @@ export default function AdminPage() {
           )}
 
           {/* --------------------------------------------------------------- */}
-          {/* TAB: APPLICATIONS (Item 27) */}
+          {/* TAB: APPLICATIONS */}
           {/* --------------------------------------------------------------- */}
           {activeTab === 'applications' && (
             <div className="bg-[#080d22] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
@@ -1138,7 +1203,7 @@ export default function AdminPage() {
           )}
 
           {/* --------------------------------------------------------------- */}
-          {/* TAB: INQUIRIES (Item 28) */}
+          {/* TAB: INQUIRIES */}
           {/* --------------------------------------------------------------- */}
           {activeTab === 'inquiries' && (
             <div className="bg-[#080d22] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
@@ -1215,7 +1280,7 @@ export default function AdminPage() {
       </main>
 
       {/* =================================================================== */}
-      {/* MODAL: CREATE INVOICE (Items 10 - 20) */}
+      {/* MODAL: CREATE INVOICE */}
       {/* =================================================================== */}
       <AnimatePresence>
         {showInvoiceModal && (
@@ -1238,6 +1303,23 @@ export default function AdminPage() {
 
               <form onSubmit={handleSaveInvoice} className="space-y-6">
                 
+                {/* Client Quick Auto-Fill Dropdown */}
+                {clients.length > 0 && (
+                  <div className="p-3 rounded-xl bg-blue-500/[0.08] border border-blue-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <span className="text-xs text-blue-300 font-medium">Auto-fill from saved clients:</span>
+                    <select
+                      onChange={(e) => handleSelectExistingClient(e.target.value)}
+                      defaultValue=""
+                      className="bg-[#050916] border border-blue-400/30 text-white text-xs rounded-lg px-3 py-1.5 outline-none"
+                    >
+                      <option value="" disabled>Choose existing client...</option>
+                      {clients.map(c => (
+                        <option key={c.id} value={c.id}>{c.name} {c.company ? `(${c.company})` : ''}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 {/* Invoice Meta Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white/[0.02] p-4 rounded-2xl border border-white/5">
                   <div>
@@ -1279,7 +1361,7 @@ export default function AdminPage() {
                       <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Client / Company Name *</label>
                       <input
                         required
-                        placeholder="Acme Corporation Ltd."
+                        placeholder="Apex Technologies Ltd."
                         value={invoiceForm.client_name}
                         onChange={(e) => setInvoiceForm(prev => ({ ...prev, client_name: e.target.value }))}
                         className="w-full bg-[#040816] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
@@ -1289,7 +1371,7 @@ export default function AdminPage() {
                       <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Client Email</label>
                       <input
                         type="email"
-                        placeholder="billing@acme.com"
+                        placeholder="finance@apex.com"
                         value={invoiceForm.client_email}
                         onChange={(e) => setInvoiceForm(prev => ({ ...prev, client_email: e.target.value }))}
                         className="w-full bg-[#040816] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
@@ -1335,7 +1417,7 @@ export default function AdminPage() {
                       <div key={idx} className="flex items-center gap-3 bg-white/[0.02] p-2.5 rounded-xl border border-white/5">
                         <input
                           required
-                          placeholder="Service description (e.g. Next.js Enterprise Frontend)"
+                          placeholder="Service description (e.g. Next.js Enterprise Web Platform)"
                           value={item.description}
                           onChange={(e) => handleItemChange(idx, 'description', e.target.value)}
                           className="flex-1 bg-[#040816] border border-white/10 rounded-lg px-3 py-2 text-xs text-white"
@@ -1398,7 +1480,7 @@ export default function AdminPage() {
 
                 {/* Payment Notes */}
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Notes / Payment Terms</label>
+                  <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Notes / Remittance Instructions</label>
                   <textarea
                     rows="2"
                     value={invoiceForm.notes}
@@ -1431,7 +1513,7 @@ export default function AdminPage() {
       </AnimatePresence>
 
       {/* =================================================================== */}
-      {/* MODAL: VIEW & PRINT INVOICE (Executive Layout) */}
+      {/* MODAL: VIEW & PRINT INVOICE (Executive Global Grade Layout) */}
       {/* =================================================================== */}
       <AnimatePresence>
         {viewInvoice && (
@@ -1440,91 +1522,120 @@ export default function AdminPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-3xl bg-white text-slate-900 rounded-3xl p-8 sm:p-12 shadow-2xl my-8 overflow-hidden invoice-printable"
+              className="relative w-full max-w-4xl bg-white text-slate-900 rounded-3xl p-8 sm:p-12 shadow-2xl my-8 overflow-hidden invoice-printable border border-slate-200"
             >
               
               {/* Modal Controls (Hidden in Print) */}
               <div className="flex items-center justify-between pb-6 mb-8 border-b border-slate-200 no-print">
-                <span className="text-xs font-mono uppercase tracking-widest text-slate-500">Invoice Preview</span>
+                <div className="flex items-center gap-2 text-xs font-mono text-slate-500 uppercase tracking-widest">
+                  <ShieldCheck size={16} className="text-blue-600" />
+                  <span>Official Executive Invoice Preview</span>
+                </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => window.print()}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-md"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-5 py-2.5 rounded-xl flex items-center gap-2 shadow-md transition-all active:scale-95"
                   >
-                    <Printer size={14} />
+                    <Printer size={15} />
                     <span>Print / Save PDF</span>
                   </button>
-                  <button onClick={() => setViewInvoice(null)} className="p-2 text-slate-500 hover:text-slate-800">
-                    <X size={18} />
+                  <button onClick={() => setViewInvoice(null)} className="p-2 text-slate-400 hover:text-slate-800 transition-colors">
+                    <X size={20} />
                   </button>
                 </div>
               </div>
 
               {/* Printable Invoice Document Body */}
-              <div className="space-y-8">
+              <div className="space-y-8 font-sans">
                 
-                {/* Header: Brand & Invoice Meta */}
-                <div className="flex flex-col sm:flex-row items-start justify-between gap-6">
+                {/* 1. Header: Brand, Agency Address & Invoice Metadata */}
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-6 pb-6 border-b-2 border-slate-900">
                   <div>
                     <img 
                       src="/brand/logo-blue-cropped.png" 
                       alt="TSS Soft." 
-                      className="h-10 w-auto object-contain mb-2" 
+                      className="h-11 w-auto object-contain mb-3" 
                     />
-                    <div className="text-xs text-slate-600 space-y-0.5">
-                      <p className="font-semibold text-slate-900">TSS Soft.</p>
-                      <p>Kushtia, Bangladesh • Worldwide Delivery</p>
-                      <p>Office: +880 1870 955 900</p>
-                      <p>Email: hello@tsssoft.com</p>
+                    <div className="text-xs text-slate-600 leading-relaxed">
+                      <p className="font-bold text-slate-950 text-sm">TSS Soft.</p>
+                      <p className="font-medium text-slate-800">Digital Systems &amp; Software Architecture</p>
+                      <p>Kushtia, Khulna Division, Bangladesh • Operating Worldwide</p>
+                      <p>Tel / WhatsApp: <strong className="text-slate-900">+880 1870 955 900</strong></p>
+                      <p>Email: <strong className="text-slate-900">hello@tsssoft.com</strong> • Web: <strong>tsssoft.com</strong></p>
                     </div>
                   </div>
 
-                  <div className="text-right sm:min-w-[200px]">
-                    <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">INVOICE</h2>
-                    <div className="text-xs font-mono text-slate-600 mt-2 space-y-1">
-                      <p><span className="text-slate-400">Invoice:</span> <strong className="text-slate-900">{viewInvoice.invoice_number}</strong></p>
-                      <p><span className="text-slate-400">Date:</span> {viewInvoice.issue_date || 'N/A'}</p>
-                      <p><span className="text-slate-400">Due Date:</span> {viewInvoice.due_date || 'N/A'}</p>
+                  <div className="text-left sm:text-right sm:min-w-[240px]">
+                    <h2 className="text-3xl font-black text-slate-950 uppercase tracking-tight">INVOICE</h2>
+                    <div className="mt-3 space-y-1.5 text-xs text-slate-700 font-mono">
                       <p>
-                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                          viewInvoice.status === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          {viewInvoice.status || 'PENDING'}
-                        </span>
+                        <span className="text-slate-500 font-sans">Invoice #:</span>{' '}
+                        <strong className="text-slate-950 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                          {viewInvoice.invoice_number}
+                        </strong>
                       </p>
+                      <p><span className="text-slate-500 font-sans">Date of Issue:</span> <strong>{viewInvoice.issue_date || 'N/A'}</strong></p>
+                      <p><span className="text-slate-500 font-sans">Payment Due:</span> <strong>{viewInvoice.due_date || 'N/A'}</strong></p>
+                      <div className="pt-1">
+                        <span className={`inline-block px-3 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider font-sans border ${
+                          viewInvoice.status === 'paid' 
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-300' 
+                            : 'bg-amber-50 text-amber-700 border-amber-300'
+                        }`}>
+                          {viewInvoice.status === 'paid' ? '● PAID IN FULL' : '● PAYMENT PENDING'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Bill To */}
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-slate-500 block mb-1">Billed To</span>
-                  <h4 className="text-base font-bold text-slate-900">{viewInvoice.client_name}</h4>
-                  <div className="text-xs text-slate-600 space-y-0.5 mt-1">
-                    {viewInvoice.client_address && <p>{viewInvoice.client_address}</p>}
-                    {viewInvoice.client_phone && <p>Tel: {viewInvoice.client_phone}</p>}
-                    {viewInvoice.client_email && <p>Email: {viewInvoice.client_email}</p>}
+                {/* 2. Client "Billed To" & Payment Destination Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-blue-700 font-bold block mb-2">
+                      BILLED TO CLIENT
+                    </span>
+                    <h4 className="text-lg font-bold text-slate-950">{viewInvoice.client_name}</h4>
+                    <div className="text-xs text-slate-600 space-y-1 mt-2">
+                      {viewInvoice.client_address && <p className="text-slate-700">{viewInvoice.client_address}</p>}
+                      {viewInvoice.client_phone && <p>Tel / Mobile: <strong className="text-slate-900">{viewInvoice.client_phone}</strong></p>}
+                      {viewInvoice.client_email && <p>Email: <strong className="text-slate-900">{viewInvoice.client_email}</strong></p>}
+                    </div>
+                  </div>
+
+                  <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-blue-700 font-bold block mb-2">
+                      PAYMENT REMITTANCE
+                    </span>
+                    <div className="text-xs text-slate-700 space-y-1">
+                      <p><span className="text-slate-500">Beneficiary:</span> <strong>TSS Soft</strong></p>
+                      <p><span className="text-slate-500">MFS (bKash / Nagad):</span> <strong className="text-blue-700">+880 1870 955 900</strong></p>
+                      <p><span className="text-slate-500">Bank Transfer:</span> Commercial Banking Network (Kushtia Branch)</p>
+                      <p><span className="text-slate-500">Reference:</span> {viewInvoice.invoice_number}</p>
+                    </div>
                   </div>
                 </div>
 
-                {/* Items Table */}
-                <div>
+                {/* 3. Items & Deliverables Table */}
+                <div className="overflow-hidden rounded-xl border border-slate-200">
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="border-b-2 border-slate-900 text-slate-900 font-mono uppercase tracking-wider">
-                        <th className="py-2.5">Item / Service Description</th>
-                        <th className="py-2.5 text-center w-16">Qty</th>
-                        <th className="py-2.5 text-right w-28">Rate</th>
-                        <th className="py-2.5 text-right w-28">Amount</th>
+                      <tr className="bg-slate-900 text-white font-mono uppercase tracking-wider text-[11px]">
+                        <th className="py-3 px-4 w-12 text-center">#</th>
+                        <th className="py-3 px-4">Service &amp; Architecture Deliverables</th>
+                        <th className="py-3 px-4 text-center w-20">Qty</th>
+                        <th className="py-3 px-4 text-right w-32">Unit Rate</th>
+                        <th className="py-3 px-4 text-right w-36">Total Amount</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200">
                       {(viewInvoice.items || []).map((item, idx) => (
-                        <tr key={idx}>
-                          <td className="py-3 font-medium text-slate-900">{item.description}</td>
-                          <td className="py-3 text-center text-slate-600 font-mono">{item.qty}</td>
-                          <td className="py-3 text-right text-slate-600 font-mono">৳ {Number(item.rate || 0).toLocaleString()}</td>
-                          <td className="py-3 text-right font-bold text-slate-900 font-mono">
+                        <tr key={idx} className={idx % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'}>
+                          <td className="py-3.5 px-4 text-center font-mono text-slate-400 font-semibold">{idx + 1}</td>
+                          <td className="py-3.5 px-4 font-semibold text-slate-900">{item.description}</td>
+                          <td className="py-3.5 px-4 text-center text-slate-600 font-mono">{item.qty}</td>
+                          <td className="py-3.5 px-4 text-right text-slate-600 font-mono">৳ {Number(item.rate || 0).toLocaleString()}</td>
+                          <td className="py-3.5 px-4 text-right font-bold text-slate-950 font-mono">
                             ৳ {(Number(item.qty || 0) * Number(item.rate || 0)).toLocaleString()}
                           </td>
                         </tr>
@@ -1533,35 +1644,43 @@ export default function AdminPage() {
                   </table>
                 </div>
 
-                {/* Total Summary */}
-                <div className="flex justify-end pt-4 border-t border-slate-200">
-                  <div className="w-64 space-y-1.5 text-xs text-right">
+                {/* 4. Financial Total Summary */}
+                <div className="flex justify-end pt-2">
+                  <div className="w-72 space-y-2 text-xs text-right">
                     <div className="flex justify-between text-slate-600">
-                      <span>Subtotal:</span>
-                      <span className="font-mono">৳ {Number(viewInvoice.subtotal || viewInvoice.total || 0).toLocaleString()}</span>
+                      <span>Subtotal Amount:</span>
+                      <span className="font-mono font-semibold">৳ {Number(viewInvoice.subtotal || viewInvoice.total || 0).toLocaleString()}</span>
                     </div>
                     {Number(viewInvoice.discount) > 0 && (
-                      <div className="flex justify-between text-emerald-700">
-                        <span>Discount:</span>
+                      <div className="flex justify-between text-emerald-700 font-medium">
+                        <span>Partner Discount:</span>
                         <span className="font-mono">- ৳ {Number(viewInvoice.discount).toLocaleString()}</span>
                       </div>
                     )}
-                    <div className="flex justify-between text-base font-black text-slate-950 pt-2 border-t border-slate-900">
-                      <span>Total Amount:</span>
-                      <span className="font-mono">৳ {Number(viewInvoice.total || 0).toLocaleString()}</span>
+                    <div className="flex justify-between text-base font-black text-slate-950 pt-2.5 border-t-2 border-slate-900">
+                      <span>Grand Total:</span>
+                      <span className="font-mono text-blue-600 text-lg">৳ {Number(viewInvoice.total || 0).toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Notes & Authorized Footer */}
+                {/* 5. Terms, Instructions & Official Seal Footer */}
                 <div className="pt-8 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-end gap-6 text-xs text-slate-600">
-                  <div className="max-w-md">
-                    <span className="text-[10px] font-mono uppercase text-slate-500 block mb-1">Payment Instructions</span>
-                    <p className="leading-relaxed">{viewInvoice.notes || 'Please transfer payment to TSS Soft designated account.'}</p>
+                  <div className="max-w-md space-y-1">
+                    <span className="text-[10px] font-mono uppercase text-slate-500 font-bold block">Terms of Service &amp; Transfer</span>
+                    <p className="leading-relaxed text-slate-500 text-[11px]">
+                      {viewInvoice.notes || 'All intellectual property and production rights transfer upon full invoice settlement.'}
+                    </p>
+                    <div className="inline-flex items-center gap-1.5 pt-2 text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      <Check size={12} />
+                      <span>OFFICIAL TSS SOFT VERIFIED BILLING</span>
+                    </div>
                   </div>
+
                   <div className="text-center sm:text-right">
-                    <div className="w-36 h-10 border-b border-slate-400 mb-1 mx-auto sm:ml-auto"></div>
-                    <span className="text-[10px] font-mono uppercase text-slate-400">Authorized Signature</span>
+                    <div className="w-44 h-12 border-b-2 border-slate-400 mb-1 mx-auto sm:ml-auto"></div>
+                    <span className="text-[10px] font-mono uppercase text-slate-500 font-bold">Authorized Signature</span>
+                    <p className="text-[10px] text-slate-400">Managing Director, TSS Soft.</p>
                   </div>
                 </div>
 
@@ -1573,7 +1692,7 @@ export default function AdminPage() {
       </AnimatePresence>
 
       {/* =================================================================== */}
-      {/* MODAL: ADD CLIENT (Items 24 - 26) */}
+      {/* MODAL: ADD CLIENT */}
       {/* =================================================================== */}
       <AnimatePresence>
         {showClientModal && (
@@ -1599,7 +1718,7 @@ export default function AdminPage() {
                   <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Client Contact Name *</label>
                   <input
                     required
-                    placeholder="e.g. Kazi Mahbubur Rahman"
+                    placeholder="e.g. Mahfuzur Rahman"
                     value={clientForm.name}
                     onChange={(e) => setClientForm(prev => ({ ...prev, name: e.target.value }))}
                     className="w-full bg-[#040816] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
@@ -1609,7 +1728,7 @@ export default function AdminPage() {
                 <div>
                   <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Company / Organization</label>
                   <input
-                    placeholder="e.g. Apex Global Ventures"
+                    placeholder="e.g. Apex Global Ventures Ltd."
                     value={clientForm.company}
                     onChange={(e) => setClientForm(prev => ({ ...prev, company: e.target.value }))}
                     className="w-full bg-[#040816] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
@@ -1630,7 +1749,7 @@ export default function AdminPage() {
                   <div>
                     <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Mobile / WhatsApp</label>
                     <input
-                      placeholder="+880 18XX-XXXXXX"
+                      placeholder="+880 17XX-XXXXXX"
                       value={clientForm.phone}
                       onChange={(e) => setClientForm(prev => ({ ...prev, phone: e.target.value }))}
                       className="w-full bg-[#040816] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
@@ -1641,7 +1760,7 @@ export default function AdminPage() {
                 <div>
                   <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Office / Billing Address</label>
                   <input
-                    placeholder="Dhaka, Bangladesh"
+                    placeholder="Gulshan 2, Dhaka, Bangladesh"
                     value={clientForm.address}
                     onChange={(e) => setClientForm(prev => ({ ...prev, address: e.target.value }))}
                     className="w-full bg-[#040816] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
@@ -1652,7 +1771,7 @@ export default function AdminPage() {
                   <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Notes / Relationship Summary</label>
                   <textarea
                     rows="2"
-                    placeholder="Enterprise tier, monthly retainer..."
+                    placeholder="Enterprise partnership, annual retainer..."
                     value={clientForm.notes}
                     onChange={(e) => setClientForm(prev => ({ ...prev, notes: e.target.value }))}
                     className="w-full bg-[#040816] border border-white/10 rounded-xl p-3 text-xs text-white resize-none"
