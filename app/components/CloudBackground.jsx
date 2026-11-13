@@ -12,14 +12,16 @@ export default function CloudBackground() {
     if (!ctx) return;
 
     let animId;
-    let w = (canvas.width = window.innerWidth);
-    let h = (canvas.height = window.innerHeight);
+    // High-performance scaled rendering: 0.5x internal resolution delivers 4x fill-rate speedup & silkier blur
+    const scaleFactor = 0.5;
+    let w = (canvas.width = Math.floor(window.innerWidth * scaleFactor));
+    let h = (canvas.height = Math.floor(window.innerHeight * scaleFactor));
 
     const onResize = () => {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
+      w = canvas.width = Math.floor(window.innerWidth * scaleFactor);
+      h = canvas.height = Math.floor(window.innerHeight * scaleFactor);
     };
-    window.addEventListener('resize', onResize);
+    window.addEventListener('resize', onResize, { passive: true });
 
     // Realistic Silky Volumetric Clouds (Multi-lobe organic cumulus clusters, zero-grain)
     const cloudClusters = [
@@ -154,27 +156,27 @@ export default function CloudBackground() {
       {/* 1. Deep Midnight Velvet Gradient Base */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#060c1e] via-[#091332] to-[#040817]" />
 
-      {/* 2. Soft Glowing Volumetric Organic Cloud Blobs (CSS Fluid Layer - Silky & Puffy) */}
-      <div className="absolute inset-0 overflow-hidden">
+      {/* 2. Soft Glowing Volumetric Organic Cloud Blobs (Hardware Accelerated CSS Fluid Layer) */}
+      <div className="absolute inset-0 overflow-hidden" style={{ transform: 'translateZ(0)' }}>
         
         {/* Main Center Luminous Cloud Formation (White & Sky Blue - As in Reference) */}
         <div 
-          className="absolute -top-[10%] left-[25%] w-[680px] h-[480px] md:w-[980px] md:h-[620px] rounded-full bg-gradient-to-tr from-sky-400/35 via-blue-200/40 to-blue-600/25 blur-[95px] animate-cloud-drift-1 mix-blend-screen"
+          className="absolute -top-[10%] left-[25%] w-[680px] h-[480px] md:w-[980px] md:h-[620px] rounded-full bg-gradient-to-tr from-sky-400/30 via-blue-200/35 to-blue-600/20 blur-[80px] animate-cloud-drift-1 mix-blend-screen"
         />
 
         {/* Secondary Upper Left Cloud Puff */}
         <div 
-          className="absolute top-[8%] left-[5%] w-[520px] h-[380px] md:w-[750px] md:h-[500px] rounded-full bg-gradient-to-br from-blue-300/30 via-sky-500/25 to-blue-800/20 blur-[90px] animate-cloud-drift-2 mix-blend-screen"
+          className="absolute top-[8%] left-[5%] w-[520px] h-[380px] md:w-[750px] md:h-[500px] rounded-full bg-gradient-to-br from-blue-300/25 via-sky-500/20 to-blue-800/18 blur-[75px] animate-cloud-drift-2 mix-blend-screen"
         />
 
         {/* Right-Side Soft Ethereal Atmospheric Mist */}
         <div 
-          className="absolute top-[12%] right-[5%] w-[600px] h-[420px] md:w-[850px] md:h-[550px] rounded-full bg-gradient-to-l from-indigo-500/25 via-blue-400/25 to-sky-300/15 blur-[105px] animate-cloud-drift-3 mix-blend-screen"
+          className="absolute top-[12%] right-[5%] w-[600px] h-[420px] md:w-[850px] md:h-[550px] rounded-full bg-gradient-to-l from-indigo-500/20 via-blue-400/20 to-sky-300/15 blur-[85px] animate-cloud-drift-3 mix-blend-screen"
         />
 
         {/* Lower Horizon Soft Blue Depth */}
         <div 
-          className="absolute -bottom-[15%] left-[20%] w-[750px] h-[500px] rounded-full bg-blue-700/15 blur-[130px] mix-blend-screen"
+          className="absolute -bottom-[15%] left-[20%] w-[750px] h-[500px] rounded-full bg-blue-700/12 blur-[100px] mix-blend-screen"
         />
       </div>
 

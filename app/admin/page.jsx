@@ -998,8 +998,8 @@ export default function AdminPage() {
                           <th className="py-3.5 px-6">Client / Partner</th>
                           <th className="py-3.5 px-6">Issue / Due Date</th>
                           <th className="py-3.5 px-6">Total Amount</th>
-                          <th className="py-3.5 px-6">Paid (জমা)</th>
-                          <th className="py-3.5 px-6">Due (বাকি)</th>
+                          <th className="py-3.5 px-6">Paid Amount</th>
+                          <th className="py-3.5 px-6">Balance Due</th>
                           <th className="py-3.5 px-6">Status</th>
                           <th className="py-3.5 px-6 text-right">Actions</th>
                         </tr>
@@ -1652,7 +1652,7 @@ export default function AdminPage() {
                         </div>
 
                         <div>
-                          <label className="text-[10px] font-mono uppercase text-emerald-400 block mb-1">Paid / Received (৳ জমা)</label>
+                          <label className="text-[10px] font-mono uppercase text-emerald-400 block mb-1">Paid Amount (৳)</label>
                           <input
                             type="number"
                             min="0"
@@ -1698,14 +1698,14 @@ export default function AdminPage() {
                           <span className="text-sm font-black text-white font-mono">৳ {formTotal.toLocaleString()}</span>
                         </div>
                         <div className="p-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/20">
-                          <span className="text-[10px] font-mono text-emerald-400 block">Paid (জমা)</span>
+                          <span className="text-[10px] font-mono text-emerald-400 block">Paid Amount</span>
                           <span className="text-sm font-black text-emerald-300 font-mono">৳ {formPaid.toLocaleString()}</span>
                         </div>
                         <div className={`p-3 rounded-xl border ${
                           formDue > 0 ? 'bg-amber-500/[0.08] border-amber-500/30' : 'bg-white/[0.02] border-white/5'
                         }`}>
                           <span className={`text-[10px] font-mono block ${formDue > 0 ? 'text-amber-400' : 'text-slate-500'}`}>
-                            Balance Due (বাকি)
+                            Balance Due
                           </span>
                           <span className={`text-sm font-black font-mono ${formDue > 0 ? 'text-amber-300' : 'text-slate-400'}`}>
                             ৳ {formDue.toLocaleString()}
@@ -1762,47 +1762,47 @@ export default function AdminPage() {
           const invDue = Number(viewInvoice.due_amount !== undefined ? viewInvoice.due_amount : Math.max(0, invTotal - invPaid));
 
           return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/75 backdrop-blur-sm overflow-y-auto invoice-modal-backdrop">
               <motion.div
                 initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.96 }}
-                className="relative w-full max-w-[210mm] bg-white text-slate-900 rounded-2xl p-6 sm:p-10 shadow-2xl my-4 overflow-hidden invoice-printable border border-slate-200 min-h-[297mm] flex flex-col justify-between"
+                className="relative w-full max-w-3xl bg-white text-slate-900 rounded-2xl p-6 sm:p-8 shadow-2xl my-4 overflow-hidden invoice-printable border border-slate-200 flex flex-col justify-between"
               >
                 
                 {/* Modal Controls (Hidden in Print) */}
-                <div className="flex items-center justify-between pb-4 mb-6 border-b border-slate-200 no-print">
+                <div className="flex items-center justify-between pb-3 mb-5 border-b border-slate-200 no-print">
                   <div className="flex items-center gap-2 text-xs font-mono text-slate-500 uppercase tracking-widest">
-                    <ShieldCheck size={16} className="text-blue-600" />
-                    <span>Official Executive Invoice Preview (A4 Ready)</span>
+                    <ShieldCheck size={15} className="text-blue-600" />
+                    <span>Official Executive Invoice Preview</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => window.print()}
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-5 py-2.5 rounded-xl flex items-center gap-2 shadow-md transition-all active:scale-95"
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-md transition-all active:scale-95"
                     >
-                      <Printer size={15} />
+                      <Printer size={14} />
                       <span>Print / Save PDF</span>
                     </button>
-                    <button onClick={() => setViewInvoice(null)} className="p-2 text-slate-400 hover:text-slate-800 transition-colors">
-                      <X size={20} />
+                    <button onClick={() => setViewInvoice(null)} className="p-1.5 text-slate-400 hover:text-slate-800 transition-colors">
+                      <X size={18} />
                     </button>
                   </div>
                 </div>
 
-                {/* Printable Invoice Document Body (Flex Column) */}
-                <div className="flex-1 flex flex-col justify-start space-y-6 font-sans">
+                {/* Printable Invoice Document Body */}
+                <div className="flex-1 flex flex-col justify-start space-y-4 font-sans">
                   
                   {/* 1. Header: Brand, Agency Address & Invoice Metadata */}
-                  <div className="flex flex-col sm:flex-row items-start justify-between gap-6 pb-6 border-b-2 border-slate-900">
+                  <div className="flex flex-col sm:flex-row items-start justify-between gap-4 pb-4 border-b-2 border-slate-900">
                     <div>
                       <img 
                         src="/brand/logo-blue-cropped.png" 
                         alt="TSS Soft." 
-                        className="h-11 w-auto object-contain mb-3" 
+                        className="h-8 w-auto object-contain mb-2" 
                       />
-                      <div className="text-xs text-slate-600 leading-relaxed">
-                        <p className="font-bold text-slate-950 text-sm">TSS Soft.</p>
+                      <div className="text-[11px] text-slate-600 leading-snug">
+                        <p className="font-bold text-slate-950 text-xs">TSS Soft.</p>
                         <p className="font-medium text-slate-800">Digital Systems &amp; Software Architecture</p>
                         <p>Kushtia, Khulna Division, Bangladesh • Operating Worldwide</p>
                         <p>Tel / WhatsApp: <strong className="text-slate-900">+880 1870 955 900</strong></p>
@@ -1810,19 +1810,19 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    <div className="text-left sm:text-right sm:min-w-[240px]">
-                      <h2 className="text-3xl font-black text-slate-950 uppercase tracking-tight">INVOICE</h2>
-                      <div className="mt-3 space-y-1.5 text-xs text-slate-700 font-mono">
+                    <div className="text-left sm:text-right sm:min-w-[220px]">
+                      <h2 className="text-2xl font-black text-slate-950 uppercase tracking-tight">INVOICE</h2>
+                      <div className="mt-2 space-y-1 text-[11px] text-slate-700 font-mono">
                         <p>
                           <span className="text-slate-500 font-sans">Invoice #:</span>{' '}
-                          <strong className="text-slate-950 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                          <strong className="text-slate-950 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
                             {viewInvoice.invoice_number}
                           </strong>
                         </p>
                         <p><span className="text-slate-500 font-sans">Date of Issue:</span> <strong>{viewInvoice.issue_date || 'N/A'}</strong></p>
                         <p><span className="text-slate-500 font-sans">Payment Due:</span> <strong>{viewInvoice.due_date || 'N/A'}</strong></p>
-                        <div className="pt-1">
-                          <span className={`inline-block px-3 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider font-sans border ${
+                        <div className="pt-0.5">
+                          <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider font-sans border ${
                             viewInvoice.status === 'paid' 
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-300' 
                               : viewInvoice.status === 'partial'
@@ -1845,24 +1845,24 @@ export default function AdminPage() {
                   </div>
 
                   {/* 2. Client "Billed To" & Payment Destination Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                      <span className="text-[10px] font-mono uppercase tracking-widest text-blue-700 font-bold block mb-1.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                      <span className="text-[9px] font-mono uppercase tracking-widest text-blue-700 font-bold block mb-1">
                         BILLED TO CLIENT
                       </span>
-                      <h4 className="text-base font-bold text-slate-950">{viewInvoice.client_name}</h4>
-                      <div className="text-xs text-slate-600 space-y-1 mt-1.5">
+                      <h4 className="text-sm font-bold text-slate-950">{viewInvoice.client_name}</h4>
+                      <div className="text-[11px] text-slate-600 space-y-0.5 mt-1">
                         {viewInvoice.client_address && <p className="text-slate-700">{viewInvoice.client_address}</p>}
                         {viewInvoice.client_phone && <p>Tel / Mobile: <strong className="text-slate-900">{viewInvoice.client_phone}</strong></p>}
                         {viewInvoice.client_email && <p>Email: <strong className="text-slate-900">{viewInvoice.client_email}</strong></p>}
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-                      <span className="text-[10px] font-mono uppercase tracking-widest text-blue-700 font-bold block mb-1.5">
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                      <span className="text-[9px] font-mono uppercase tracking-widest text-blue-700 font-bold block mb-1">
                         PAYMENT REMITTANCE
                       </span>
-                      <div className="text-xs text-slate-700 space-y-1">
+                      <div className="text-[11px] text-slate-700 space-y-0.5">
                         <p><span className="text-slate-500">Beneficiary:</span> <strong>TSS Soft</strong></p>
                         <p><span className="text-slate-500">MFS (bKash / Nagad):</span> <strong className="text-blue-700">+880 1870 955 900</strong></p>
                         <p><span className="text-slate-500">Bank Transfer:</span> Commercial Banking Network (Kushtia Branch)</p>
@@ -1871,26 +1871,26 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  {/* 3. Items & Deliverables Table */}
+                  {/* 3. Items & Deliverables Table (Compact typography - Multi-service optimized) */}
                   <div className="overflow-hidden rounded-xl border border-slate-200">
-                    <table className="w-full text-left text-xs">
+                    <table className="w-full text-left text-[11px]">
                       <thead>
-                        <tr className="bg-slate-900 text-white font-mono uppercase tracking-wider text-[11px]">
-                          <th className="py-3 px-4 w-12 text-center">#</th>
-                          <th className="py-3 px-4">Service &amp; Architecture Deliverables</th>
-                          <th className="py-3 px-4 text-center w-20">Qty</th>
-                          <th className="py-3 px-4 text-right w-32">Unit Rate</th>
-                          <th className="py-3 px-4 text-right w-36">Total Amount</th>
+                        <tr className="bg-slate-900 text-white font-mono uppercase tracking-wider text-[10px]">
+                          <th className="py-2 px-3 w-10 text-center">#</th>
+                          <th className="py-2 px-3">Service &amp; Architecture Deliverables</th>
+                          <th className="py-2 px-3 text-center w-16">Qty</th>
+                          <th className="py-2 px-3 text-right w-28">Unit Rate</th>
+                          <th className="py-2 px-3 text-right w-32">Total Amount</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200">
                         {(viewInvoice.items || []).map((item, idx) => (
                           <tr key={idx} className={idx % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'}>
-                            <td className="py-3 px-4 text-center font-mono text-slate-400 font-semibold">{idx + 1}</td>
-                            <td className="py-3 px-4 font-semibold text-slate-900">{item.description}</td>
-                            <td className="py-3 px-4 text-center text-slate-600 font-mono">{item.qty}</td>
-                            <td className="py-3 px-4 text-right text-slate-600 font-mono">৳ {Number(item.rate || 0).toLocaleString()}</td>
-                            <td className="py-3 px-4 text-right font-bold text-slate-950 font-mono">
+                            <td className="py-2 px-3 text-center font-mono text-slate-400 font-semibold">{idx + 1}</td>
+                            <td className="py-2 px-3 font-semibold text-slate-900 leading-snug">{item.description}</td>
+                            <td className="py-2 px-3 text-center text-slate-600 font-mono">{item.qty}</td>
+                            <td className="py-2 px-3 text-right text-slate-600 font-mono">৳ {Number(item.rate || 0).toLocaleString()}</td>
+                            <td className="py-2 px-3 text-right font-bold text-slate-950 font-mono">
                               ৳ {(Number(item.qty || 0) * Number(item.rate || 0)).toLocaleString()}
                             </td>
                           </tr>
@@ -1899,9 +1899,9 @@ export default function AdminPage() {
                     </table>
                   </div>
 
-                  {/* 4. Financial Total Summary with Paid & Due */}
+                  {/* 4. Financial Total Summary (100% English - No Bengali) */}
                   <div className="flex justify-end pt-1">
-                    <div className="w-80 space-y-1.5 text-xs text-right">
+                    <div className="w-72 space-y-1 text-[11px] text-right">
                       <div className="flex justify-between text-slate-600">
                         <span>Subtotal Amount:</span>
                         <span className="font-mono font-semibold">৳ {invSubtotal.toLocaleString()}</span>
@@ -1912,19 +1912,19 @@ export default function AdminPage() {
                           <span className="font-mono">- ৳ {invDiscount.toLocaleString()}</span>
                         </div>
                       )}
-                      <div className="flex justify-between text-sm font-black text-slate-950 pt-2 border-t-2 border-slate-900">
+                      <div className="flex justify-between text-xs font-black text-slate-950 pt-1.5 border-t-2 border-slate-900">
                         <span>Grand Total:</span>
-                        <span className="font-mono text-blue-600 text-base">৳ {invTotal.toLocaleString()}</span>
+                        <span className="font-mono text-blue-600 text-sm">৳ {invTotal.toLocaleString()}</span>
                       </div>
-                      <div className="flex justify-between text-slate-700 pt-1">
-                        <span className="font-medium">Paid Amount (জমা):</span>
+                      <div className="flex justify-between text-slate-700 pt-0.5">
+                        <span className="font-medium">Paid Amount:</span>
                         <span className="font-mono font-bold text-emerald-600">৳ {invPaid.toLocaleString()}</span>
                       </div>
-                      <div className={`flex justify-between text-sm font-black pt-1 border-t border-slate-200 ${
+                      <div className={`flex justify-between text-xs font-black pt-0.5 border-t border-slate-200 ${
                         invDue > 0 ? 'text-amber-600' : 'text-emerald-600'
                       }`}>
-                        <span>Balance Due (বাকি):</span>
-                        <span className="font-mono text-base">
+                        <span>Balance Due:</span>
+                        <span className="font-mono text-sm">
                           ৳ {invDue.toLocaleString()}
                         </span>
                       </div>
@@ -1932,11 +1932,11 @@ export default function AdminPage() {
                   </div>
 
                   {/* 5. Terms of Service & Notes */}
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600">
-                    <span className="text-[10px] font-mono uppercase text-slate-500 font-bold block mb-1">
+                  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[10px] text-slate-600">
+                    <span className="font-mono uppercase text-slate-500 font-bold block mb-0.5">
                       Terms of Service &amp; Transfer
                     </span>
-                    <p className="leading-relaxed text-slate-500 text-[11px]">
+                    <p className="leading-relaxed text-slate-500">
                       {viewInvoice.notes || 'All intellectual property and production deliverables transfer upon full invoice settlement.'}
                     </p>
                   </div>
@@ -1944,28 +1944,28 @@ export default function AdminPage() {
                 </div>
 
                 {/* 6. BOTTOM ANCHORED SECTION: Signatures, Seal & Digital Disclaimer */}
-                <div className="mt-auto pt-6 border-t-2 border-slate-900 font-sans">
+                <div className="mt-6 pt-4 border-t-2 border-slate-900 font-sans">
                   
                   {/* Two Signatures Grid (Customer + Authorized Authority) */}
-                  <div className="grid grid-cols-2 gap-8 items-end">
+                  <div className="grid grid-cols-2 gap-6 items-end">
                     
                     {/* Left: Customer Signature */}
                     <div className="text-left">
-                      <div className="w-52 border-b-2 border-slate-900 mb-2"></div>
-                      <span className="text-[10px] font-mono uppercase text-slate-500 font-bold tracking-wider block">
+                      <div className="w-44 border-b-2 border-slate-900 mb-1.5"></div>
+                      <span className="text-[9px] font-mono uppercase text-slate-500 font-bold tracking-wider block">
                         Customer Signature
                       </span>
-                      <p className="text-sm font-bold text-slate-950 mt-1">
+                      <p className="text-xs font-bold text-slate-950 mt-0.5">
                         {viewInvoice.client_name || 'Valued Client'}
                       </p>
-                      <p className="text-[10px] text-slate-500 font-sans">Authorized Client Representative</p>
+                      <p className="text-[9px] text-slate-500 font-sans">Authorized Client Representative</p>
                     </div>
 
                     {/* Right: Authority with Official Circular TSS Soft Seal */}
                     <div className="text-right flex flex-col items-end">
                       {/* Official Circular Vector Seal */}
-                      <div className="relative w-24 h-24 flex items-center justify-center select-none text-blue-700 -mb-2 mr-6">
-                        <svg viewBox="0 0 120 120" className="w-24 h-24">
+                      <div className="relative w-20 h-20 flex items-center justify-center select-none text-blue-700 -mb-2 mr-4">
+                        <svg viewBox="0 0 120 120" className="w-20 h-20">
                           <circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" strokeWidth="2.5" strokeDasharray="3 2" opacity="0.85" />
                           <circle cx="60" cy="60" r="50" fill="none" stroke="currentColor" strokeWidth="1.5" />
                           <circle cx="60" cy="60" r="34" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" opacity="0.6" />
@@ -1983,25 +1983,25 @@ export default function AdminPage() {
                           </text>
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                          <span className="text-sm font-black font-mono tracking-tighter text-blue-700 leading-none">&lt;/&gt;</span>
-                          <span className="text-[6.5px] font-black tracking-widest text-blue-800 uppercase mt-0.5">VERIFIED</span>
-                          <span className="text-[4.5px] font-bold text-slate-600 font-mono">TSSSOFT.COM</span>
+                          <span className="text-xs font-black font-mono tracking-tighter text-blue-700 leading-none">&lt;/&gt;</span>
+                          <span className="text-[5.5px] font-black tracking-widest text-blue-800 uppercase mt-0.5">VERIFIED</span>
+                          <span className="text-[4px] font-bold text-slate-600 font-mono">TSSSOFT.COM</span>
                         </div>
                       </div>
 
-                      <div className="w-52 border-b-2 border-slate-900 mb-2"></div>
-                      <span className="text-[10px] font-mono uppercase text-slate-500 font-bold tracking-wider block">
+                      <div className="w-44 border-b-2 border-slate-900 mb-1.5"></div>
+                      <span className="text-[9px] font-mono uppercase text-slate-500 font-bold tracking-wider block">
                         Authorized Authority
                       </span>
-                      <p className="text-sm font-bold text-slate-950 mt-1">TSS Soft Management</p>
-                      <p className="text-[10px] text-slate-500 font-sans">Digital Systems &amp; Software Architecture</p>
+                      <p className="text-xs font-bold text-slate-950 mt-0.5">TSS Soft Management</p>
+                      <p className="text-[9px] text-slate-500 font-sans">Digital Systems &amp; Software Architecture</p>
                     </div>
 
                   </div>
 
                   {/* Digital Signature Disclaimer in English (Full Width) */}
-                  <div className="mt-6 pt-3 border-t border-slate-200 text-center">
-                    <p className="text-[11px] font-medium text-slate-500 tracking-wide">
+                  <div className="mt-4 pt-2 border-t border-slate-200 text-center">
+                    <p className="text-[10px] font-medium text-slate-500 tracking-wide">
                       This document is computer-generated and electronically verified by TSS Soft. No physical signature is required.
                     </p>
                   </div>
