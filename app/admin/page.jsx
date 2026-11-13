@@ -72,6 +72,11 @@ export default function AdminPage() {
   const [showClientModal, setShowClientModal] = useState(false);
   const [selectedDetail, setSelectedDetail] = useState(null);
 
+  // Client Search in Invoice Creator
+  const [clientSearchTerm, setClientSearchTerm] = useState('');
+  const [isClientSearchFocused, setIsClientSearchFocused] = useState(false);
+  const [selectedClientName, setSelectedClientName] = useState('');
+
   // Invoice Form State
   const [invoiceForm, setInvoiceForm] = useState({
     invoice_number: `TSS-INV-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
@@ -86,6 +91,7 @@ export default function AdminPage() {
       { description: 'Bespoke Web Platform Architecture & Engineering', qty: 1, rate: 85000 }
     ],
     discount: 0,
+    paid_amount: 0,
     status: 'pending',
     notes: 'Thank you for partnering with TSS Soft. Payment is due within 14 business days.'
   });
@@ -167,20 +173,48 @@ export default function AdminPage() {
   const fetchAllData = async () => {
     setDataLoading(true);
 
+    // Helper to normalize invoice numbers & financial fields
+    const normalizeInvoiceList = (list) => {
+      if (!Array.isArray(list)) return [];
+      return list.map(inv => {
+        let paid = inv.paid_amount;
+        let due = inv.due_amount;
+        if (paid === undefined || paid === null) {
+          try {
+            const parsed = JSON.parse(inv.notes || '{}');
+            if (parsed && typeof parsed === 'object' && parsed.paid_amount !== undefined) {
+              paid = parsed.paid_amount;
+              due = parsed.due_amount;
+            }
+          } catch {}
+        }
+        if (paid === undefined || paid === null) {
+          paid = inv.status === 'paid' ? Number(inv.total || 0) : 0;
+          due = Math.max(0, Number(inv.total || 0) - Number(paid || 0));
+        }
+        return {
+          ...inv,
+          paid_amount: Number(paid || 0),
+          due_amount: Number(due !== undefined ? due : Math.max(0, Number(inv.total || 0) - Number(paid || 0)))
+        };
+      });
+    };
+
     // 1. Invoices
     try {
       const { data, error } = await supabase.from('invoices').select('*').order('created_at', { ascending: false });
       if (!error && Array.isArray(data)) {
-        setInvoices(data);
-        localStorage.setItem('tss_local_invoices', JSON.stringify(data));
+        const normalized = normalizeInvoiceList(data);
+        setInvoices(normalized);
+        localStorage.setItem('tss_local_invoices', JSON.stringify(normalized));
       } else {
         const local = JSON.parse(localStorage.getItem('tss_local_invoices') || '[]');
-        setInvoices(local);
+        setInvoices(normalizeInvoiceList(local));
       }
     } catch (err) {
       console.warn('Invoices fetch note:', err);
       const local = JSON.parse(localStorage.getItem('tss_local_invoices') || '[]');
-      setInvoices(local);
+      setInvoices(normalizeInvoiceList(local));
     }
 
     // 2. Clients
@@ -264,24 +298,40 @@ export default function AdminPage() {
     return Math.max(0, sub - Number(discount || 0));
   };
 
-  const handleSelectExistingClient = (clientId) => {
-    const client = clients.find(c => c.id === clientId);
+  const handleSelectExistingClient = (client) => {
     if (client) {
       setInvoiceForm(prev => ({
         ...prev,
-        client_name: client.name,
+        client_name: client.name || '',
         client_email: client.email || '',
         client_phone: client.phone || '',
         client_address: client.address || ''
       }));
+      setSelectedClientName(`${client.name} ${client.phone ? `(${client.phone})` : ''}`);
+      setClientSearchTerm('');
+      setIsClientSearchFocused(false);
     }
   };
 
-  // SAVE INVOICE: Fix UUID error by omitting custom 'id'
+  // SAVE INVOICE: Fixed UUID persistence + Paid vs Due breakdown + Safe column fallback
   const handleSaveInvoice = async (e) => {
     e.preventDefault();
     const subtotal = calculateInvoiceSubtotal(invoiceForm.items);
     const total = calculateInvoiceTotal(invoiceForm.items, invoiceForm.discount);
+    const paidAmount = Number(invoiceForm.paid_amount || 0);
+    const dueAmount = Math.max(0, total - paidAmount);
+
+    // Auto calculate status if not manually overriden to cancelled/overdue
+    let finalStatus = invoiceForm.status || 'pending';
+    if (finalStatus !== 'cancelled' && finalStatus !== 'overdue') {
+      if (dueAmount === 0 && total > 0) {
+        finalStatus = 'paid';
+      } else if (paidAmount > 0 && dueAmount > 0) {
+        finalStatus = 'partial';
+      } else if (paidAmount === 0) {
+        finalStatus = 'pending';
+      }
+    }
 
     const payload = {
       invoice_number: invoiceForm.invoice_number,
@@ -296,19 +346,38 @@ export default function AdminPage() {
       subtotal,
       discount: Number(invoiceForm.discount || 0),
       total,
-      status: invoiceForm.status || 'pending',
+      paid_amount: paidAmount,
+      due_amount: dueAmount,
+      status: finalStatus,
       notes: invoiceForm.notes || null
     };
 
     try {
-      // 1. Insert into Supabase and get back database row with official UUID
-      const { data, error } = await supabase.from('invoices').insert([payload]).select();
-      if (error) {
-        console.error('Supabase invoice insert error:', error.message);
+      // 1. Try insert with official columns
+      let savedRow = null;
+      let { data, error } = await supabase.from('invoices').insert([payload]).select();
+      
+      if (error && error.message && error.message.includes('column')) {
+        // Table hasn't been migrated with paid_amount/due_amount yet; embed in notes JSON
+        const safePayload = {
+          ...payload,
+          notes: JSON.stringify({
+            text: invoiceForm.notes || '',
+            paid_amount: paidAmount,
+            due_amount: dueAmount
+          })
+        };
+        delete safePayload.paid_amount;
+        delete safePayload.due_amount;
+        const retry = await supabase.from('invoices').insert([safePayload]).select();
+        if (retry.error) throw retry.error;
+        savedRow = retry.data && retry.data[0] ? { ...retry.data[0], paid_amount: paidAmount, due_amount: dueAmount } : payload;
+      } else if (error) {
         throw error;
+      } else {
+        savedRow = (data && data[0]) ? { ...data[0], paid_amount: paidAmount, due_amount: dueAmount } : payload;
       }
 
-      const savedRow = (data && data[0]) ? data[0] : payload;
       setInvoices(prev => [savedRow, ...prev]);
 
       // Update local storage backup
@@ -927,8 +996,10 @@ export default function AdminPage() {
                         <tr>
                           <th className="py-3.5 px-6">Invoice #</th>
                           <th className="py-3.5 px-6">Client / Partner</th>
-                          <th className="py-3.5 px-6">Issue Date</th>
+                          <th className="py-3.5 px-6">Issue / Due Date</th>
                           <th className="py-3.5 px-6">Total Amount</th>
+                          <th className="py-3.5 px-6">Paid (জমা)</th>
+                          <th className="py-3.5 px-6">Due (বাকি)</th>
                           <th className="py-3.5 px-6">Status</th>
                           <th className="py-3.5 px-6 text-right">Actions</th>
                         </tr>
@@ -937,61 +1008,85 @@ export default function AdminPage() {
                         {invoices
                           .filter(i => {
                             const matchSearch = (i.client_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                                (i.client_phone || '').includes(searchQuery) ||
                                                 (i.invoice_number || '').toLowerCase().includes(searchQuery.toLowerCase());
                             const matchStatus = statusFilter === 'all' || (i.status || 'pending') === statusFilter;
                             return matchSearch && matchStatus;
                           })
-                          .map(inv => (
-                            <tr key={inv.id} className="hover:bg-white/[0.02] transition-colors">
-                              <td className="py-4 px-6 font-mono font-bold text-blue-400">
-                                {inv.invoice_number}
-                              </td>
-                              <td className="py-4 px-6">
-                                <div className="font-semibold text-white">{inv.client_name}</div>
-                                {inv.client_email && <div className="text-[10px] text-slate-400 font-mono">{inv.client_email}</div>}
-                              </td>
-                              <td className="py-4 px-6 text-slate-400 font-mono">
-                                {inv.issue_date || 'N/A'}
-                              </td>
-                              <td className="py-4 px-6 font-bold text-white">
-                                ৳ {Number(inv.total || 0).toLocaleString()}
-                              </td>
-                              <td className="py-4 px-6">
-                                <select
-                                  value={inv.status || 'pending'}
-                                  onChange={(e) => handleUpdateInvoiceStatus(inv.id, e.target.value)}
-                                  className={`rounded-lg px-2.5 py-1 text-[11px] font-mono outline-none border ${
-                                    inv.status === 'paid'
-                                      ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
-                                      : 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                                  }`}
-                                >
-                                  <option value="pending" className="bg-[#080d22]">Pending</option>
-                                  <option value="paid" className="bg-[#080d22]">Paid</option>
-                                  <option value="overdue" className="bg-[#080d22]">Overdue</option>
-                                  <option value="cancelled" className="bg-[#080d22]">Cancelled</option>
-                                </select>
-                              </td>
-                              <td className="py-4 px-6 text-right">
-                                <div className="flex items-center justify-end gap-2">
-                                  <button
-                                    onClick={() => setViewInvoice(inv)}
-                                    className="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/20"
-                                    title="View & Print Invoice"
+                          .map(inv => {
+                            const totalVal = Number(inv.total || 0);
+                            const paidVal = Number(inv.paid_amount || (inv.status === 'paid' ? totalVal : 0));
+                            const dueVal = Number(inv.due_amount !== undefined ? inv.due_amount : Math.max(0, totalVal - paidVal));
+
+                            return (
+                              <tr key={inv.id} className="hover:bg-white/[0.02] transition-colors">
+                                <td className="py-4 px-6 font-mono font-bold text-blue-400">
+                                  {inv.invoice_number}
+                                </td>
+                                <td className="py-4 px-6">
+                                  <div className="font-semibold text-white">{inv.client_name}</div>
+                                  {inv.client_phone && <div className="text-[11px] text-blue-400 font-mono">{inv.client_phone}</div>}
+                                  {inv.client_email && <div className="text-[10px] text-slate-400 font-mono">{inv.client_email}</div>}
+                                </td>
+                                <td className="py-4 px-6 text-slate-400 font-mono">
+                                  <div>{inv.issue_date || 'N/A'}</div>
+                                  {inv.due_date && <div className="text-[10px] text-slate-500">Due: {inv.due_date}</div>}
+                                </td>
+                                <td className="py-4 px-6 font-bold text-white">
+                                  ৳ {totalVal.toLocaleString()}
+                                </td>
+                                <td className="py-4 px-6 font-mono font-semibold text-emerald-400">
+                                  ৳ {paidVal.toLocaleString()}
+                                </td>
+                                <td className="py-4 px-6 font-mono font-semibold">
+                                  {dueVal > 0 ? (
+                                    <span className="text-amber-400">৳ {dueVal.toLocaleString()}</span>
+                                  ) : (
+                                    <span className="text-slate-500">৳ 0</span>
+                                  )}
+                                </td>
+                                <td className="py-4 px-6">
+                                  <select
+                                    value={inv.status || 'pending'}
+                                    onChange={(e) => handleUpdateInvoiceStatus(inv.id, e.target.value)}
+                                    className={`rounded-lg px-2.5 py-1 text-[11px] font-mono outline-none border ${
+                                      inv.status === 'paid'
+                                        ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                                        : inv.status === 'partial'
+                                        ? 'bg-sky-500/10 text-sky-300 border-sky-500/30'
+                                        : inv.status === 'overdue'
+                                        ? 'bg-rose-500/10 text-rose-300 border-rose-500/30'
+                                        : 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                                    }`}
                                   >
-                                    <Printer size={14} />
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteInvoice(inv.id)}
-                                    className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                                    title="Delete invoice"
-                                  >
-                                    <Trash2 size={14} />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
+                                    <option value="pending" className="bg-[#080d22]">Pending (Unpaid)</option>
+                                    <option value="partial" className="bg-[#080d22]">Partial (Due)</option>
+                                    <option value="paid" className="bg-[#080d22]">Paid in Full</option>
+                                    <option value="overdue" className="bg-[#080d22]">Overdue</option>
+                                    <option value="cancelled" className="bg-[#080d22]">Cancelled</option>
+                                  </select>
+                                </td>
+                                <td className="py-4 px-6 text-right">
+                                  <div className="flex items-center justify-end gap-2">
+                                    <button
+                                      onClick={() => setViewInvoice(inv)}
+                                      className="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/20"
+                                      title="View & Print Invoice"
+                                    >
+                                      <Printer size={14} />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteInvoice(inv.id)}
+                                      className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                                      title="Delete invoice"
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
                       </tbody>
                     </table>
                   </div>
@@ -1303,22 +1398,101 @@ export default function AdminPage() {
 
               <form onSubmit={handleSaveInvoice} className="space-y-6">
                 
-                {/* Client Quick Auto-Fill Dropdown */}
-                {clients.length > 0 && (
-                  <div className="p-3 rounded-xl bg-blue-500/[0.08] border border-blue-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                    <span className="text-xs text-blue-300 font-medium">Auto-fill from saved clients:</span>
-                    <select
-                      onChange={(e) => handleSelectExistingClient(e.target.value)}
-                      defaultValue=""
-                      className="bg-[#050916] border border-blue-400/30 text-white text-xs rounded-lg px-3 py-1.5 outline-none"
-                    >
-                      <option value="" disabled>Choose existing client...</option>
-                      {clients.map(c => (
-                        <option key={c.id} value={c.id}>{c.name} {c.company ? `(${c.company})` : ''}</option>
-                      ))}
-                    </select>
+                {/* Searchable Client Picker & Auto-fill */}
+                <div className="p-4 rounded-2xl bg-blue-500/[0.06] border border-blue-500/20 space-y-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                    <span className="text-xs text-blue-300 font-semibold flex items-center gap-1.5">
+                      <Search size={14} className="text-blue-400" />
+                      <span>Search &amp; Auto-fill from Existing Clients:</span>
+                    </span>
+                    {selectedClientName && (
+                      <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
+                        <CheckCircle size={12} />
+                        <span>Auto-filled: <strong>{selectedClientName}</strong></span>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedClientName('')}
+                          className="ml-1 text-slate-400 hover:text-white"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                )}
+
+                  <div className="relative">
+                    <div className="relative">
+                      <Search size={14} className="absolute left-3.5 top-3 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="Type mobile number (+880...), client name, or company to search..."
+                        value={clientSearchTerm}
+                        onChange={(e) => {
+                          setClientSearchTerm(e.target.value);
+                          setIsClientSearchFocused(true);
+                        }}
+                        onFocus={() => setIsClientSearchFocused(true)}
+                        className="w-full bg-[#050916] border border-blue-400/30 text-white text-xs rounded-xl pl-9 pr-8 py-2.5 outline-none focus:border-blue-400 transition-colors"
+                      />
+                      {clientSearchTerm && (
+                        <button
+                          type="button"
+                          onClick={() => setClientSearchTerm('')}
+                          className="absolute right-3 top-2.5 text-slate-400 hover:text-white"
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Filtered Dropdown Results */}
+                    {isClientSearchFocused && clientSearchTerm.trim().length > 0 && (
+                      <div className="absolute z-20 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-[#070c24] border border-blue-500/30 rounded-xl shadow-2xl divide-y divide-white/5">
+                        {clients
+                          .filter(c => {
+                            const term = clientSearchTerm.toLowerCase();
+                            return (c.phone || '').includes(term) ||
+                                   (c.name || '').toLowerCase().includes(term) ||
+                                   (c.company || '').toLowerCase().includes(term);
+                          })
+                          .map(c => (
+                            <div
+                              key={c.id}
+                              onClick={() => handleSelectExistingClient(c)}
+                              className="p-3 hover:bg-blue-600/20 cursor-pointer transition-colors flex items-center justify-between gap-3 text-xs"
+                            >
+                              <div>
+                                <div className="font-semibold text-white">{c.name}</div>
+                                {c.company && <div className="text-[11px] text-slate-400">{c.company}</div>}
+                                {c.address && <div className="text-[10px] text-slate-500">{c.address}</div>}
+                              </div>
+                              <div className="text-right">
+                                {c.phone ? (
+                                  <div className="text-[11px] font-mono font-bold text-sky-400 flex items-center gap-1 justify-end">
+                                    <Phone size={11} />
+                                    <span>{c.phone}</span>
+                                  </div>
+                                ) : (
+                                  <div className="text-[10px] text-slate-500">No phone</div>
+                                )}
+                                <span className="inline-block mt-1 text-[10px] text-blue-400 underline font-medium">Click to Fill</span>
+                              </div>
+                            </div>
+                          ))}
+                        {clients.filter(c => {
+                          const term = clientSearchTerm.toLowerCase();
+                          return (c.phone || '').includes(term) ||
+                                 (c.name || '').toLowerCase().includes(term) ||
+                                 (c.company || '').toLowerCase().includes(term);
+                        }).length === 0 && (
+                          <div className="p-4 text-center text-xs text-slate-400">
+                            No clients matching <strong className="text-white">"{clientSearchTerm}"</strong>. You can manually enter details below or add to Clients CRM.
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
 
                 {/* Invoice Meta Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white/[0.02] p-4 rounded-2xl border border-white/5">
@@ -1455,28 +1629,92 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* Financial Summary Calculation */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-white/10">
-                  <div className="flex items-center gap-3">
-                    <label className="text-xs text-slate-400 font-mono">Discount (৳):</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={invoiceForm.discount}
-                      onChange={(e) => setInvoiceForm(prev => ({ ...prev, discount: Number(e.target.value) }))}
-                      className="w-28 bg-[#040816] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white font-mono"
-                    />
-                  </div>
+                {/* Financial Breakdown & Due Management */}
+                {(() => {
+                  const formSubtotal = calculateInvoiceSubtotal(invoiceForm.items);
+                  const formTotal = calculateInvoiceTotal(invoiceForm.items, invoiceForm.discount);
+                  const formPaid = Number(invoiceForm.paid_amount || 0);
+                  const formDue = Math.max(0, formTotal - formPaid);
 
-                  <div className="text-right">
-                    <div className="text-xs text-slate-400 font-mono">
-                      Subtotal: ৳ {calculateInvoiceSubtotal(invoiceForm.items).toLocaleString()}
+                  return (
+                    <div className="bg-[#050917] p-5 rounded-2xl border border-white/10 space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                          <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Discount (৳)</label>
+                          <input
+                            type="number"
+                            min="0"
+                            placeholder="0"
+                            value={invoiceForm.discount}
+                            onChange={(e) => setInvoiceForm(prev => ({ ...prev, discount: Number(e.target.value) }))}
+                            className="w-full bg-[#030612] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-mono uppercase text-emerald-400 block mb-1">Paid / Received (৳ জমা)</label>
+                          <input
+                            type="number"
+                            min="0"
+                            placeholder="0"
+                            value={invoiceForm.paid_amount}
+                            onChange={(e) => {
+                              const paid = Number(e.target.value);
+                              const due = Math.max(0, formTotal - paid);
+                              let newStatus = invoiceForm.status;
+                              if (due === 0 && formTotal > 0) newStatus = 'paid';
+                              else if (paid > 0 && due > 0) newStatus = 'partial';
+                              else if (paid === 0) newStatus = 'pending';
+                              setInvoiceForm(prev => ({ ...prev, paid_amount: paid, status: newStatus }));
+                            }}
+                            className="w-full bg-[#030612] border border-emerald-500/30 text-emerald-300 rounded-xl px-3 py-2 text-xs font-mono font-semibold"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Payment Status</label>
+                          <select
+                            value={invoiceForm.status || 'pending'}
+                            onChange={(e) => setInvoiceForm(prev => ({ ...prev, status: e.target.value }))}
+                            className="w-full bg-[#030612] border border-white/10 text-white rounded-xl px-3 py-2 text-xs outline-none"
+                          >
+                            <option value="pending">Pending (Unpaid)</option>
+                            <option value="partial">Partial (Due)</option>
+                            <option value="paid">Paid in Full</option>
+                            <option value="overdue">Overdue</option>
+                            <option value="cancelled">Cancelled</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Calculated Financial Summary Cards */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-white/10">
+                        <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                          <span className="text-[10px] font-mono text-slate-500 block">Subtotal</span>
+                          <span className="text-xs font-bold text-slate-300 font-mono">৳ {formSubtotal.toLocaleString()}</span>
+                        </div>
+                        <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                          <span className="text-[10px] font-mono text-slate-500 block">Grand Total</span>
+                          <span className="text-sm font-black text-white font-mono">৳ {formTotal.toLocaleString()}</span>
+                        </div>
+                        <div className="p-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/20">
+                          <span className="text-[10px] font-mono text-emerald-400 block">Paid (জমা)</span>
+                          <span className="text-sm font-black text-emerald-300 font-mono">৳ {formPaid.toLocaleString()}</span>
+                        </div>
+                        <div className={`p-3 rounded-xl border ${
+                          formDue > 0 ? 'bg-amber-500/[0.08] border-amber-500/30' : 'bg-white/[0.02] border-white/5'
+                        }`}>
+                          <span className={`text-[10px] font-mono block ${formDue > 0 ? 'text-amber-400' : 'text-slate-500'}`}>
+                            Balance Due (বাকি)
+                          </span>
+                          <span className={`text-sm font-black font-mono ${formDue > 0 ? 'text-amber-300' : 'text-slate-400'}`}>
+                            ৳ {formDue.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-2xl font-black text-white mt-0.5">
-                      Total: ৳ {calculateInvoiceTotal(invoiceForm.items, invoiceForm.discount).toLocaleString()}
-                    </div>
-                  </div>
-                </div>
+                  );
+                })()}
 
                 {/* Payment Notes */}
                 <div>
@@ -1516,179 +1754,264 @@ export default function AdminPage() {
       {/* MODAL: VIEW & PRINT INVOICE (Executive Global Grade Layout) */}
       {/* =================================================================== */}
       <AnimatePresence>
-        {viewInvoice && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-4xl bg-white text-slate-900 rounded-3xl p-8 sm:p-12 shadow-2xl my-8 overflow-hidden invoice-printable border border-slate-200"
-            >
-              
-              {/* Modal Controls (Hidden in Print) */}
-              <div className="flex items-center justify-between pb-6 mb-8 border-b border-slate-200 no-print">
-                <div className="flex items-center gap-2 text-xs font-mono text-slate-500 uppercase tracking-widest">
-                  <ShieldCheck size={16} className="text-blue-600" />
-                  <span>Official Executive Invoice Preview</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => window.print()}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-5 py-2.5 rounded-xl flex items-center gap-2 shadow-md transition-all active:scale-95"
-                  >
-                    <Printer size={15} />
-                    <span>Print / Save PDF</span>
-                  </button>
-                  <button onClick={() => setViewInvoice(null)} className="p-2 text-slate-400 hover:text-slate-800 transition-colors">
-                    <X size={20} />
-                  </button>
-                </div>
-              </div>
+        {viewInvoice && (() => {
+          const invSubtotal = Number(viewInvoice.subtotal || viewInvoice.total || 0);
+          const invDiscount = Number(viewInvoice.discount || 0);
+          const invTotal = Number(viewInvoice.total || (invSubtotal - invDiscount));
+          const invPaid = Number(viewInvoice.paid_amount !== undefined ? viewInvoice.paid_amount : (viewInvoice.status === 'paid' ? invTotal : 0));
+          const invDue = Number(viewInvoice.due_amount !== undefined ? viewInvoice.due_amount : Math.max(0, invTotal - invPaid));
 
-              {/* Printable Invoice Document Body */}
-              <div className="space-y-8 font-sans">
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                className="relative w-full max-w-[210mm] bg-white text-slate-900 rounded-2xl p-6 sm:p-10 shadow-2xl my-4 overflow-hidden invoice-printable border border-slate-200 min-h-[297mm] flex flex-col justify-between"
+              >
                 
-                {/* 1. Header: Brand, Agency Address & Invoice Metadata */}
-                <div className="flex flex-col sm:flex-row items-start justify-between gap-6 pb-6 border-b-2 border-slate-900">
-                  <div>
-                    <img 
-                      src="/brand/logo-blue-cropped.png" 
-                      alt="TSS Soft." 
-                      className="h-11 w-auto object-contain mb-3" 
-                    />
-                    <div className="text-xs text-slate-600 leading-relaxed">
-                      <p className="font-bold text-slate-950 text-sm">TSS Soft.</p>
-                      <p className="font-medium text-slate-800">Digital Systems &amp; Software Architecture</p>
-                      <p>Kushtia, Khulna Division, Bangladesh • Operating Worldwide</p>
-                      <p>Tel / WhatsApp: <strong className="text-slate-900">+880 1870 955 900</strong></p>
-                      <p>Email: <strong className="text-slate-900">hello@tsssoft.com</strong> • Web: <strong>tsssoft.com</strong></p>
+                {/* Modal Controls (Hidden in Print) */}
+                <div className="flex items-center justify-between pb-4 mb-6 border-b border-slate-200 no-print">
+                  <div className="flex items-center gap-2 text-xs font-mono text-slate-500 uppercase tracking-widest">
+                    <ShieldCheck size={16} className="text-blue-600" />
+                    <span>Official Executive Invoice Preview (A4 Ready)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => window.print()}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-5 py-2.5 rounded-xl flex items-center gap-2 shadow-md transition-all active:scale-95"
+                    >
+                      <Printer size={15} />
+                      <span>Print / Save PDF</span>
+                    </button>
+                    <button onClick={() => setViewInvoice(null)} className="p-2 text-slate-400 hover:text-slate-800 transition-colors">
+                      <X size={20} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Printable Invoice Document Body (Flex Column) */}
+                <div className="flex-1 flex flex-col justify-start space-y-6 font-sans">
+                  
+                  {/* 1. Header: Brand, Agency Address & Invoice Metadata */}
+                  <div className="flex flex-col sm:flex-row items-start justify-between gap-6 pb-6 border-b-2 border-slate-900">
+                    <div>
+                      <img 
+                        src="/brand/logo-blue-cropped.png" 
+                        alt="TSS Soft." 
+                        className="h-11 w-auto object-contain mb-3" 
+                      />
+                      <div className="text-xs text-slate-600 leading-relaxed">
+                        <p className="font-bold text-slate-950 text-sm">TSS Soft.</p>
+                        <p className="font-medium text-slate-800">Digital Systems &amp; Software Architecture</p>
+                        <p>Kushtia, Khulna Division, Bangladesh • Operating Worldwide</p>
+                        <p>Tel / WhatsApp: <strong className="text-slate-900">+880 1870 955 900</strong></p>
+                        <p>Email: <strong className="text-slate-900">hello@tsssoft.com</strong> • Web: <strong>tsssoft.com</strong></p>
+                      </div>
+                    </div>
+
+                    <div className="text-left sm:text-right sm:min-w-[240px]">
+                      <h2 className="text-3xl font-black text-slate-950 uppercase tracking-tight">INVOICE</h2>
+                      <div className="mt-3 space-y-1.5 text-xs text-slate-700 font-mono">
+                        <p>
+                          <span className="text-slate-500 font-sans">Invoice #:</span>{' '}
+                          <strong className="text-slate-950 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                            {viewInvoice.invoice_number}
+                          </strong>
+                        </p>
+                        <p><span className="text-slate-500 font-sans">Date of Issue:</span> <strong>{viewInvoice.issue_date || 'N/A'}</strong></p>
+                        <p><span className="text-slate-500 font-sans">Payment Due:</span> <strong>{viewInvoice.due_date || 'N/A'}</strong></p>
+                        <div className="pt-1">
+                          <span className={`inline-block px-3 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider font-sans border ${
+                            viewInvoice.status === 'paid' 
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-300' 
+                              : viewInvoice.status === 'partial'
+                              ? 'bg-sky-50 text-sky-700 border-sky-300'
+                              : viewInvoice.status === 'overdue'
+                              ? 'bg-rose-50 text-rose-700 border-rose-300'
+                              : 'bg-amber-50 text-amber-700 border-amber-300'
+                          }`}>
+                            {viewInvoice.status === 'paid' 
+                              ? '● PAID IN FULL' 
+                              : viewInvoice.status === 'partial'
+                              ? `● PARTIAL PAYMENT (DUE: ৳ ${invDue.toLocaleString()})`
+                              : viewInvoice.status === 'overdue'
+                              ? '● OVERDUE'
+                              : '● PAYMENT PENDING'}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="text-left sm:text-right sm:min-w-[240px]">
-                    <h2 className="text-3xl font-black text-slate-950 uppercase tracking-tight">INVOICE</h2>
-                    <div className="mt-3 space-y-1.5 text-xs text-slate-700 font-mono">
-                      <p>
-                        <span className="text-slate-500 font-sans">Invoice #:</span>{' '}
-                        <strong className="text-slate-950 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                          {viewInvoice.invoice_number}
-                        </strong>
-                      </p>
-                      <p><span className="text-slate-500 font-sans">Date of Issue:</span> <strong>{viewInvoice.issue_date || 'N/A'}</strong></p>
-                      <p><span className="text-slate-500 font-sans">Payment Due:</span> <strong>{viewInvoice.due_date || 'N/A'}</strong></p>
-                      <div className="pt-1">
-                        <span className={`inline-block px-3 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider font-sans border ${
-                          viewInvoice.status === 'paid' 
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-300' 
-                            : 'bg-amber-50 text-amber-700 border-amber-300'
-                        }`}>
-                          {viewInvoice.status === 'paid' ? '● PAID IN FULL' : '● PAYMENT PENDING'}
+                  {/* 2. Client "Billed To" & Payment Destination Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-blue-700 font-bold block mb-1.5">
+                        BILLED TO CLIENT
+                      </span>
+                      <h4 className="text-base font-bold text-slate-950">{viewInvoice.client_name}</h4>
+                      <div className="text-xs text-slate-600 space-y-1 mt-1.5">
+                        {viewInvoice.client_address && <p className="text-slate-700">{viewInvoice.client_address}</p>}
+                        {viewInvoice.client_phone && <p>Tel / Mobile: <strong className="text-slate-900">{viewInvoice.client_phone}</strong></p>}
+                        {viewInvoice.client_email && <p>Email: <strong className="text-slate-900">{viewInvoice.client_email}</strong></p>}
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-blue-700 font-bold block mb-1.5">
+                        PAYMENT REMITTANCE
+                      </span>
+                      <div className="text-xs text-slate-700 space-y-1">
+                        <p><span className="text-slate-500">Beneficiary:</span> <strong>TSS Soft</strong></p>
+                        <p><span className="text-slate-500">MFS (bKash / Nagad):</span> <strong className="text-blue-700">+880 1870 955 900</strong></p>
+                        <p><span className="text-slate-500">Bank Transfer:</span> Commercial Banking Network (Kushtia Branch)</p>
+                        <p><span className="text-slate-500">Reference:</span> {viewInvoice.invoice_number}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Items & Deliverables Table */}
+                  <div className="overflow-hidden rounded-xl border border-slate-200">
+                    <table className="w-full text-left text-xs">
+                      <thead>
+                        <tr className="bg-slate-900 text-white font-mono uppercase tracking-wider text-[11px]">
+                          <th className="py-3 px-4 w-12 text-center">#</th>
+                          <th className="py-3 px-4">Service &amp; Architecture Deliverables</th>
+                          <th className="py-3 px-4 text-center w-20">Qty</th>
+                          <th className="py-3 px-4 text-right w-32">Unit Rate</th>
+                          <th className="py-3 px-4 text-right w-36">Total Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200">
+                        {(viewInvoice.items || []).map((item, idx) => (
+                          <tr key={idx} className={idx % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'}>
+                            <td className="py-3 px-4 text-center font-mono text-slate-400 font-semibold">{idx + 1}</td>
+                            <td className="py-3 px-4 font-semibold text-slate-900">{item.description}</td>
+                            <td className="py-3 px-4 text-center text-slate-600 font-mono">{item.qty}</td>
+                            <td className="py-3 px-4 text-right text-slate-600 font-mono">৳ {Number(item.rate || 0).toLocaleString()}</td>
+                            <td className="py-3 px-4 text-right font-bold text-slate-950 font-mono">
+                              ৳ {(Number(item.qty || 0) * Number(item.rate || 0)).toLocaleString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* 4. Financial Total Summary with Paid & Due */}
+                  <div className="flex justify-end pt-1">
+                    <div className="w-80 space-y-1.5 text-xs text-right">
+                      <div className="flex justify-between text-slate-600">
+                        <span>Subtotal Amount:</span>
+                        <span className="font-mono font-semibold">৳ {invSubtotal.toLocaleString()}</span>
+                      </div>
+                      {invDiscount > 0 && (
+                        <div className="flex justify-between text-emerald-700 font-medium">
+                          <span>Partner Discount:</span>
+                          <span className="font-mono">- ৳ {invDiscount.toLocaleString()}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-sm font-black text-slate-950 pt-2 border-t-2 border-slate-900">
+                        <span>Grand Total:</span>
+                        <span className="font-mono text-blue-600 text-base">৳ {invTotal.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-700 pt-1">
+                        <span className="font-medium">Paid Amount (জমা):</span>
+                        <span className="font-mono font-bold text-emerald-600">৳ {invPaid.toLocaleString()}</span>
+                      </div>
+                      <div className={`flex justify-between text-sm font-black pt-1 border-t border-slate-200 ${
+                        invDue > 0 ? 'text-amber-600' : 'text-emerald-600'
+                      }`}>
+                        <span>Balance Due (বাকি):</span>
+                        <span className="font-mono text-base">
+                          ৳ {invDue.toLocaleString()}
                         </span>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* 2. Client "Billed To" & Payment Destination Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-blue-700 font-bold block mb-2">
-                      BILLED TO CLIENT
+                  {/* 5. Terms of Service & Notes */}
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600">
+                    <span className="text-[10px] font-mono uppercase text-slate-500 font-bold block mb-1">
+                      Terms of Service &amp; Transfer
                     </span>
-                    <h4 className="text-lg font-bold text-slate-950">{viewInvoice.client_name}</h4>
-                    <div className="text-xs text-slate-600 space-y-1 mt-2">
-                      {viewInvoice.client_address && <p className="text-slate-700">{viewInvoice.client_address}</p>}
-                      {viewInvoice.client_phone && <p>Tel / Mobile: <strong className="text-slate-900">{viewInvoice.client_phone}</strong></p>}
-                      {viewInvoice.client_email && <p>Email: <strong className="text-slate-900">{viewInvoice.client_email}</strong></p>}
-                    </div>
-                  </div>
-
-                  <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-blue-700 font-bold block mb-2">
-                      PAYMENT REMITTANCE
-                    </span>
-                    <div className="text-xs text-slate-700 space-y-1">
-                      <p><span className="text-slate-500">Beneficiary:</span> <strong>TSS Soft</strong></p>
-                      <p><span className="text-slate-500">MFS (bKash / Nagad):</span> <strong className="text-blue-700">+880 1870 955 900</strong></p>
-                      <p><span className="text-slate-500">Bank Transfer:</span> Commercial Banking Network (Kushtia Branch)</p>
-                      <p><span className="text-slate-500">Reference:</span> {viewInvoice.invoice_number}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 3. Items & Deliverables Table */}
-                <div className="overflow-hidden rounded-xl border border-slate-200">
-                  <table className="w-full text-left text-xs">
-                    <thead>
-                      <tr className="bg-slate-900 text-white font-mono uppercase tracking-wider text-[11px]">
-                        <th className="py-3 px-4 w-12 text-center">#</th>
-                        <th className="py-3 px-4">Service &amp; Architecture Deliverables</th>
-                        <th className="py-3 px-4 text-center w-20">Qty</th>
-                        <th className="py-3 px-4 text-right w-32">Unit Rate</th>
-                        <th className="py-3 px-4 text-right w-36">Total Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200">
-                      {(viewInvoice.items || []).map((item, idx) => (
-                        <tr key={idx} className={idx % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'}>
-                          <td className="py-3.5 px-4 text-center font-mono text-slate-400 font-semibold">{idx + 1}</td>
-                          <td className="py-3.5 px-4 font-semibold text-slate-900">{item.description}</td>
-                          <td className="py-3.5 px-4 text-center text-slate-600 font-mono">{item.qty}</td>
-                          <td className="py-3.5 px-4 text-right text-slate-600 font-mono">৳ {Number(item.rate || 0).toLocaleString()}</td>
-                          <td className="py-3.5 px-4 text-right font-bold text-slate-950 font-mono">
-                            ৳ {(Number(item.qty || 0) * Number(item.rate || 0)).toLocaleString()}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* 4. Financial Total Summary */}
-                <div className="flex justify-end pt-2">
-                  <div className="w-72 space-y-2 text-xs text-right">
-                    <div className="flex justify-between text-slate-600">
-                      <span>Subtotal Amount:</span>
-                      <span className="font-mono font-semibold">৳ {Number(viewInvoice.subtotal || viewInvoice.total || 0).toLocaleString()}</span>
-                    </div>
-                    {Number(viewInvoice.discount) > 0 && (
-                      <div className="flex justify-between text-emerald-700 font-medium">
-                        <span>Partner Discount:</span>
-                        <span className="font-mono">- ৳ {Number(viewInvoice.discount).toLocaleString()}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between text-base font-black text-slate-950 pt-2.5 border-t-2 border-slate-900">
-                      <span>Grand Total:</span>
-                      <span className="font-mono text-blue-600 text-lg">৳ {Number(viewInvoice.total || 0).toLocaleString()}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 5. Terms, Instructions & Official Seal Footer */}
-                <div className="pt-8 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-end gap-6 text-xs text-slate-600">
-                  <div className="max-w-md space-y-1">
-                    <span className="text-[10px] font-mono uppercase text-slate-500 font-bold block">Terms of Service &amp; Transfer</span>
                     <p className="leading-relaxed text-slate-500 text-[11px]">
-                      {viewInvoice.notes || 'All intellectual property and production rights transfer upon full invoice settlement.'}
+                      {viewInvoice.notes || 'All intellectual property and production deliverables transfer upon full invoice settlement.'}
                     </p>
-                    <div className="inline-flex items-center gap-1.5 pt-2 text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                      <Check size={12} />
-                      <span>OFFICIAL TSS SOFT VERIFIED BILLING</span>
-                    </div>
                   </div>
 
-                  <div className="text-center sm:text-right">
-                    <div className="w-44 h-12 border-b-2 border-slate-400 mb-1 mx-auto sm:ml-auto"></div>
-                    <span className="text-[10px] font-mono uppercase text-slate-500 font-bold">Authorized Signature</span>
-                    <p className="text-[10px] text-slate-400">Managing Director, TSS Soft.</p>
-                  </div>
                 </div>
 
-              </div>
+                {/* 6. BOTTOM ANCHORED SECTION: Signatures, Seal & Digital Disclaimer */}
+                <div className="mt-auto pt-6 border-t-2 border-slate-900 font-sans">
+                  
+                  {/* Two Signatures Grid (Customer + Authorized Authority) */}
+                  <div className="grid grid-cols-2 gap-8 items-end">
+                    
+                    {/* Left: Customer Signature */}
+                    <div className="text-left">
+                      <div className="w-52 border-b-2 border-slate-900 mb-2"></div>
+                      <span className="text-[10px] font-mono uppercase text-slate-500 font-bold tracking-wider block">
+                        Customer Signature
+                      </span>
+                      <p className="text-sm font-bold text-slate-950 mt-1">
+                        {viewInvoice.client_name || 'Valued Client'}
+                      </p>
+                      <p className="text-[10px] text-slate-500 font-sans">Authorized Client Representative</p>
+                    </div>
 
-            </motion.div>
-          </div>
-        )}
+                    {/* Right: Authority with Official Circular TSS Soft Seal */}
+                    <div className="text-right flex flex-col items-end">
+                      {/* Official Circular Vector Seal */}
+                      <div className="relative w-24 h-24 flex items-center justify-center select-none text-blue-700 -mb-2 mr-6">
+                        <svg viewBox="0 0 120 120" className="w-24 h-24">
+                          <circle cx="60" cy="60" r="56" fill="none" stroke="currentColor" strokeWidth="2.5" strokeDasharray="3 2" opacity="0.85" />
+                          <circle cx="60" cy="60" r="50" fill="none" stroke="currentColor" strokeWidth="1.5" />
+                          <circle cx="60" cy="60" r="34" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" opacity="0.6" />
+                          <path id="sealUpperText" d="M 18,60 A 42,42 0 0,1 102,60" fill="none" />
+                          <path id="sealLowerText" d="M 102,60 A 42,42 0 0,1 18,60" fill="none" />
+                          <text fontSize="7.2" fontWeight="800" fill="currentColor" letterSpacing="1.2">
+                            <textPath href="#sealUpperText" startOffset="50%" textAnchor="middle">
+                              ★ TSS SOFT. OFFICIAL SEAL ★
+                            </textPath>
+                          </text>
+                          <text fontSize="6.5" fontWeight="700" fill="currentColor" letterSpacing="1.2">
+                            <textPath href="#sealLowerText" startOffset="50%" textAnchor="middle">
+                              • DIGITALLY VERIFIED •
+                            </textPath>
+                          </text>
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                          <span className="text-sm font-black font-mono tracking-tighter text-blue-700 leading-none">&lt;/&gt;</span>
+                          <span className="text-[6.5px] font-black tracking-widest text-blue-800 uppercase mt-0.5">VERIFIED</span>
+                          <span className="text-[4.5px] font-bold text-slate-600 font-mono">TSSSOFT.COM</span>
+                        </div>
+                      </div>
+
+                      <div className="w-52 border-b-2 border-slate-900 mb-2"></div>
+                      <span className="text-[10px] font-mono uppercase text-slate-500 font-bold tracking-wider block">
+                        Authorized Authority
+                      </span>
+                      <p className="text-sm font-bold text-slate-950 mt-1">TSS Soft Management</p>
+                      <p className="text-[10px] text-slate-500 font-sans">Digital Systems &amp; Software Architecture</p>
+                    </div>
+
+                  </div>
+
+                  {/* Digital Signature Disclaimer in English (Full Width) */}
+                  <div className="mt-6 pt-3 border-t border-slate-200 text-center">
+                    <p className="text-[11px] font-medium text-slate-500 tracking-wide">
+                      This document is computer-generated and electronically verified by TSS Soft. No physical signature is required.
+                    </p>
+                  </div>
+
+                </div>
+
+              </motion.div>
+            </div>
+          );
+        })()}
       </AnimatePresence>
 
       {/* =================================================================== */}
