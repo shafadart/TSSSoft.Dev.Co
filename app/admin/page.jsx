@@ -1763,32 +1763,35 @@ export default function AdminPage() {
 
           return (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/75 backdrop-blur-sm overflow-y-auto invoice-modal-backdrop">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.97 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.97 }}
-                className="relative w-full max-w-3xl bg-white text-slate-800 rounded-xl p-6 sm:p-8 shadow-2xl my-4 overflow-hidden invoice-printable border border-slate-200 flex flex-col justify-between"
-              >
+              <div className="relative w-full max-w-3xl my-4 flex flex-col">
                 
-                {/* Modal Controls (Hidden in Print) */}
-                <div className="flex items-center justify-between pb-3 mb-5 border-b border-slate-200 no-print">
-                  <div className="flex items-center gap-2 text-xs font-mono text-slate-500 uppercase tracking-widest">
-                    <ShieldCheck size={14} className="text-slate-600" />
+                {/* 1. Modal Toolbar (STRICTLY OUTSIDE INVOICE - NEVER APPEARS IN PRINT) */}
+                <div className="flex items-center justify-between p-3 mb-3 bg-[#080d22] border border-white/10 rounded-xl text-white shadow-xl no-print">
+                  <div className="flex items-center gap-2 text-xs font-mono text-slate-300 uppercase tracking-widest">
+                    <ShieldCheck size={14} className="text-blue-400" />
                     <span>Official Executive Invoice Preview</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => window.print()}
-                      className="bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs px-4 py-2 rounded-lg flex items-center gap-1.5 shadow-sm transition-all active:scale-95"
+                      className="bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs px-4 py-2 rounded-lg flex items-center gap-1.5 shadow-md transition-all active:scale-95"
                     >
                       <Printer size={13} />
                       <span>Print / Save PDF</span>
                     </button>
-                    <button onClick={() => setViewInvoice(null)} className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors">
+                    <button onClick={() => setViewInvoice(null)} className="p-1.5 text-slate-400 hover:text-white transition-colors">
                       <X size={18} />
                     </button>
                   </div>
                 </div>
+
+                {/* 2. PURE INVOICE DOCUMENT (A4 Proportionate with Signatures at True Bottom) */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  className="bg-white text-slate-800 rounded-xl p-8 sm:p-12 shadow-2xl overflow-hidden invoice-printable border border-slate-200 flex flex-col justify-between min-h-[860px]"
+                >
 
                 {/* Minimal, Professional Invoice Body */}
                 <div className="flex-1 flex flex-col justify-start space-y-5 font-sans">
@@ -1937,70 +1940,73 @@ export default function AdminPage() {
 
                 </div>
 
-                {/* 6. BOTTOM SECTION: Minimalist Signatures & Delicate TSS Soft Seal */}
-                <div className="mt-8 pt-4 border-t border-slate-200 font-sans">
-                  
-                  {/* Two Signatures Grid */}
-                  <div className="grid grid-cols-2 gap-6 items-end">
+                {/* BOTTOM ANCHORED SECTION: Signatures at True Bottom of A4 + Blue Official Seal */}
+                <div className="mt-auto pt-8 border-t border-slate-200 font-sans">
                     
-                    {/* Left: Customer Signature */}
-                    <div className="text-left">
-                      <div className="w-36 border-b border-slate-300 mb-1.5"></div>
-                      <span className="text-[9px] font-mono uppercase text-slate-400 tracking-wider block">
-                        Customer Signature
-                      </span>
-                      <p className="text-xs font-semibold text-slate-900 mt-0.5">
-                        {viewInvoice.client_name || 'Valued Client'}
-                      </p>
-                      <p className="text-[9px] text-slate-400">Authorized Client Representative</p>
-                    </div>
-
-                    {/* Right: Authority with Delicate Minimal TSS Soft Seal */}
-                    <div className="text-right flex flex-col items-end">
-                      {/* Minimal Line Vector Seal */}
-                      <div className="relative w-16 h-16 flex items-center justify-center select-none text-slate-600 -mb-1 mr-3">
-                        <svg viewBox="0 0 100 100" className="w-16 h-16">
-                          <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2 1.5" opacity="0.7" />
-                          <circle cx="50" cy="50" r="41" fill="none" stroke="currentColor" strokeWidth="0.8" />
-                          <path id="sealUpperTextMin" d="M 16,50 A 34,34 0 0,1 84,50" fill="none" />
-                          <path id="sealLowerTextMin" d="M 84,50 A 34,34 0 0,1 16,50" fill="none" />
-                          <text fontSize="5.8" fontWeight="600" fill="currentColor" letterSpacing="0.8">
-                            <textPath href="#sealUpperTextMin" startOffset="50%" textAnchor="middle">
-                              ★ TSS SOFT. OFFICIAL SEAL ★
-                            </textPath>
-                          </text>
-                          <text fontSize="5.2" fontWeight="600" fill="currentColor" letterSpacing="0.8">
-                            <textPath href="#sealLowerTextMin" startOffset="50%" textAnchor="middle">
-                              • DIGITALLY VERIFIED •
-                            </textPath>
-                          </text>
-                        </svg>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                          <span className="text-[10px] font-bold font-mono tracking-tighter text-slate-800 leading-none">&lt;/&gt;</span>
-                          <span className="text-[4.5px] font-semibold tracking-widest text-slate-600 uppercase mt-0.5">VERIFIED</span>
-                        </div>
+                    {/* Two Signatures Grid */}
+                    <div className="grid grid-cols-2 gap-6 items-end">
+                      
+                      {/* Left: Customer Signature */}
+                      <div className="text-left">
+                        <div className="w-44 border-b border-slate-300 mb-1.5"></div>
+                        <span className="text-[9px] font-mono uppercase text-slate-400 tracking-wider block">
+                          Customer Signature
+                        </span>
+                        <p className="text-xs font-semibold text-slate-900 mt-0.5">
+                          {viewInvoice.client_name || 'Valued Client'}
+                        </p>
+                        <p className="text-[9px] text-slate-400">Authorized Client Representative</p>
                       </div>
 
-                      <div className="w-36 border-b border-slate-300 mb-1.5"></div>
-                      <span className="text-[9px] font-mono uppercase text-slate-400 tracking-wider block">
-                        Authorized Authority
-                      </span>
-                      <p className="text-xs font-semibold text-slate-900 mt-0.5">TSS Soft Management</p>
-                      <p className="text-[9px] text-slate-400">Digital Systems &amp; Software Architecture</p>
+                      {/* Right: Authority with TSS Soft Blue Official Circular Seal */}
+                      <div className="text-right flex flex-col items-end">
+                        {/* Blue Vector Seal */}
+                        <div className="relative w-20 h-20 flex items-center justify-center select-none text-blue-600 -mb-2 mr-3">
+                          <svg viewBox="0 0 100 100" className="w-20 h-20">
+                            <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="1.6" strokeDasharray="3 2" opacity="0.9" />
+                            <circle cx="50" cy="50" r="41" fill="none" stroke="currentColor" strokeWidth="1.2" />
+                            <circle cx="50" cy="50" r="28" fill="none" stroke="currentColor" strokeWidth="0.8" strokeDasharray="2 1.5" opacity="0.6" />
+                            <path id="sealUpperBlue" d="M 16,50 A 34,34 0 0,1 84,50" fill="none" />
+                            <path id="sealLowerBlue" d="M 84,50 A 34,34 0 0,1 16,50" fill="none" />
+                            <text fontSize="5.8" fontWeight="bold" fill="currentColor" letterSpacing="0.9">
+                              <textPath href="#sealUpperBlue" startOffset="50%" textAnchor="middle">
+                                ★ TSS SOFT. OFFICIAL SEAL ★
+                              </textPath>
+                            </text>
+                            <text fontSize="5" fontWeight="bold" fill="currentColor" letterSpacing="0.8">
+                              <textPath href="#sealLowerBlue" startOffset="50%" textAnchor="middle">
+                                • DIGITALLY VERIFIED •
+                              </textPath>
+                            </text>
+                          </svg>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                            <span className="text-xs font-black font-mono tracking-tighter text-blue-600 leading-none">&lt;/&gt;</span>
+                            <span className="text-[5px] font-bold tracking-widest text-blue-700 uppercase mt-0.5">VERIFIED</span>
+                            <span className="text-[3.5px] font-semibold text-slate-500 font-mono">TSSSOFT.COM</span>
+                          </div>
+                        </div>
+
+                        <div className="w-44 border-b border-slate-300 mb-1.5"></div>
+                        <span className="text-[9px] font-mono uppercase text-slate-400 tracking-wider block">
+                          Authorized Authority
+                        </span>
+                        <p className="text-xs font-semibold text-slate-900 mt-0.5">TSS Soft Management</p>
+                        <p className="text-[9px] text-slate-400">Digital Systems &amp; Software Architecture</p>
+                      </div>
+
+                    </div>
+
+                    {/* Digital Disclaimer */}
+                    <div className="mt-4 pt-2 border-t border-slate-100 text-center">
+                      <p className="text-[9px] text-slate-400 tracking-wide">
+                        This document is computer-generated and electronically verified by TSS Soft. No physical signature is required.
+                      </p>
                     </div>
 
                   </div>
 
-                  {/* Digital Disclaimer */}
-                  <div className="mt-4 pt-2 border-t border-slate-100 text-center">
-                    <p className="text-[9px] text-slate-400 tracking-wide">
-                      This document is computer-generated and electronically verified by TSS Soft. No physical signature is required.
-                    </p>
-                  </div>
-
-                </div>
-
-              </motion.div>
+                </motion.div>
+              </div>
             </div>
           );
         })()}

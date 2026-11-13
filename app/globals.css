@@ -89,19 +89,26 @@
     color: #0f172a !important;
     margin: 0 !important;
     padding: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
   
-  /* CRITICAL: Hide EVERYTHING in the DOM tree */
-  body * {
+  /* Strictly hide everything with .no-print */
+  .no-print,
+  .no-print * {
+    display: none !important;
     visibility: hidden !important;
   }
 
-  /* Make ONLY the printable invoice visible and anchored at the top */
+  body * {
+    visibility: hidden;
+  }
+
   .invoice-printable,
   .invoice-printable * {
-    visibility: visible !important;
+    visibility: visible;
   }
 
   .invoice-printable {
@@ -110,6 +117,8 @@
     top: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
+    min-height: 275mm !important;
+    height: 275mm !important;
     margin: 0 !important;
     padding: 0 !important;
     background: #ffffff !important;
@@ -117,5 +126,8 @@
     border: none !important;
     box-shadow: none !important;
     border-radius: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
   }
 }
