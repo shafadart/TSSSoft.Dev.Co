@@ -80,52 +80,42 @@
 
 @page {
   size: A4 portrait;
-  margin: 6mm 8mm;
+  margin: 10mm 12mm;
 }
 
 @media print {
   html, body {
     background: #ffffff !important;
     color: #0f172a !important;
-    width: 100% !important;
-    height: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
   
-  .no-print,
-  .no-print * {
-    display: none !important;
+  /* CRITICAL: Hide EVERYTHING in the DOM tree */
+  body * {
     visibility: hidden !important;
   }
 
-  .invoice-modal-backdrop {
-    position: static !important;
-    background: transparent !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    display: block !important;
-    overflow: visible !important;
-    width: 100% !important;
-    height: auto !important;
+  /* Make ONLY the printable invoice visible and anchored at the top */
+  .invoice-printable,
+  .invoice-printable * {
+    visibility: visible !important;
   }
 
   .invoice-printable {
-    position: relative !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
     background: #ffffff !important;
     color: #0f172a !important;
     border: none !important;
     box-shadow: none !important;
-    padding: 0 !important;
-    margin: 0 auto !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-height: 275mm !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
     border-radius: 0 !important;
   }
 }
