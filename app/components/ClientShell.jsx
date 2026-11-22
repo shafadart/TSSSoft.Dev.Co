@@ -23,7 +23,7 @@ export default function ClientShell({ children }) {
 
   if (isAdmin) {
     return (
-      <div className="min-h-screen bg-[#030612] text-slate-100 flex flex-col">
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
         {children}
       </div>
     );

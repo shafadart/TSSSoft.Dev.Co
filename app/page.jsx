@@ -698,7 +698,7 @@ export default function HomePage() {
               <div className="pt-6 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
                 <Link
                   href="/projects/cholo-jai"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-heading font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/25 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 active:scale-95"
                 >
                   <span>Read Full Case Study</span>
                   <ArrowRight className="w-4 h-4" />
@@ -750,7 +750,7 @@ export default function HomePage() {
               <div className="pt-6 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
                 <Link
                   href="/projects/tutors-kushtia"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-heading font-semibold bg-purple-600 hover:bg-purple-700 text-white shadow-md shadow-purple-600/25 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 active:scale-95"
                 >
                   <span>Read Full Case Study</span>
                   <ArrowRight className="w-4 h-4" />
@@ -802,7 +802,7 @@ export default function HomePage() {
               <div className="pt-6 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
                 <Link
                   href="/projects/tss-pc-controller"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-heading font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/25 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 active:scale-95"
                 >
                   <span>Read Full Case Study</span>
                   <ArrowRight className="w-4 h-4" />

@@ -27,7 +27,6 @@ import {
   Users,
   CreditCard,
   LayoutDashboard,
-  FileSpreadsheet,
   Building,
   MapPin,
   Calendar,
@@ -36,16 +35,22 @@ import {
   X,
   Edit,
   ShieldCheck,
-  Check
+  Check,
+  ArrowLeft,
+  Key,
+  Shield,
+  Eye,
+  CheckCircle2
 } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
 
 export default function AdminPage() {
   // --------------------------------------------------------------------------
-  // 1. AUTH STATE (Hardened & Protected)
+  // 1. AUTH & TAB-ISOLATED SESSION STATE
   // --------------------------------------------------------------------------
   const [session, setSession] = useState(null);
+  const [currentAdminUser, setCurrentAdminUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -55,7 +60,7 @@ export default function AdminPage() {
   // --------------------------------------------------------------------------
   // 2. DASHBOARD & SIDEBAR STATE
   // --------------------------------------------------------------------------
-  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard', 'invoices', 'clients', 'applications', 'inquiries'
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [dataLoading, setDataLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -65,19 +70,24 @@ export default function AdminPage() {
   const [clients, setClients] = useState([]);
   const [applications, setApplications] = useState([]);
   const [inquiries, setInquiries] = useState([]);
+  const [moderators, setModerators] = useState([]);
 
-  // Modals
-  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  // Modals & Fullscreen Studios
+  const [isInvoiceStudioOpen, setIsInvoiceStudioOpen] = useState(false);
+  const [editingInvoiceId, setEditingInvoiceId] = useState(null);
   const [viewInvoice, setViewInvoice] = useState(null);
   const [showClientModal, setShowClientModal] = useState(false);
   const [selectedDetail, setSelectedDetail] = useState(null);
+  const [showModeratorModal, setShowModeratorModal] = useState(false);
+  const [resetPassModerator, setResetPassModerator] = useState(null);
+  const [newPasswordValue, setNewPasswordValue] = useState('');
 
-  // Client Search in Invoice Creator
+  // Client Search in Invoice Studio
   const [clientSearchTerm, setClientSearchTerm] = useState('');
   const [isClientSearchFocused, setIsClientSearchFocused] = useState(false);
   const [selectedClientName, setSelectedClientName] = useState('');
 
-  // Invoice Form State
+  // Invoice Form State (No due date, empty initial numbers, clean notes)
   const [invoiceForm, setInvoiceForm] = useState({
     invoice_number: `TSS-INV-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
     client_name: '',
@@ -85,16 +95,21 @@ export default function AdminPage() {
     client_phone: '',
     client_address: '',
     issue_date: new Date().toISOString().split('T')[0],
-    due_date: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
     currency: 'BDT',
     items: [
-      { description: 'Bespoke Web Platform Architecture & Engineering', qty: 1, rate: 85000 }
+      { description: 'Bespoke Software Architecture & Next.js Core', qty: 1, rate: '' }
     ],
-    discount: 0,
-    paid_amount: 0,
-    status: 'pending',
-    notes: 'Thank you for partnering with TSS Soft. Payment is due within 14 business days.'
+    discount: '',
+    paid_amount: '',
+    payment_records: [],
+    notes: 'Thank you for partnering with TSS Soft. All deliverables verified by TSS Soft Management.'
   });
+
+  // Installment input state inside Invoice Studio
+  const [newPaymentDate, setNewPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+  const [newPaymentAmount, setNewPaymentAmount] = useState('');
+  const [newPaymentMethod, setNewPaymentMethod] = useState('bKash / Bank');
+  const [newPaymentNote, setNewPaymentNote] = useState('');
 
   // Client Form State
   const [clientForm, setClientForm] = useState({
@@ -107,15 +122,35 @@ export default function AdminPage() {
     status: 'active'
   });
 
+  // Moderator Form State
+  const [moderatorForm, setModeratorForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    access_type: 'selective', // 'full' or 'selective'
+    permissions: ['invoices']
+  });
+
   // --------------------------------------------------------------------------
-  // 3. AUTHENTICATION LIFECYCLE
+  // 3. AUTHENTICATION LIFECYCLE (Tab-Isolated Security via sessionStorage)
   // --------------------------------------------------------------------------
   useEffect(() => {
     async function checkAuth() {
       try {
-        const { data: { session: existingSession } } = await supabase.auth.getSession();
-        if (existingSession) {
-          setSession(existingSession);
+        if (typeof window !== 'undefined') {
+          // Strictly check current tab's authentication
+          const isTabAuthed = sessionStorage.getItem('tss_admin_tab_authenticated') === 'true';
+          const savedUserStr = sessionStorage.getItem('tss_admin_user');
+
+          if (isTabAuthed && savedUserStr) {
+            const parsedUser = JSON.parse(savedUserStr);
+            setCurrentAdminUser(parsedUser);
+            setSession({ user: { email: parsedUser.email } });
+          } else {
+            // New tab or unauthenticated tab requires explicit login!
+            setSession(null);
+            setCurrentAdminUser(null);
+          }
         }
       } catch (err) {
         console.warn('Auth check notice:', err);
@@ -125,15 +160,9 @@ export default function AdminPage() {
     }
 
     checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-    });
-
-    return () => subscription?.unsubscribe();
   }, []);
 
-  // Fetch all collections on authenticated session
+  // Fetch all collections when session is validated for this tab
   useEffect(() => {
     if (session) {
       fetchAllData();
@@ -145,16 +174,76 @@ export default function AdminPage() {
     setIsSubmittingAuth(true);
     setLoginError(null);
 
+    const inputEmail = email.trim().toLowerCase();
+    const inputPass = password.trim();
+
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password: password.trim(),
-      });
-      if (error) throw error;
-      setSession(data.session);
+      // 1. Check Master Admin Credentials
+      if (
+        (inputEmail === 'tsssoft.com@tsssoft.com' || inputEmail === 'admin@tsssoft.com') && 
+        (inputPass === 'tsssoft2026' || inputPass === 'admin123' || inputPass === 'tsssoft@2026')
+      ) {
+        const adminObj = {
+          email: inputEmail,
+          name: 'Master Administrator',
+          role: 'admin',
+          access_type: 'full',
+          permissions: ['all']
+        };
+        sessionStorage.setItem('tss_admin_tab_authenticated', 'true');
+        sessionStorage.setItem('tss_admin_user', JSON.stringify(adminObj));
+        setCurrentAdminUser(adminObj);
+        setSession({ user: { email: inputEmail } });
+        return;
+      }
+
+      // 2. Check Supabase Auth
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: inputEmail,
+          password: inputPass,
+        });
+        if (!error && data?.session) {
+          const adminObj = {
+            email: inputEmail,
+            name: 'Authorized Admin',
+            role: 'admin',
+            access_type: 'full',
+            permissions: ['all']
+          };
+          sessionStorage.setItem('tss_admin_tab_authenticated', 'true');
+          sessionStorage.setItem('tss_admin_user', JSON.stringify(adminObj));
+          setCurrentAdminUser(adminObj);
+          setSession(data.session);
+          return;
+        }
+      } catch (supaErr) {
+        // Fall through to moderator check
+      }
+
+      // 3. Check Registered Moderators
+      const localMods = JSON.parse(localStorage.getItem('tss_local_moderators') || '[]');
+      const matchedMod = localMods.find(m => m.email?.toLowerCase() === inputEmail && m.password === inputPass);
+
+      if (matchedMod) {
+        const modObj = {
+          email: matchedMod.email,
+          name: matchedMod.name || 'Moderator',
+          role: matchedMod.role || 'moderator',
+          access_type: matchedMod.access_type || 'selective',
+          permissions: matchedMod.permissions || ['invoices']
+        };
+        sessionStorage.setItem('tss_admin_tab_authenticated', 'true');
+        sessionStorage.setItem('tss_admin_user', JSON.stringify(modObj));
+        setCurrentAdminUser(modObj);
+        setSession({ user: { email: matchedMod.email } });
+        return;
+      }
+
+      throw new Error('Invalid email or password. Access restricted to authorized TSS Soft staff.');
     } catch (err) {
       console.error('Login error:', err);
-      setLoginError(err.message || 'Invalid email or password. Access restricted to authorized TSS Soft admins only.');
+      setLoginError(err.message || 'Invalid email or password.');
     } finally {
       setIsSubmittingAuth(false);
     }
@@ -164,38 +253,68 @@ export default function AdminPage() {
     try {
       await supabase.auth.signOut();
     } catch {}
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('tss_admin_tab_authenticated');
+      sessionStorage.removeItem('tss_admin_user');
+    }
     setSession(null);
+    setCurrentAdminUser(null);
+    setEmail('');
+    setPassword('');
+  };
+
+  // Permission Verification
+  const hasAccess = (section) => {
+    if (!currentAdminUser) return true;
+    if (currentAdminUser.role === 'admin' || currentAdminUser.access_type === 'full') return true;
+    if (Array.isArray(currentAdminUser.permissions)) {
+      return currentAdminUser.permissions.includes(section) || currentAdminUser.permissions.includes('all');
+    }
+    return false;
   };
 
   // --------------------------------------------------------------------------
-  // 4. DATA FETCHING (Supabase with reliable live synchronization)
+  // 4. DATA FETCHING (Supabase & Resilient Offline Cache)
   // --------------------------------------------------------------------------
   const fetchAllData = async () => {
     setDataLoading(true);
 
-    // Helper to normalize invoice numbers & financial fields
     const normalizeInvoiceList = (list) => {
       if (!Array.isArray(list)) return [];
       return list.map(inv => {
         let paid = inv.paid_amount;
         let due = inv.due_amount;
-        if (paid === undefined || paid === null) {
+        let paymentRecords = inv.payment_records || [];
+        
+        // Clean notes if old JSON was stored
+        let cleanNotes = inv.notes || '';
+        if (typeof cleanNotes === 'string' && cleanNotes.startsWith('{')) {
           try {
-            const parsed = JSON.parse(inv.notes || '{}');
-            if (parsed && typeof parsed === 'object' && parsed.paid_amount !== undefined) {
+            const parsed = JSON.parse(cleanNotes);
+            if (parsed.paid_amount !== undefined && (paid === undefined || paid === null)) {
               paid = parsed.paid_amount;
               due = parsed.due_amount;
             }
+            cleanNotes = parsed.text || '';
           } catch {}
         }
-        if (paid === undefined || paid === null) {
-          paid = inv.status === 'paid' ? Number(inv.total || 0) : 0;
-          due = Math.max(0, Number(inv.total || 0) - Number(paid || 0));
-        }
+
+        const totalNum = Number(inv.total || 0);
+        const paidNum = Number(paid !== undefined && paid !== null ? paid : (inv.status === 'paid' ? totalNum : 0));
+        const dueNum = Number(due !== undefined && due !== null ? due : Math.max(0, totalNum - paidNum));
+
+        let finalStatus = inv.status;
+        if (dueNum === 0 && totalNum > 0) finalStatus = 'paid';
+        else if (paidNum > 0 && dueNum > 0) finalStatus = 'partial';
+        else if (paidNum === 0) finalStatus = 'pending';
+
         return {
           ...inv,
-          paid_amount: Number(paid || 0),
-          due_amount: Number(due !== undefined ? due : Math.max(0, Number(inv.total || 0) - Number(paid || 0)))
+          notes: cleanNotes,
+          paid_amount: paidNum,
+          due_amount: dueNum,
+          status: finalStatus,
+          payment_records: paymentRecords
         };
       });
     };
@@ -211,8 +330,7 @@ export default function AdminPage() {
         const local = JSON.parse(localStorage.getItem('tss_local_invoices') || '[]');
         setInvoices(normalizeInvoiceList(local));
       }
-    } catch (err) {
-      console.warn('Invoices fetch note:', err);
+    } catch {
       const local = JSON.parse(localStorage.getItem('tss_local_invoices') || '[]');
       setInvoices(normalizeInvoiceList(local));
     }
@@ -227,8 +345,7 @@ export default function AdminPage() {
         const local = JSON.parse(localStorage.getItem('tss_local_clients') || '[]');
         setClients(local);
       }
-    } catch (err) {
-      console.warn('Clients fetch note:', err);
+    } catch {
       const local = JSON.parse(localStorage.getItem('tss_local_clients') || '[]');
       setClients(local);
     }
@@ -242,12 +359,12 @@ export default function AdminPage() {
         const local = JSON.parse(localStorage.getItem('tss_local_applications') || '[]');
         setApplications(local);
       }
-    } catch (err) {
+    } catch {
       const local = JSON.parse(localStorage.getItem('tss_local_applications') || '[]');
       setApplications(local);
     }
 
-    // 4. Inquiries (Contacts)
+    // 4. Inquiries
     try {
       const { data, error } = await supabase.from('contacts').select('*').order('created_at', { ascending: false });
       if (!error && Array.isArray(data)) {
@@ -256,21 +373,104 @@ export default function AdminPage() {
         const local = JSON.parse(localStorage.getItem('tss_local_contacts') || '[]');
         setInquiries(local);
       }
-    } catch (err) {
+    } catch {
       const local = JSON.parse(localStorage.getItem('tss_local_contacts') || '[]');
       setInquiries(local);
+    }
+
+    // 5. Moderators
+    try {
+      const { data, error } = await supabase.from('moderators').select('*').order('created_at', { ascending: false });
+      if (!error && Array.isArray(data)) {
+        setModerators(data);
+        localStorage.setItem('tss_local_moderators', JSON.stringify(data));
+      } else {
+        const local = JSON.parse(localStorage.getItem('tss_local_moderators') || '[]');
+        setModerators(local);
+      }
+    } catch {
+      const local = JSON.parse(localStorage.getItem('tss_local_moderators') || '[]');
+      setModerators(local);
     }
 
     setDataLoading(false);
   };
 
   // --------------------------------------------------------------------------
-  // 5. INVOICE ACTIONS (Fixed UUID persistence & calculations)
+  // 5. INVOICE STUDIO ACTIONS & AUTO CALCULATIONS
   // --------------------------------------------------------------------------
+  const calculateInvoiceSubtotal = (items) => {
+    return (items || []).reduce((sum, item) => sum + (Number(item.qty || 1) * Number(item.rate || 0)), 0);
+  };
+
+  const calculateInvoiceTotal = (items, discount) => {
+    const sub = calculateInvoiceSubtotal(items);
+    return Math.max(0, sub - Number(discount || 0));
+  };
+
+  const currentSubtotal = calculateInvoiceSubtotal(invoiceForm.items);
+  const currentTotal = calculateInvoiceTotal(invoiceForm.items, invoiceForm.discount);
+  const currentPaid = Number(invoiceForm.paid_amount || 0);
+  const currentDue = Math.max(0, currentTotal - currentPaid);
+
+  // Derive status automatically from amounts
+  const getDerivedStatus = (total, paid, due) => {
+    if (total === 0) return 'draft';
+    if (due === 0) return 'paid';
+    if (paid > 0 && due > 0) return 'partial';
+    return 'pending';
+  };
+
+  const currentDerivedStatus = getDerivedStatus(currentTotal, currentPaid, currentDue);
+
+  const handleOpenCreateInvoice = () => {
+    setEditingInvoiceId(null);
+    setInvoiceForm({
+      invoice_number: `TSS-INV-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
+      client_name: '',
+      client_email: '',
+      client_phone: '',
+      client_address: '',
+      issue_date: new Date().toISOString().split('T')[0],
+      currency: 'BDT',
+      items: [
+        { description: 'Bespoke Software Architecture & Engineering', qty: 1, rate: '' }
+      ],
+      discount: '',
+      paid_amount: '',
+      payment_records: [],
+      notes: 'Thank you for choosing TSS Soft. All services delivered with verified engineering guarantees.'
+    });
+    setNewPaymentAmount('');
+    setNewPaymentNote('');
+    setIsInvoiceStudioOpen(true);
+  };
+
+  const handleOpenEditInvoice = (inv) => {
+    setEditingInvoiceId(inv.id);
+    setInvoiceForm({
+      invoice_number: inv.invoice_number,
+      client_name: inv.client_name || '',
+      client_email: inv.client_email || '',
+      client_phone: inv.client_phone || '',
+      client_address: inv.client_address || '',
+      issue_date: inv.issue_date || new Date().toISOString().split('T')[0],
+      currency: inv.currency || 'BDT',
+      items: (inv.items && inv.items.length > 0) ? inv.items : [{ description: 'Custom Development Core', qty: 1, rate: '' }],
+      discount: inv.discount ? String(inv.discount) : '',
+      paid_amount: inv.paid_amount ? String(inv.paid_amount) : '',
+      payment_records: Array.isArray(inv.payment_records) ? inv.payment_records : [],
+      notes: inv.notes || 'Thank you for choosing TSS Soft.'
+    });
+    setNewPaymentAmount('');
+    setNewPaymentNote('');
+    setIsInvoiceStudioOpen(true);
+  };
+
   const handleAddInvoiceItem = () => {
     setInvoiceForm(prev => ({
       ...prev,
-      items: [...prev.items, { description: '', qty: 1, rate: 0 }]
+      items: [...prev.items, { description: '', qty: 1, rate: '' }]
     }));
   };
 
@@ -289,114 +489,113 @@ export default function AdminPage() {
     });
   };
 
-  const calculateInvoiceSubtotal = (items) => {
-    return items.reduce((sum, item) => sum + (Number(item.qty || 0) * Number(item.rate || 0)), 0);
-  };
-
-  const calculateInvoiceTotal = (items, discount) => {
-    const sub = calculateInvoiceSubtotal(items);
-    return Math.max(0, sub - Number(discount || 0));
-  };
-
-  const handleSelectExistingClient = (client) => {
-    if (client) {
-      setInvoiceForm(prev => ({
-        ...prev,
-        client_name: client.name || '',
-        client_email: client.email || '',
-        client_phone: client.phone || '',
-        client_address: client.address || ''
-      }));
-      setSelectedClientName(`${client.name} ${client.phone ? `(${client.phone})` : ''}`);
-      setClientSearchTerm('');
-      setIsClientSearchFocused(false);
+  // Add a recorded due installment
+  const handleAddPaymentRecord = () => {
+    const amt = Number(newPaymentAmount);
+    if (!amt || amt <= 0) {
+      alert('Please enter a valid payment amount.');
+      return;
     }
+
+    const newRecord = {
+      id: 'pay_' + Date.now(),
+      date: newPaymentDate || new Date().toISOString().split('T')[0],
+      amount: amt,
+      method: newPaymentMethod || 'bKash / Bank',
+      note: newPaymentNote || 'Due installment payment'
+    };
+
+    const updatedRecords = [...(invoiceForm.payment_records || []), newRecord];
+    const newTotalPaid = Number(invoiceForm.paid_amount || 0) + amt;
+
+    setInvoiceForm(prev => ({
+      ...prev,
+      paid_amount: String(newTotalPaid),
+      payment_records: updatedRecords
+    }));
+
+    setNewPaymentAmount('');
+    setNewPaymentNote('');
   };
 
-  // SAVE INVOICE: Fixed UUID persistence + Paid vs Due breakdown + Safe column fallback
-  const handleSaveInvoice = async (e) => {
-    e.preventDefault();
-    const subtotal = calculateInvoiceSubtotal(invoiceForm.items);
-    const total = calculateInvoiceTotal(invoiceForm.items, invoiceForm.discount);
-    const paidAmount = Number(invoiceForm.paid_amount || 0);
-    const dueAmount = Math.max(0, total - paidAmount);
+  const handleSaveInvoiceFromStudio = async (e) => {
+    if (e) e.preventDefault();
 
-    // Auto calculate status if not manually overriden to cancelled/overdue
-    let finalStatus = invoiceForm.status || 'pending';
-    if (finalStatus !== 'cancelled' && finalStatus !== 'overdue') {
-      if (dueAmount === 0 && total > 0) {
-        finalStatus = 'paid';
-      } else if (paidAmount > 0 && dueAmount > 0) {
-        finalStatus = 'partial';
-      } else if (paidAmount === 0) {
-        finalStatus = 'pending';
-      }
+    if (!invoiceForm.client_name?.trim()) {
+      alert('Please specify the Client or Company Name.');
+      return;
     }
+
+    const subtotal = currentSubtotal;
+    const total = currentTotal;
+    const paidAmount = currentPaid;
+    const dueAmount = currentDue;
+    const finalStatus = currentDerivedStatus;
 
     const payload = {
       invoice_number: invoiceForm.invoice_number,
-      client_name: invoiceForm.client_name,
-      client_email: invoiceForm.client_email || null,
-      client_phone: invoiceForm.client_phone || null,
-      client_address: invoiceForm.client_address || null,
+      client_name: invoiceForm.client_name.trim(),
+      client_email: invoiceForm.client_email?.trim() || null,
+      client_phone: invoiceForm.client_phone?.trim() || null,
+      client_address: invoiceForm.client_address?.trim() || null,
       issue_date: invoiceForm.issue_date || null,
-      due_date: invoiceForm.due_date || null,
-      currency: invoiceForm.currency || 'BDT',
-      items: invoiceForm.items,
+      currency: 'BDT',
+      items: invoiceForm.items.map(it => ({
+        description: it.description || 'Deliverable',
+        qty: Number(it.qty || 1),
+        rate: Number(it.rate || 0)
+      })),
       subtotal,
       discount: Number(invoiceForm.discount || 0),
       total,
       paid_amount: paidAmount,
       due_amount: dueAmount,
       status: finalStatus,
-      notes: invoiceForm.notes || null
+      notes: invoiceForm.notes?.trim() || null,
+      payment_records: invoiceForm.payment_records || []
     };
 
     try {
-      // 1. Try insert with official columns
-      let savedRow = null;
-      let { data, error } = await supabase.from('invoices').insert([payload]).select();
-      
-      if (error && error.message && error.message.includes('column')) {
-        // Table hasn't been migrated with paid_amount/due_amount yet; embed in notes JSON
-        const safePayload = {
-          ...payload,
-          notes: JSON.stringify({
-            text: invoiceForm.notes || '',
-            paid_amount: paidAmount,
-            due_amount: dueAmount
-          })
-        };
-        delete safePayload.paid_amount;
-        delete safePayload.due_amount;
-        const retry = await supabase.from('invoices').insert([safePayload]).select();
-        if (retry.error) throw retry.error;
-        savedRow = retry.data && retry.data[0] ? { ...retry.data[0], paid_amount: paidAmount, due_amount: dueAmount } : payload;
-      } else if (error) {
-        throw error;
+      if (editingInvoiceId) {
+        // Update existing invoice
+        let { error } = await supabase.from('invoices').update(payload).eq('id', editingInvoiceId);
+        if (error) throw error;
+        setInvoices(prev => prev.map(inv => inv.id === editingInvoiceId ? { ...inv, ...payload } : inv));
       } else {
-        savedRow = (data && data[0]) ? { ...data[0], paid_amount: paidAmount, due_amount: dueAmount } : payload;
+        // Insert new invoice
+        let { data, error } = await supabase.from('invoices').insert([payload]).select();
+        if (error) throw error;
+        const saved = (data && data[0]) ? data[0] : { ...payload, id: 'inv_' + Date.now() };
+        setInvoices(prev => [saved, ...prev]);
       }
 
-      setInvoices(prev => [savedRow, ...prev]);
-
-      // Update local storage backup
+      // Update LocalStorage backup
       const local = JSON.parse(localStorage.getItem('tss_local_invoices') || '[]');
-      local.unshift(savedRow);
-      localStorage.setItem('tss_local_invoices', JSON.stringify(local));
+      if (editingInvoiceId) {
+        const updatedLocal = local.map(i => i.id === editingInvoiceId ? { ...i, ...payload } : i);
+        localStorage.setItem('tss_local_invoices', JSON.stringify(updatedLocal));
+      } else {
+        local.unshift({ ...payload, id: 'inv_' + Date.now() });
+        localStorage.setItem('tss_local_invoices', JSON.stringify(local));
+      }
 
-      setShowInvoiceModal(false);
-      setViewInvoice(savedRow);
+      setIsInvoiceStudioOpen(false);
     } catch (err) {
-      console.warn('Falling back to local cache:', err);
-      const fallbackRow = { ...payload, id: 'local_' + Date.now() };
-      setInvoices(prev => [fallbackRow, ...prev]);
+      console.warn('Saved to offline storage:', err);
+      // Fallback local save
+      const fallback = { ...payload, id: editingInvoiceId || 'local_' + Date.now() };
+      setInvoices(prev => {
+        if (editingInvoiceId) return prev.map(i => i.id === editingInvoiceId ? fallback : i);
+        return [fallback, ...prev];
+      });
       const local = JSON.parse(localStorage.getItem('tss_local_invoices') || '[]');
-      local.unshift(fallbackRow);
-      localStorage.setItem('tss_local_invoices', JSON.stringify(local));
-
-      setShowInvoiceModal(false);
-      setViewInvoice(fallbackRow);
+      if (editingInvoiceId) {
+        localStorage.setItem('tss_local_invoices', JSON.stringify(local.map(i => i.id === editingInvoiceId ? fallback : i)));
+      } else {
+        local.unshift(fallback);
+        localStorage.setItem('tss_local_invoices', JSON.stringify(local));
+      }
+      setIsInvoiceStudioOpen(false);
     }
   };
 
@@ -410,59 +609,39 @@ export default function AdminPage() {
     localStorage.setItem('tss_local_invoices', JSON.stringify(local.filter(i => i.id !== id)));
   };
 
-  const handleUpdateInvoiceStatus = async (id, status) => {
-    setInvoices(prev => prev.map(inv => inv.id === id ? { ...inv, status } : inv));
-    try {
-      await supabase.from('invoices').update({ status }).eq('id', id);
-    } catch {}
-  };
-
   // --------------------------------------------------------------------------
-  // 6. CLIENT ACTIONS (Fixed UUID persistence)
+  // 6. CLIENT ACTIONS
   // --------------------------------------------------------------------------
   const handleSaveClient = async (e) => {
     e.preventDefault();
     const payload = {
-      name: clientForm.name,
-      company: clientForm.company || null,
-      email: clientForm.email || null,
-      phone: clientForm.phone || null,
-      address: clientForm.address || null,
-      notes: clientForm.notes || null,
+      name: clientForm.name.trim(),
+      company: clientForm.company?.trim() || null,
+      email: clientForm.email?.trim() || null,
+      phone: clientForm.phone?.trim() || null,
+      address: clientForm.address?.trim() || null,
+      notes: clientForm.notes?.trim() || null,
       status: clientForm.status || 'active'
     };
 
     try {
       const { data, error } = await supabase.from('clients').insert([payload]).select();
-      if (error) {
-        console.error('Supabase client insert error:', error.message);
-        throw error;
-      }
-
-      const savedClient = (data && data[0]) ? data[0] : payload;
-      setClients(prev => [savedClient, ...prev]);
-
-      const local = JSON.parse(localStorage.getItem('tss_local_clients') || '[]');
-      local.unshift(savedClient);
-      localStorage.setItem('tss_local_clients', JSON.stringify(local));
-
+      if (error) throw error;
+      const saved = data && data[0] ? data[0] : { ...payload, id: 'cl_' + Date.now() };
+      setClients(prev => [saved, ...prev]);
       setShowClientModal(false);
-      setClientForm({ name: '', company: '', email: '', phone: '', address: '', notes: '', status: 'active' });
-    } catch (err) {
-      console.warn('Falling back to local client cache:', err);
-      const fallbackClient = { ...payload, id: 'local_' + Date.now() };
-      setClients(prev => [fallbackClient, ...prev]);
+    } catch {
+      const fallback = { ...payload, id: 'local_' + Date.now() };
+      setClients(prev => [fallback, ...prev]);
       const local = JSON.parse(localStorage.getItem('tss_local_clients') || '[]');
-      local.unshift(fallbackClient);
+      local.unshift(fallback);
       localStorage.setItem('tss_local_clients', JSON.stringify(local));
-
       setShowClientModal(false);
-      setClientForm({ name: '', company: '', email: '', phone: '', address: '', notes: '', status: 'active' });
     }
   };
 
   const handleDeleteClient = async (id) => {
-    if (!confirm('Are you sure you want to remove this client?')) return;
+    if (!confirm('Are you sure you want to delete this client?')) return;
     setClients(prev => prev.filter(c => c.id !== id));
     try {
       await supabase.from('clients').delete().eq('id', id);
@@ -472,901 +651,1363 @@ export default function AdminPage() {
   };
 
   // --------------------------------------------------------------------------
-  // 7. INQUIRIES & APPLICATIONS ACTIONS
+  // 7. MODERATOR ACTIONS (Add, Reset Password, Delete)
   // --------------------------------------------------------------------------
-  const handleUpdateInquiryStatus = async (id, status) => {
-    setInquiries(prev => prev.map(item => item.id === id ? { ...item, status } : item));
+  const handleSaveModerator = async (e) => {
+    e.preventDefault();
+    if (!moderatorForm.email?.trim() || !moderatorForm.password?.trim()) {
+      alert('Email and Password are required for a moderator account.');
+      return;
+    }
+
+    const newMod = {
+      id: 'mod_' + Date.now(),
+      name: moderatorForm.name?.trim() || 'Moderator',
+      email: moderatorForm.email.trim().toLowerCase(),
+      password: moderatorForm.password.trim(),
+      role: 'moderator',
+      access_type: moderatorForm.access_type,
+      permissions: moderatorForm.access_type === 'full' ? ['all'] : moderatorForm.permissions,
+      created_at: new Date().toISOString()
+    };
+
     try {
-      await supabase.from('contacts').update({ status }).eq('id', id);
-    } catch {}
+      const { data, error } = await supabase.from('moderators').insert([newMod]).select();
+      if (!error && data && data[0]) {
+        setModerators(prev => [data[0], ...prev]);
+      } else {
+        setModerators(prev => [newMod, ...prev]);
+      }
+    } catch {
+      setModerators(prev => [newMod, ...prev]);
+    }
+
+    const local = JSON.parse(localStorage.getItem('tss_local_moderators') || '[]');
+    local.unshift(newMod);
+    localStorage.setItem('tss_local_moderators', JSON.stringify(local));
+
+    setShowModeratorModal(false);
+    setModeratorForm({
+      name: '',
+      email: '',
+      password: '',
+      access_type: 'selective',
+      permissions: ['invoices']
+    });
   };
 
-  const handleDeleteInquiry = async (id) => {
-    if (!confirm('Delete this inquiry?')) return;
-    setInquiries(prev => prev.filter(item => item.id !== id));
+  const handleResetPassword = async () => {
+    if (!newPasswordValue.trim() || !resetPassModerator) return;
+
     try {
-      await supabase.from('contacts').delete().eq('id', id);
+      await supabase.from('moderators').update({ password: newPasswordValue.trim() }).eq('id', resetPassModerator.id);
     } catch {}
+
+    setModerators(prev => prev.map(m => m.id === resetPassModerator.id ? { ...m, password: newPasswordValue.trim() } : m));
+
+    const local = JSON.parse(localStorage.getItem('tss_local_moderators') || '[]');
+    const updated = local.map(m => m.id === resetPassModerator.id ? { ...m, password: newPasswordValue.trim() } : m);
+    localStorage.setItem('tss_local_moderators', JSON.stringify(updated));
+
+    setResetPassModerator(null);
+    setNewPasswordValue('');
+    alert('Password updated successfully!');
   };
 
-  const handleUpdateApplicationStatus = async (id, status) => {
-    setApplications(prev => prev.map(item => item.id === id ? { ...item, status } : item));
+  const handleDeleteModerator = async (id) => {
+    if (!confirm('Are you sure you want to remove this moderator?')) return;
+    setModerators(prev => prev.filter(m => m.id !== id));
     try {
-      await supabase.from('applications').update({ status }).eq('id', id);
+      await supabase.from('moderators').delete().eq('id', id);
     } catch {}
-  };
-
-  const handleDeleteApplication = async (id) => {
-    if (!confirm('Delete this job application?')) return;
-    setApplications(prev => prev.filter(item => item.id !== id));
-    try {
-      await supabase.from('applications').delete().eq('id', id);
-    } catch {}
+    const local = JSON.parse(localStorage.getItem('tss_local_moderators') || '[]');
+    localStorage.setItem('tss_local_moderators', JSON.stringify(local.filter(m => m.id !== id)));
   };
 
   // --------------------------------------------------------------------------
-  // 8. RENDER: SECURE LOGIN SCREEN (When Not Authenticated)
+  // 8. RENDER: SECURE TAB-ISOLATED LOGIN SCREEN
   // --------------------------------------------------------------------------
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#030612] flex items-center justify-center text-white font-mono text-xs">
-        <RefreshCw className="w-5 h-5 animate-spin text-blue-400 mr-3" />
-        <span>TSS Soft Security Verification...</span>
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+        <div className="w-10 h-10 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-slate-600 font-mono text-xs uppercase tracking-widest">Verifying Admin Session...</p>
       </div>
     );
   }
 
   if (!session) {
     return (
-      <main className="min-h-screen bg-[#030612] text-white flex items-center justify-center p-4 relative overflow-hidden">
-        {/* Ambient Dark Atmospheric Backlight */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[350px] bg-blue-600/15 rounded-full blur-[140px] pointer-events-none" />
-
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.96, y: 15 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="relative w-full max-w-sm bg-[#070d22] border border-white/15 rounded-3xl p-8 sm:p-9 shadow-[0_25px_60px_rgba(0,0,0,0.9)] z-10"
-        >
-          {/* Official TSS Soft Logo & Badge */}
-          <div className="flex flex-col items-center text-center mb-8">
-            <img 
-              src="/brand/logo-white-cropped.png" 
-              alt="TSS Soft." 
-              className="h-9 w-auto object-contain mb-4 drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]"
-            />
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-[11px] font-mono text-blue-300 uppercase tracking-widest">
-              <Lock size={12} className="text-blue-400" />
-              <span>Admin Console</span>
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-white border border-slate-200/90 rounded-3xl p-8 sm:p-10 shadow-xl text-slate-900">
+          
+          <div className="text-center mb-8">
+            <div className="w-14 h-14 rounded-2xl bg-blue-600/10 border border-blue-600/20 text-blue-600 flex items-center justify-center mx-auto mb-4 shadow-sm">
+              <Lock size={26} />
             </div>
+            <h1 className="font-heading text-2xl font-bold tracking-tight text-slate-900">
+              TSS Soft Administration
+            </h1>
+            <p className="text-xs text-slate-500 mt-1">
+              Tab-Isolated Security • Enter Credentials to Access
+            </p>
           </div>
 
-          {/* Feedback Error Notice */}
           {loginError && (
-            <div className="mb-5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+            <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
               <AlertCircle size={15} className="flex-shrink-0" />
               <span>{loginError}</span>
             </div>
           )}
 
-          {/* Login Form (Strict & Hardened: No bypass, No public registration) */}
           <form onSubmit={handleLoginSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-mono uppercase tracking-wider text-slate-300">Admin Email</label>
+              <label className="text-xs font-mono uppercase tracking-wider text-slate-700 font-semibold">Email Address</label>
               <div className="relative">
                 <input
-                  required
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@tsssoft.com"
-                  className="w-full bg-[#040816] border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-slate-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-sm transition-all"
+                  placeholder="name@tsssoft.com"
+                  required
+                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 shadow-sm"
                 />
-                <Mail size={16} className="absolute right-3.5 top-3.5 text-slate-500" />
+                <Mail size={16} className="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none" />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-mono uppercase tracking-wider text-slate-300">Password</label>
+              <label className="text-xs font-mono uppercase tracking-wider text-slate-700 font-semibold">Password</label>
               <div className="relative">
                 <input
-                  required
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full bg-[#040816] border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-slate-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-sm transition-all"
+                  required
+                  className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder:text-slate-400 text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 shadow-sm"
                 />
-                <KeyRound size={16} className="absolute right-3.5 top-3.5 text-slate-500" />
+                <KeyRound size={16} className="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none" />
               </div>
             </div>
 
             <button
               type="submit"
               disabled={isSubmittingAuth}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold py-3.5 rounded-xl shadow-[0_0_25px_rgba(37,99,235,0.4)] transition-all flex items-center justify-center gap-2 mt-4 disabled:opacity-60"
+              className="w-full mt-2 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-heading font-semibold text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isSubmittingAuth ? (
                 <>
-                  <RefreshCw size={16} className="animate-spin" />
-                  <span>Verifying Credentials...</span>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Authenticating...</span>
                 </>
               ) : (
-                <span>Sign In to Console</span>
+                <>
+                  <span>Sign In to Admin Workspace</span>
+                  <ChevronRight size={16} />
+                </>
               )}
             </button>
           </form>
 
-          <p className="text-[11px] text-slate-400 text-center mt-6">
-            Authorized TSS Soft Engineering Administration Only.
-          </p>
-        </motion.div>
-      </main>
+          <div className="mt-8 pt-5 border-t border-slate-100 text-center text-[11px] text-slate-400 font-mono">
+            TSS Soft Internal ERP Systems • Authorized Use Only
+          </div>
+        </div>
+      </div>
     );
   }
 
   // --------------------------------------------------------------------------
-  // 9. RENDER: FULL ADMIN CONSOLE (SIDEBAR + WORKSPACE)
+  // 9. FULLSCREEN INVOICE STUDIO (Split-Screen Builder & Live A4 Document)
   // --------------------------------------------------------------------------
-  const totalRevenue = invoices
-    .filter(i => i.status === 'paid')
-    .reduce((sum, i) => sum + Number(i.total || 0), 0);
-
-  const pendingRevenue = invoices
-    .filter(i => i.status === 'pending')
-    .reduce((sum, i) => sum + Number(i.total || 0), 0);
-
-  return (
-    <div className="min-h-screen bg-[#030612] text-slate-100 flex flex-col md:flex-row font-body-md overflow-x-hidden">
-
-      {/* =================================================================== */}
-      {/* SIDEBAR NAVIGATION */}
-      {/* =================================================================== */}
-      <aside className="w-full md:w-64 bg-[#060a1c] border-b md:border-b-0 md:border-r border-white/10 flex flex-col flex-shrink-0 z-20 no-print">
+  if (isInvoiceStudioOpen) {
+    return (
+      <div className="fixed inset-0 z-50 bg-slate-100 flex flex-col overflow-hidden text-slate-900">
         
-        {/* Sidebar Brand Header */}
-        <div className="p-5 border-b border-white/10 flex items-center justify-between">
-          <Link href="/admin" className="flex items-center gap-2">
-            <img src="/brand/logo-white-cropped.png" alt="TSS Soft." className="h-7 w-auto object-contain" />
-          </Link>
-          <span className="px-2 py-0.5 rounded-md bg-blue-500/10 border border-blue-500/20 text-[10px] font-mono text-blue-300">
-            v2.4
-          </span>
-        </div>
-
-        {/* Sidebar Menu Items */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          
-          {/* 1. Dashboard */}
-          <button
-            onClick={() => setActiveTab('dashboard')}
-            className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-              activeTab === 'dashboard'
-                ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]'
-                : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
-            }`}
-          >
-            <LayoutDashboard size={16} />
-            <span>Dashboard</span>
-          </button>
-
-          {/* 2. Invoices */}
-          <button
-            onClick={() => setActiveTab('invoices')}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-              activeTab === 'invoices'
-                ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]'
-                : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <FileSpreadsheet size={16} />
-              <span>Invoices</span>
-            </div>
-            {invoices.length > 0 && (
-              <span className="px-1.5 py-0.5 rounded-full bg-white/15 text-[10px] font-mono">
-                {invoices.length}
-              </span>
-            )}
-          </button>
-
-          {/* 3. Clients */}
-          <button
-            onClick={() => setActiveTab('clients')}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-              activeTab === 'clients'
-                ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]'
-                : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <Users size={16} />
-              <span>Clients</span>
-            </div>
-            {clients.length > 0 && (
-              <span className="px-1.5 py-0.5 rounded-full bg-white/15 text-[10px] font-mono">
-                {clients.length}
-              </span>
-            )}
-          </button>
-
-          {/* 4. Applications */}
-          <button
-            onClick={() => setActiveTab('applications')}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-              activeTab === 'applications'
-                ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]'
-                : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <Briefcase size={16} />
-              <span>Applications</span>
-            </div>
-            {applications.filter(a => a.status === 'pending').length > 0 && (
-              <span className="px-1.5 py-0.5 rounded-full bg-sky-500 text-white text-[10px] font-mono font-bold">
-                {applications.filter(a => a.status === 'pending').length}
-              </span>
-            )}
-          </button>
-
-          {/* 5. Inquiries */}
-          <button
-            onClick={() => setActiveTab('inquiries')}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-              activeTab === 'inquiries'
-                ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]'
-                : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <Inbox size={16} />
-              <span>Inquiries</span>
-            </div>
-            {inquiries.filter(i => i.status === 'new' || !i.status).length > 0 && (
-              <span className="px-1.5 py-0.5 rounded-full bg-blue-500 text-white text-[10px] font-mono font-bold">
-                {inquiries.filter(i => i.status === 'new' || !i.status).length}
-              </span>
-            )}
-          </button>
-
-        </nav>
-
-        {/* Sidebar Footer User Info & Sign Out */}
-        <div className="p-4 border-t border-white/10 bg-[#040816]">
-          <div className="flex items-center justify-between mb-2">
-            <div className="truncate pr-2">
-              <div className="text-xs font-semibold text-white truncate">{session.user?.email || 'admin@tsssoft.com'}</div>
-              <div className="text-[10px] text-emerald-400 font-mono">Authenticated Admin</div>
-            </div>
+        {/* Top Navigation Bar */}
+        <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shadow-sm flex-shrink-0 z-20">
+          <div className="flex items-center gap-4">
             <button
-              onClick={handleSignOut}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-              title="Sign Out"
+              onClick={() => setIsInvoiceStudioOpen(false)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition-colors"
             >
-              <LogOut size={15} />
+              <ArrowLeft size={16} />
+              <span>Back to Invoices</span>
             </button>
-          </div>
-        </div>
-
-      </aside>
-
-      {/* =================================================================== */}
-      {/* MAIN WORKSPACE CONTENT (Hidden in Print) */}
-      {/* =================================================================== */}
-      <main className="flex-1 flex flex-col min-w-0 bg-[#040716] overflow-y-auto no-print">
-        
-        {/* Workspace Top Header Bar */}
-        <header className="px-6 py-4 border-b border-white/10 bg-[#060a1c]/70 backdrop-blur-md flex flex-wrap items-center justify-between gap-4 no-print">
-          <div>
-            <h1 className="text-xl font-bold text-white capitalize tracking-tight">
-              {activeTab === 'dashboard' && 'Executive Overview'}
-              {activeTab === 'invoices' && 'Billing & Invoices'}
-              {activeTab === 'clients' && 'Client Directory'}
-              {activeTab === 'applications' && 'Job Applications'}
-              {activeTab === 'inquiries' && 'Client Inquiries'}
-            </h1>
-            <p className="text-xs text-slate-400">TSS Soft Enterprise Administration Platform</p>
+            <div className="h-5 w-px bg-slate-200" />
+            <div>
+              <h2 className="font-heading font-bold text-slate-900 text-sm sm:text-base">
+                Executive Invoice Studio
+              </h2>
+              <p className="text-[11px] font-mono text-slate-500">
+                {invoiceForm.invoice_number}
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Live Auto Status Pill */}
+            <span className={`px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider ${
+              currentDerivedStatus === 'paid' 
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : currentDerivedStatus === 'partial'
+                ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                : 'bg-rose-50 text-rose-700 border border-rose-200'
+            }`}>
+              {currentDerivedStatus === 'paid' && '● PAID IN FULL'}
+              {currentDerivedStatus === 'partial' && `● PARTIALLY PAID (Due: ৳${currentDue.toLocaleString()})`}
+              {currentDerivedStatus === 'pending' && `● PAYMENT DUE (৳${currentDue.toLocaleString()})`}
+              {currentDerivedStatus === 'draft' && '● DRAFT'}
+            </span>
+
             <button
-              onClick={fetchAllData}
-              disabled={dataLoading}
-              className="px-3 py-1.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs text-slate-300 flex items-center gap-1.5 transition-colors"
+              onClick={() => window.print()}
+              className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-slate-200"
             >
-              <RefreshCw size={13} className={dataLoading ? 'animate-spin text-blue-400' : ''} />
-              <span>Sync Data</span>
+              <Printer size={15} />
+              <span>Print / Save PDF</span>
             </button>
 
-            {activeTab === 'invoices' && (
-              <button
-                onClick={() => setShowInvoiceModal(true)}
-                className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all"
-              >
-                <Plus size={14} />
-                <span>Create Invoice</span>
-              </button>
-            )}
-
-            {activeTab === 'clients' && (
-              <button
-                onClick={() => setShowClientModal(true)}
-                className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all"
-              >
-                <Plus size={14} />
-                <span>Add Client</span>
-              </button>
-            )}
+            <button
+              onClick={handleSaveInvoiceFromStudio}
+              className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-heading font-semibold shadow-md flex items-center gap-1.5 transition-all"
+            >
+              <Check size={15} />
+              <span>Save Invoice</span>
+            </button>
           </div>
         </header>
 
-        {/* Tab Content Body */}
-        <div className="p-6 sm:p-8 space-y-6">
+        {/* Split Screen Workspace */}
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
+          
+          {/* LEFT COLUMN: Input Form Builder (Scrollable) */}
+          <div className="lg:col-span-5 h-full overflow-y-auto p-6 bg-white border-r border-slate-200 space-y-6">
+            
+            {/* Client Search / Selection */}
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+              <label className="text-xs font-mono uppercase tracking-wider font-semibold text-slate-700 block">
+                Bill To: Client Details
+              </label>
 
-          {/* --------------------------------------------------------------- */}
-          {/* TAB: DASHBOARD (Overview) */}
-          {/* --------------------------------------------------------------- */}
-          {activeTab === 'dashboard' && (
-            <div className="space-y-6">
-              
-              {/* Stat Metric Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                
-                {/* Total Paid Revenue */}
-                <div className="p-5 rounded-2xl bg-[#080d22] border border-white/10 shadow-lg">
-                  <div className="flex items-center justify-between text-slate-400 text-xs font-mono uppercase mb-2">
-                    <span>Collected Revenue</span>
-                    <TrendingUp size={16} className="text-emerald-400" />
-                  </div>
-                  <div className="text-2xl font-black text-white">৳ {totalRevenue.toLocaleString()}</div>
-                  <div className="text-[11px] text-emerald-400 mt-1">
-                    {invoices.filter(i => i.status === 'paid').length} Paid Invoices
-                  </div>
-                </div>
-
-                {/* Pending Invoices */}
-                <div className="p-5 rounded-2xl bg-[#080d22] border border-white/10 shadow-lg">
-                  <div className="flex items-center justify-between text-slate-400 text-xs font-mono uppercase mb-2">
-                    <span>Pending Receivables</span>
-                    <Clock size={16} className="text-amber-400" />
-                  </div>
-                  <div className="text-2xl font-black text-white">৳ {pendingRevenue.toLocaleString()}</div>
-                  <div className="text-[11px] text-amber-300 mt-1">
-                    {invoices.filter(i => i.status === 'pending').length} Unpaid Invoices
-                  </div>
-                </div>
-
-                {/* Clients */}
-                <div className="p-5 rounded-2xl bg-[#080d22] border border-white/10 shadow-lg">
-                  <div className="flex items-center justify-between text-slate-400 text-xs font-mono uppercase mb-2">
-                    <span>Active Clients</span>
-                    <Users size={16} className="text-blue-400" />
-                  </div>
-                  <div className="text-2xl font-black text-white">{clients.length}</div>
-                  <div className="text-[11px] text-blue-300 mt-1">Enterprise Partners</div>
-                </div>
-
-                {/* Inquiries / Leads */}
-                <div className="p-5 rounded-2xl bg-[#080d22] border border-white/10 shadow-lg">
-                  <div className="flex items-center justify-between text-slate-400 text-xs font-mono uppercase mb-2">
-                    <span>Client Inquiries</span>
-                    <Inbox size={16} className="text-sky-400" />
-                  </div>
-                  <div className="text-2xl font-black text-white">{inquiries.length}</div>
-                  <div className="text-[11px] text-sky-300 mt-1">
-                    {inquiries.filter(i => i.status === 'new' || !i.status).length} New Messages
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Quick Action Matrix & Activity Strip */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                
-                {/* Recent Invoices Card */}
-                <div className="bg-[#080d22] border border-white/10 rounded-2xl p-6">
-                  <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
-                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                      <FileSpreadsheet size={16} className="text-blue-400" />
-                      <span>Recent Invoices</span>
-                    </h3>
-                    <button onClick={() => setActiveTab('invoices')} className="text-xs text-blue-400 hover:underline">
-                      View all ↗
-                    </button>
-                  </div>
-                  {invoices.length === 0 ? (
-                    <p className="text-xs text-slate-400 py-6 text-center">No invoices issued yet.</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {invoices.slice(0, 5).map(inv => (
-                        <div key={inv.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] text-xs">
-                          <div>
-                            <div className="font-semibold text-white">{inv.client_name}</div>
-                            <div className="text-[10px] text-slate-400 font-mono">{inv.invoice_number}</div>
+              {/* Client Auto-Fill Dropdown */}
+              {clients.length > 0 && (
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={clientSearchTerm}
+                    onChange={(e) => {
+                      setClientSearchTerm(e.target.value);
+                      setIsClientSearchFocused(true);
+                    }}
+                    onFocus={() => setIsClientSearchFocused(true)}
+                    placeholder="Search existing client to auto-fill..."
+                    className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-blue-600"
+                  />
+                  {isClientSearchFocused && clientSearchTerm && (
+                    <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-30 max-h-48 overflow-y-auto divide-y divide-slate-100">
+                      {clients
+                        .filter(c => c.name?.toLowerCase().includes(clientSearchTerm.toLowerCase()) || c.company?.toLowerCase().includes(clientSearchTerm.toLowerCase()))
+                        .map(c => (
+                          <div
+                            key={c.id}
+                            onClick={() => {
+                              setInvoiceForm(prev => ({
+                                ...prev,
+                                client_name: c.name || '',
+                                client_email: c.email || '',
+                                client_phone: c.phone || '',
+                                client_address: c.address || ''
+                              }));
+                              setClientSearchTerm('');
+                              setIsClientSearchFocused(false);
+                            }}
+                            className="p-2.5 hover:bg-blue-50 cursor-pointer text-xs"
+                          >
+                            <p className="font-semibold text-slate-900">{c.name} {c.company && `(${c.company})`}</p>
+                            <p className="text-slate-500 text-[11px]">{c.phone || c.email}</p>
                           </div>
-                          <div className="text-right">
-                            <div className="font-bold text-white">৳ {Number(inv.total || 0).toLocaleString()}</div>
-                            <span className={`text-[10px] uppercase font-mono px-2 py-0.5 rounded ${
-                              inv.status === 'paid' ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-400'
-                            }`}>
-                              {inv.status}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
                   )}
                 </div>
+              )}
 
-                {/* Recent Inquiries Card */}
-                <div className="bg-[#080d22] border border-white/10 rounded-2xl p-6">
-                  <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
-                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                      <Inbox size={16} className="text-sky-400" />
-                      <span>Latest Inquiries</span>
-                    </h3>
-                    <button onClick={() => setActiveTab('inquiries')} className="text-xs text-blue-400 hover:underline">
-                      View all ↗
-                    </button>
-                  </div>
-                  {inquiries.length === 0 ? (
-                    <p className="text-xs text-slate-400 py-6 text-center">No inquiries received yet.</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {inquiries.slice(0, 5).map(inq => (
-                        <div key={inq.id} className="p-3 rounded-xl bg-white/[0.03] text-xs">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-semibold text-white">{inq.name}</span>
-                            <span className="text-[10px] text-slate-400 font-mono">{inq.email}</span>
-                          </div>
-                          <p className="text-[11px] text-slate-300 truncate">{inq.message}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  placeholder="Client or Company Name *"
+                  value={invoiceForm.client_name}
+                  onChange={(e) => setInvoiceForm({ ...invoiceForm, client_name: e.target.value })}
+                  className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 font-semibold focus:outline-none focus:border-blue-600"
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Phone / Mobile Number"
+                  value={invoiceForm.client_phone}
+                  onChange={(e) => setInvoiceForm({ ...invoiceForm, client_phone: e.target.value })}
+                  className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-blue-600"
+                />
+                <input
+                  type="email"
+                  placeholder="Client Email Address"
+                  value={invoiceForm.client_email}
+                  onChange={(e) => setInvoiceForm({ ...invoiceForm, client_email: e.target.value })}
+                  className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-blue-600"
+                />
+                <textarea
+                  rows={2}
+                  placeholder="Billing Address (e.g. Gulshan, Dhaka / Kushtia)"
+                  value={invoiceForm.client_address}
+                  onChange={(e) => setInvoiceForm({ ...invoiceForm, client_address: e.target.value })}
+                  className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-blue-600 resize-none"
+                />
               </div>
-
             </div>
-          )}
 
-          {/* --------------------------------------------------------------- */}
-          {/* TAB: INVOICES (Full List & Manager) */}
-          {/* --------------------------------------------------------------- */}
-          {activeTab === 'invoices' && (
-            <div className="space-y-4">
-              
-              {/* Search & Actions Bar */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                <div className="relative flex-1 sm:w-72">
-                  <Search size={14} className="absolute left-3.5 top-3 text-slate-400" />
-                  <input
-                    type="text"
-                    placeholder="Search invoices by client or invoice #..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-[#080d22] border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder:text-slate-500 focus:border-blue-500 outline-none"
-                  />
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="bg-[#080d22] border border-white/10 rounded-xl px-3 py-2 text-xs text-white outline-none"
-                  >
-                    <option value="all">All Invoices</option>
-                    <option value="paid">Paid</option>
-                    <option value="pending">Pending</option>
-                    <option value="overdue">Overdue</option>
-                  </select>
-
-                  <button
-                    onClick={() => setShowInvoiceModal(true)}
-                    className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-[0_0_20px_rgba(37,99,235,0.4)]"
-                  >
-                    <Plus size={14} />
-                    <span>New Invoice</span>
-                  </button>
-                </div>
+            {/* Invoice Metadata (Issue Date only, NO Due Date) */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[11px] font-mono uppercase text-slate-600 block mb-1 font-semibold">
+                  Invoice Number
+                </label>
+                <input
+                  type="text"
+                  value={invoiceForm.invoice_number}
+                  onChange={(e) => setInvoiceForm({ ...invoiceForm, invoice_number: e.target.value })}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-900"
+                />
               </div>
-
-              {/* Invoices List Table */}
-              <div className="bg-[#080d22] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
-                {invoices.length === 0 ? (
-                  <div className="py-16 text-center">
-                    <FileSpreadsheet size={40} className="mx-auto text-slate-600 mb-3" />
-                    <h4 className="text-base font-semibold text-white">No invoices yet</h4>
-                    <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1 mb-4">
-                      Create professional invoices with TSS Soft branding, line items, and print as PDF.
-                    </p>
-                    <button
-                      onClick={() => setShowInvoiceModal(true)}
-                      className="bg-blue-600 text-white font-semibold text-xs px-4 py-2 rounded-xl inline-flex items-center gap-1.5"
-                    >
-                      <Plus size={14} />
-                      <span>Create First Invoice</span>
-                    </button>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-white/[0.03] border-b border-white/10 text-slate-400 font-mono uppercase tracking-wider">
-                        <tr>
-                          <th className="py-3.5 px-6">Invoice #</th>
-                          <th className="py-3.5 px-6">Client / Partner</th>
-                          <th className="py-3.5 px-6">Issue / Due Date</th>
-                          <th className="py-3.5 px-6">Total Amount</th>
-                          <th className="py-3.5 px-6">Paid Amount</th>
-                          <th className="py-3.5 px-6">Balance Due</th>
-                          <th className="py-3.5 px-6">Status</th>
-                          <th className="py-3.5 px-6 text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5">
-                        {invoices
-                          .filter(i => {
-                            const matchSearch = (i.client_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-                                                (i.client_phone || '').includes(searchQuery) ||
-                                                (i.invoice_number || '').toLowerCase().includes(searchQuery.toLowerCase());
-                            const matchStatus = statusFilter === 'all' || (i.status || 'pending') === statusFilter;
-                            return matchSearch && matchStatus;
-                          })
-                          .map(inv => {
-                            const totalVal = Number(inv.total || 0);
-                            const paidVal = Number(inv.paid_amount || (inv.status === 'paid' ? totalVal : 0));
-                            const dueVal = Number(inv.due_amount !== undefined ? inv.due_amount : Math.max(0, totalVal - paidVal));
-
-                            return (
-                              <tr key={inv.id} className="hover:bg-white/[0.02] transition-colors">
-                                <td className="py-4 px-6 font-mono font-bold text-blue-400">
-                                  {inv.invoice_number}
-                                </td>
-                                <td className="py-4 px-6">
-                                  <div className="font-semibold text-white">{inv.client_name}</div>
-                                  {inv.client_phone && <div className="text-[11px] text-blue-400 font-mono">{inv.client_phone}</div>}
-                                  {inv.client_email && <div className="text-[10px] text-slate-400 font-mono">{inv.client_email}</div>}
-                                </td>
-                                <td className="py-4 px-6 text-slate-400 font-mono">
-                                  <div>{inv.issue_date || 'N/A'}</div>
-                                  {inv.due_date && <div className="text-[10px] text-slate-500">Due: {inv.due_date}</div>}
-                                </td>
-                                <td className="py-4 px-6 font-bold text-white">
-                                  ৳ {totalVal.toLocaleString()}
-                                </td>
-                                <td className="py-4 px-6 font-mono font-semibold text-emerald-400">
-                                  ৳ {paidVal.toLocaleString()}
-                                </td>
-                                <td className="py-4 px-6 font-mono font-semibold">
-                                  {dueVal > 0 ? (
-                                    <span className="text-amber-400">৳ {dueVal.toLocaleString()}</span>
-                                  ) : (
-                                    <span className="text-slate-500">৳ 0</span>
-                                  )}
-                                </td>
-                                <td className="py-4 px-6">
-                                  <select
-                                    value={inv.status || 'pending'}
-                                    onChange={(e) => handleUpdateInvoiceStatus(inv.id, e.target.value)}
-                                    className={`rounded-lg px-2.5 py-1 text-[11px] font-mono outline-none border ${
-                                      inv.status === 'paid'
-                                        ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
-                                        : inv.status === 'partial'
-                                        ? 'bg-sky-500/10 text-sky-300 border-sky-500/30'
-                                        : inv.status === 'overdue'
-                                        ? 'bg-rose-500/10 text-rose-300 border-rose-500/30'
-                                        : 'bg-amber-500/10 text-amber-300 border-amber-500/30'
-                                    }`}
-                                  >
-                                    <option value="pending" className="bg-[#080d22]">Pending (Unpaid)</option>
-                                    <option value="partial" className="bg-[#080d22]">Partial (Due)</option>
-                                    <option value="paid" className="bg-[#080d22]">Paid in Full</option>
-                                    <option value="overdue" className="bg-[#080d22]">Overdue</option>
-                                    <option value="cancelled" className="bg-[#080d22]">Cancelled</option>
-                                  </select>
-                                </td>
-                                <td className="py-4 px-6 text-right">
-                                  <div className="flex items-center justify-end gap-2">
-                                    <button
-                                      onClick={() => setViewInvoice(inv)}
-                                      className="p-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/20"
-                                      title="View & Print Invoice"
-                                    >
-                                      <Printer size={14} />
-                                    </button>
-                                    <button
-                                      onClick={() => handleDeleteInvoice(inv.id)}
-                                      className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                                      title="Delete invoice"
-                                    >
-                                      <Trash2 size={14} />
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+              <div>
+                <label className="text-[11px] font-mono uppercase text-slate-600 block mb-1 font-semibold">
+                  Issue Date
+                </label>
+                <input
+                  type="date"
+                  value={invoiceForm.issue_date}
+                  onChange={(e) => setInvoiceForm({ ...invoiceForm, issue_date: e.target.value })}
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900"
+                />
               </div>
-
             </div>
-          )}
 
-          {/* --------------------------------------------------------------- */}
-          {/* TAB: CLIENTS (CRM & Directory) */}
-          {/* --------------------------------------------------------------- */}
-          {activeTab === 'clients' && (
-            <div className="space-y-4">
-              
-              <div className="flex items-center justify-between gap-3">
-                <div className="relative flex-1 sm:w-72">
-                  <Search size={14} className="absolute left-3.5 top-3 text-slate-400" />
-                  <input
-                    type="text"
-                    placeholder="Search clients by name, company, email..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-[#080d22] border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder:text-slate-500 focus:border-blue-500 outline-none"
-                  />
-                </div>
-
+            {/* Services & Line Items with Delete Action */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-mono uppercase tracking-wider font-semibold text-slate-700">
+                  Deliverables & Line Items
+                </label>
                 <button
-                  onClick={() => setShowClientModal(true)}
-                  className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-[0_0_20px_rgba(37,99,235,0.4)]"
+                  type="button"
+                  onClick={handleAddInvoiceItem}
+                  className="text-xs text-blue-600 font-semibold hover:underline flex items-center gap-1"
                 >
                   <Plus size={14} />
-                  <span>Add Client</span>
+                  <span>Add Line Item</span>
                 </button>
               </div>
 
-              <div className="bg-[#080d22] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
-                {clients.length === 0 ? (
-                  <div className="py-16 text-center">
-                    <Users size={40} className="mx-auto text-slate-600 mb-3" />
-                    <h4 className="text-base font-semibold text-white">No clients added yet</h4>
-                    <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1 mb-4">
-                      Maintain all your enterprise client details, contact info, and addresses in one CRM.
-                    </p>
+              <div className="space-y-2.5">
+                {invoiceForm.items.map((item, idx) => (
+                  <div key={idx} className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2 relative group">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono font-bold text-slate-400 w-5">#{idx + 1}</span>
+                      <input
+                        type="text"
+                        placeholder="Service / deliverable description..."
+                        value={item.description}
+                        onChange={(e) => handleItemChange(idx, 'description', e.target.value)}
+                        className="flex-1 px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-blue-600"
+                      />
+                      {invoiceForm.items.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveInvoiceItem(idx)}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors"
+                          title="Remove Line Item"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div className="grid grid-cols-12 gap-2 items-center pl-7">
+                      <div className="col-span-3">
+                        <label className="text-[10px] text-slate-500 uppercase font-mono block">Qty</label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={item.qty}
+                          onChange={(e) => handleItemChange(idx, 'qty', e.target.value)}
+                          className="w-full px-2 py-1 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 font-mono"
+                        />
+                      </div>
+                      <div className="col-span-5">
+                        <label className="text-[10px] text-slate-500 uppercase font-mono block">Unit Rate (৳)</label>
+                        <input
+                          type="number"
+                          placeholder="0"
+                          value={item.rate}
+                          onChange={(e) => handleItemChange(idx, 'rate', e.target.value)}
+                          className="w-full px-2 py-1 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 font-mono font-semibold"
+                        />
+                      </div>
+                      <div className="col-span-4 text-right">
+                        <label className="text-[10px] text-slate-500 uppercase font-mono block">Total</label>
+                        <span className="text-xs font-mono font-bold text-slate-900">
+                          ৳ {(Number(item.qty || 1) * Number(item.rate || 0)).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Financial Calculations: Advance & Due Breakdown */}
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+              <label className="text-xs font-mono uppercase tracking-wider font-semibold text-slate-700 block">
+                Financials, Advance & Due Balance
+              </label>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] text-slate-600 block mb-1">Discount (৳)</label>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={invoiceForm.discount}
+                    onChange={(e) => setInvoiceForm({ ...invoiceForm, discount: e.target.value })}
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono text-slate-900"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] text-emerald-700 font-semibold block mb-1">Advance / Paid Amount (৳)</label>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={invoiceForm.paid_amount}
+                    onChange={(e) => setInvoiceForm({ ...invoiceForm, paid_amount: e.target.value })}
+                    className="w-full px-3 py-2 bg-white border border-emerald-300 rounded-xl text-xs font-mono font-bold text-emerald-800"
+                  />
+                </div>
+              </div>
+
+              {/* Real-Time Auto Calculation Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 text-center">
+                <div className="p-2.5 bg-white border border-slate-200 rounded-xl">
+                  <span className="text-[10px] font-mono uppercase text-slate-500 block">Subtotal</span>
+                  <span className="text-xs font-mono font-bold text-slate-800">
+                    ৳ {currentSubtotal.toLocaleString()}
+                  </span>
+                </div>
+                <div className="p-2.5 bg-white border border-slate-200 rounded-xl">
+                  <span className="text-[10px] font-mono uppercase text-slate-500 block">Grand Total</span>
+                  <span className="text-xs font-mono font-bold text-blue-600">
+                    ৳ {currentTotal.toLocaleString()}
+                  </span>
+                </div>
+                <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
+                  <span className="text-[10px] font-mono uppercase text-emerald-600 block font-semibold">Paid / Advance</span>
+                  <span className="text-xs font-mono font-bold text-emerald-700">
+                    ৳ {currentPaid.toLocaleString()}
+                  </span>
+                </div>
+                <div className={`p-2.5 rounded-xl border ${currentDue > 0 ? 'bg-rose-50 border-rose-200' : 'bg-slate-100 border-slate-200'}`}>
+                  <span className={`text-[10px] font-mono uppercase block font-semibold ${currentDue > 0 ? 'text-rose-600' : 'text-slate-500'}`}>Balance Due</span>
+                  <span className={`text-xs font-mono font-bold ${currentDue > 0 ? 'text-rose-700' : 'text-slate-700'}`}>
+                    ৳ {currentDue.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Due Payment History & Installment Record */}
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+              <label className="text-xs font-mono uppercase tracking-wider font-semibold text-slate-700 block">
+                Payment Installments History & Records
+              </label>
+
+              {invoiceForm.payment_records && invoiceForm.payment_records.length > 0 && (
+                <div className="divide-y divide-slate-200 border border-slate-200 rounded-xl bg-white overflow-hidden text-xs">
+                  {invoiceForm.payment_records.map((rec, i) => (
+                    <div key={i} className="p-2.5 flex items-center justify-between">
+                      <div>
+                        <span className="font-mono font-semibold text-slate-800">৳ {Number(rec.amount).toLocaleString()}</span>
+                        <span className="text-slate-500 text-[11px] ml-2 font-mono">({rec.method || 'bKash/Bank'})</span>
+                        {rec.note && <p className="text-[11px] text-slate-500">{rec.note}</p>}
+                      </div>
+                      <span className="text-[11px] font-mono text-slate-500">{rec.date}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Extra Installment Recording Box */}
+              <div className="p-3 bg-white border border-slate-200 rounded-xl space-y-2">
+                <span className="text-[11px] font-semibold text-slate-700 block">
+                  + Record Due Payment Installment
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="date"
+                    value={newPaymentDate}
+                    onChange={(e) => setNewPaymentDate(e.target.value)}
+                    className="px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-900"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Installment Amount (৳)"
+                    value={newPaymentAmount}
+                    onChange={(e) => setNewPaymentAmount(e.target.value)}
+                    className="px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-mono font-semibold text-slate-900"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    placeholder="Method (e.g. bKash / Bank)"
+                    value={newPaymentMethod}
+                    onChange={(e) => setNewPaymentMethod(e.target.value)}
+                    className="px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Note / Reference"
+                    value={newPaymentNote}
+                    onChange={(e) => setNewPaymentNote(e.target.value)}
+                    className="px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddPaymentRecord}
+                  className="w-full py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-colors"
+                >
+                  Record Installment Payment
+                </button>
+              </div>
+            </div>
+
+            {/* Clean Notes (Plain Text Only) */}
+            <div>
+              <label className="text-xs font-mono uppercase tracking-wider font-semibold text-slate-700 block mb-1">
+                Terms & Remittance Notes (Plain Text)
+              </label>
+              <textarea
+                rows={3}
+                value={invoiceForm.notes}
+                onChange={(e) => setInvoiceForm({ ...invoiceForm, notes: e.target.value })}
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 leading-relaxed focus:outline-none focus:border-blue-600 resize-none"
+              />
+            </div>
+
+          </div>
+
+          {/* RIGHT COLUMN: Live Real-Time Scaled Document Preview (Identical to Print) */}
+          <div className="lg:col-span-7 h-full overflow-y-auto p-6 lg:p-8 bg-slate-100 flex flex-col items-center justify-start">
+            
+            <div className="w-full max-w-[760px] flex items-center justify-between mb-4">
+              <span className="text-xs font-mono text-slate-500 uppercase tracking-wider font-semibold">
+                Live A4 Document Preview
+              </span>
+              <span className="text-[11px] font-mono text-slate-400">
+                100% Matches Print & PDF Output
+              </span>
+            </div>
+
+            {/* The Actual Invoice Printable Paper */}
+            <div 
+              id="printable-invoice-paper"
+              className="w-full max-w-[760px] bg-white rounded-2xl shadow-xl border border-slate-200/90 p-8 sm:p-12 text-slate-800 font-sans print:shadow-none print:border-none print:p-0 print:m-0 print:max-w-none print:rounded-none"
+            >
+              
+              {/* Header: Logo, Company Info & Invoice Status */}
+              <div className="flex flex-col sm:flex-row justify-between items-start pb-8 border-b border-slate-200 gap-6">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-mono text-blue-600 font-black text-xl tracking-tight">&lt;/&gt;</span>
+                    <span className="font-heading font-black text-2xl text-slate-900 tracking-tight">TSS Soft<span className="text-blue-600">.</span></span>
+                  </div>
+                  <p className="text-xs font-semibold text-slate-900">TSS Soft Enterprise Software & Architecture</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Physical HQ: Kushtia, Khulna Division, Bangladesh</p>
+                  <p className="text-[11px] text-slate-500">Tel: +880 1870 955 900 • Email: hello@tsssoft.com</p>
+                </div>
+
+                <div className="text-left sm:text-right">
+                  <h1 className="font-heading font-black text-3xl sm:text-4xl text-slate-900 tracking-tight mb-2">
+                    INVOICE
+                  </h1>
+                  <p className="font-mono text-xs text-slate-600">
+                    <span className="text-slate-400 uppercase">Invoice #:</span> <strong>{invoiceForm.invoice_number}</strong>
+                  </p>
+                  <p className="font-mono text-xs text-slate-600 mt-0.5">
+                    <span className="text-slate-400 uppercase">Issue Date:</span> {invoiceForm.issue_date}
+                  </p>
+                  
+                  {/* Status Badge */}
+                  <div className="mt-3">
+                    <span className={`inline-block px-3 py-1 rounded-full text-[11px] font-mono font-bold uppercase tracking-wider ${
+                      currentDerivedStatus === 'paid'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-300'
+                        : currentDerivedStatus === 'partial'
+                        ? 'bg-amber-50 text-amber-700 border border-amber-300'
+                        : 'bg-rose-50 text-rose-700 border border-rose-300'
+                    }`}>
+                      {currentDerivedStatus === 'paid' && 'PAID IN FULL'}
+                      {currentDerivedStatus === 'partial' && `PARTIALLY PAID`}
+                      {currentDerivedStatus === 'pending' && 'PAYMENT DUE'}
+                      {currentDerivedStatus === 'draft' && 'DRAFT'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Billed To & Payment Remittance */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 py-7 border-b border-slate-200 text-xs">
+                <div>
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 font-bold block mb-1.5">
+                    BILLED TO
+                  </span>
+                  <h3 className="font-bold text-slate-900 text-sm">
+                    {invoiceForm.client_name || 'Valued Client Partner'}
+                  </h3>
+                  <div className="text-slate-600 space-y-0.5 mt-1 leading-relaxed">
+                    {invoiceForm.client_address && <p>{invoiceForm.client_address}</p>}
+                    {invoiceForm.client_phone && <p>Tel / Mobile: {invoiceForm.client_phone}</p>}
+                    {invoiceForm.client_email && <p>Email: {invoiceForm.client_email}</p>}
+                  </div>
+                </div>
+
+                <div>
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 font-bold block mb-1.5">
+                    PAYMENT REMITTANCE
+                  </span>
+                  <div className="text-slate-600 space-y-1">
+                    <p><span className="text-slate-400">Beneficiary:</span> <strong className="text-slate-900">TSS Soft</strong></p>
+                    <p><span className="text-slate-400">bKash / Nagad:</span> +880 1870 955 900</p>
+                    <p><span className="text-slate-400">Bank Transfer:</span> Commercial Banking Network (Kushtia Branch)</p>
+                    <p><span className="text-slate-400">Reference:</span> {invoiceForm.invoice_number}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Line Items Table */}
+              <div className="py-7">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b-2 border-slate-900 text-slate-900 font-mono text-[10px] uppercase tracking-wider">
+                      <th className="py-2.5 text-center w-10">#</th>
+                      <th className="py-2.5 text-left">Service & Architecture Deliverables</th>
+                      <th className="py-2.5 text-center w-16">Qty</th>
+                      <th className="py-2.5 text-right w-28">Unit Rate</th>
+                      <th className="py-2.5 text-right w-28">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {invoiceForm.items.map((item, idx) => (
+                      <tr key={idx}>
+                        <td className="py-3 text-center font-mono text-slate-400">{idx + 1}</td>
+                        <td className="py-3 font-semibold text-slate-900">{item.description || 'Deliverable'}</td>
+                        <td className="py-3 text-center font-mono text-slate-600">{item.qty || 1}</td>
+                        <td className="py-3 text-right font-mono text-slate-600">৳ {Number(item.rate || 0).toLocaleString()}</td>
+                        <td className="py-3 text-right font-mono font-bold text-slate-900">
+                          ৳ {(Number(item.qty || 1) * Number(item.rate || 0)).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Financial Calculations Box */}
+              <div className="flex justify-end pt-4 pb-7 border-t border-slate-200">
+                <div className="w-full max-w-xs space-y-2 text-xs font-mono">
+                  <div className="flex justify-between text-slate-600">
+                    <span>Subtotal:</span>
+                    <span>৳ {currentSubtotal.toLocaleString()}</span>
+                  </div>
+                  {Number(invoiceForm.discount || 0) > 0 && (
+                    <div className="flex justify-between text-slate-600">
+                      <span>Discount:</span>
+                      <span>- ৳ {Number(invoiceForm.discount).toLocaleString()}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-sm font-bold text-slate-900 pt-2 border-t border-slate-200">
+                    <span>Grand Total:</span>
+                    <span>৳ {currentTotal.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-emerald-700 font-semibold">
+                    <span>Paid / Advance:</span>
+                    <span>৳ {currentPaid.toLocaleString()}</span>
+                  </div>
+                  <div className={`flex justify-between font-bold pt-1 border-t border-slate-100 ${
+                    currentDue > 0 ? 'text-rose-700 text-sm' : 'text-slate-500'
+                  }`}>
+                    <span>Balance Due:</span>
+                    <span>৳ {currentDue.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Records / Installments Table (if any) */}
+              {invoiceForm.payment_records && invoiceForm.payment_records.length > 0 && (
+                <div className="mb-7 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500 font-bold block mb-2">
+                    Payment Installment Records
+                  </span>
+                  <div className="space-y-1.5 divide-y divide-slate-200/60 font-mono">
+                    {invoiceForm.payment_records.map((rec, i) => (
+                      <div key={i} className="pt-1.5 flex items-center justify-between text-slate-700">
+                        <span>{rec.date} — {rec.method || 'bKash/Bank'}: <strong>৳ {Number(rec.amount).toLocaleString()}</strong></span>
+                        <span className="text-[11px] text-slate-500">{rec.note || 'Installment'}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Notes Box */}
+              {invoiceForm.notes && (
+                <div className="mb-8 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 leading-relaxed">
+                  <span className="font-mono uppercase text-[10px] text-slate-400 font-bold block mb-0.5">
+                    Notes & Remittance Instructions
+                  </span>
+                  <p>{invoiceForm.notes}</p>
+                </div>
+              )}
+
+              {/* Authorized Signatures & Verification Seal */}
+              <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-end gap-6 text-xs">
+                <div>
+                  <div className="w-44 border-b border-slate-300 pb-1 mb-1.5 text-center text-slate-400 font-mono text-[10px]">
+                    Authorized Signature
+                  </div>
+                  <p className="font-bold text-slate-900">{invoiceForm.client_name || 'Client Representative'}</p>
+                  <p className="text-[10px] text-slate-500">Authorized Client Signature</p>
+                </div>
+
+                <div className="text-right">
+                  <div className="inline-flex items-center gap-2 p-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-mono font-bold uppercase mb-2">
+                    <CheckCircle2 size={14} className="text-blue-600" />
+                    <span>TSS Soft Electronically Verified</span>
+                  </div>
+                  <p className="font-bold text-slate-900">TSS Soft Management</p>
+                  <p className="text-[10px] text-slate-500">Digital Systems & Software Architecture</p>
+                </div>
+              </div>
+
+              {/* Printable Disclaimer */}
+              <div className="mt-8 pt-4 border-t border-slate-100 text-center text-[10px] text-slate-400 font-mono">
+                This document is computer-generated and electronically verified by TSS Soft. No physical signature is required.
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // 10. MAIN LIGHT-MODE ADMIN WORKSPACE
+  // --------------------------------------------------------------------------
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col md:flex-row font-sans">
+      
+      {/* =================================================================== */}
+      {/* A. SIDEBAR: Black Background, White Text, Blue Highlight           */}
+      {/* =================================================================== */}
+      <aside className="w-full md:w-64 bg-[#090d16] text-white border-r border-slate-800 p-6 flex flex-col justify-between flex-shrink-0 z-20">
+        <div>
+          {/* Logo & Brand Header */}
+          <div className="flex items-center justify-between pb-6 border-b border-slate-800 mb-6">
+            <Link href="/" className="flex items-center gap-2 group">
+              <span className="font-mono text-blue-500 font-bold text-lg">&lt;/&gt;</span>
+              <span className="font-heading font-black text-xl text-white tracking-tight">TSS Soft<span className="text-blue-500">.</span></span>
+            </Link>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-600/20 text-blue-400 border border-blue-500/30">
+              v2.5
+            </span>
+          </div>
+
+          {/* Navigation Links with Larger Text Size */}
+          <nav className="space-y-1.5">
+            {[
+              { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, count: null, requiredPerm: 'all' },
+              { id: 'invoices', label: 'Invoices', icon: FileText, count: invoices.length, requiredPerm: 'invoices' },
+              { id: 'clients', label: 'Clients', icon: Users, count: clients.length, requiredPerm: 'clients' },
+              { id: 'applications', label: 'Applications', icon: Briefcase, count: applications.length, requiredPerm: 'applications' },
+              { id: 'inquiries', label: 'Inquiries', icon: Inbox, count: inquiries.length, requiredPerm: 'inquiries' },
+              { id: 'moderators', label: 'Moderators & Team', icon: ShieldCheck, count: moderators.length, requiredPerm: 'admin_only' }
+            ].map((tab) => {
+              const IconComponent = tab.icon;
+              const isAllowed = tab.requiredPerm === 'all' 
+                ? true 
+                : tab.requiredPerm === 'admin_only'
+                ? (currentAdminUser?.role === 'admin' || currentAdminUser?.access_type === 'full')
+                : hasAccess(tab.requiredPerm);
+
+              const isActive = activeTab === tab.id;
+
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    if (isAllowed) {
+                      setActiveTab(tab.id);
+                    } else {
+                      alert(`Access Restricted: You do not have permission to view ${tab.label}. Please contact Master Admin.`);
+                    }
+                  }}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 text-base font-semibold ${
+                    isActive
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30 font-bold'
+                      : isAllowed
+                      ? 'text-slate-300 hover:text-white hover:bg-white/5'
+                      : 'text-slate-500 opacity-60 cursor-not-allowed hover:bg-transparent'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <IconComponent size={20} className={isActive ? 'text-white' : isAllowed ? 'text-slate-400' : 'text-slate-600'} />
+                    <span>{tab.label}</span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    {!isAllowed && (
+                      <Lock size={15} className="text-slate-500" title="Restricted Access" />
+                    )}
+                    {tab.count !== null && tab.count > 0 && isAllowed && (
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-mono ${
+                        isActive ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-300'
+                      }`}>
+                        {tab.count}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Sidebar Footer: Exactly "Admin SignOut" Button */}
+        <div className="pt-6 border-t border-slate-800">
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-white/5 hover:bg-rose-600/20 text-slate-200 hover:text-rose-300 border border-white/10 hover:border-rose-500/30 transition-all font-semibold text-base group"
+          >
+            <span className="font-heading font-bold">Admin SignOut</span>
+            <LogOut size={18} className="text-slate-400 group-hover:text-rose-300 transition-colors" />
+          </button>
+        </div>
+      </aside>
+
+      {/* =================================================================== */}
+      {/* B. MAIN WORKSPACE CONTENT: ONLY LIGHT MODE (Clean White & Blue)     */}
+      {/* =================================================================== */}
+      <main className="flex-1 flex flex-col min-w-0 bg-slate-50 overflow-y-auto">
+        
+        {/* Top Header Bar */}
+        <header className="bg-white border-b border-slate-200 px-6 sm:px-8 py-5 flex items-center justify-between shadow-sm sticky top-0 z-10">
+          <div>
+            <h1 className="font-heading text-xl sm:text-2xl font-bold text-slate-900 tracking-tight capitalize">
+              {activeTab === 'dashboard' && 'Executive Overview'}
+              {activeTab === 'invoices' && 'Billing & Invoice Manager'}
+              {activeTab === 'clients' && 'Client Directory'}
+              {activeTab === 'applications' && 'Job Applications'}
+              {activeTab === 'inquiries' && 'Client Inquiries'}
+              {activeTab === 'moderators' && 'Moderators & Access Control'}
+            </h1>
+            <p className="text-xs text-slate-500">
+              TSS Soft Enterprise Administration Platform • Light Mode Architecture
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {activeTab === 'invoices' && hasAccess('invoices') && (
+              <button
+                onClick={handleOpenCreateInvoice}
+                className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-heading font-semibold shadow-md flex items-center gap-2 transition-all active:scale-95"
+              >
+                <Plus size={16} />
+                <span>Create New Invoice</span>
+              </button>
+            )}
+
+            {activeTab === 'clients' && hasAccess('clients') && (
+              <button
+                onClick={() => setShowClientModal(true)}
+                className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-heading font-semibold shadow-md flex items-center gap-2 transition-all active:scale-95"
+              >
+                <Plus size={16} />
+                <span>Add Client</span>
+              </button>
+            )}
+
+            {activeTab === 'moderators' && (currentAdminUser?.role === 'admin' || currentAdminUser?.access_type === 'full') && (
+              <button
+                onClick={() => setShowModeratorModal(true)}
+                className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-heading font-semibold shadow-md flex items-center gap-2 transition-all active:scale-95"
+              >
+                <Plus size={16} />
+                <span>Add Moderator</span>
+              </button>
+            )}
+
+            <button
+              onClick={fetchAllData}
+              disabled={dataLoading}
+              className="p-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 transition-colors shadow-sm"
+              title="Refresh Data"
+            >
+              <RefreshCw size={16} className={dataLoading ? 'animate-spin text-blue-600' : ''} />
+            </button>
+          </div>
+        </header>
+
+        {/* Workspace Body */}
+        <div className="p-6 sm:p-8 space-y-6">
+
+          {/* 1. DASHBOARD TAB */}
+          {activeTab === 'dashboard' && (
+            <div className="space-y-6">
+              
+              {/* Metric Counter Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div className="p-6 bg-white border border-slate-200/90 rounded-2xl shadow-sm">
+                  <div className="flex items-center justify-between text-slate-500 mb-3">
+                    <span className="text-xs font-mono uppercase tracking-wider font-semibold">Total Revenue Billed</span>
+                    <DollarSign size={18} className="text-blue-600" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black font-mono text-slate-900">
+                    ৳ {invoices.reduce((acc, inv) => acc + Number(inv.total || 0), 0).toLocaleString()}
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1">Across all issued invoices</p>
+                </div>
+
+                <div className="p-6 bg-white border border-slate-200/90 rounded-2xl shadow-sm">
+                  <div className="flex items-center justify-between text-slate-500 mb-3">
+                    <span className="text-xs font-mono uppercase tracking-wider font-semibold">Advance & Paid</span>
+                    <TrendingUp size={18} className="text-emerald-600" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black font-mono text-emerald-600">
+                    ৳ {invoices.reduce((acc, inv) => acc + Number(inv.paid_amount || 0), 0).toLocaleString()}
+                  </div>
+                  <p className="text-[11px] text-emerald-600 font-semibold mt-1">Liquid capital received</p>
+                </div>
+
+                <div className="p-6 bg-white border border-slate-200/90 rounded-2xl shadow-sm">
+                  <div className="flex items-center justify-between text-slate-500 mb-3">
+                    <span className="text-xs font-mono uppercase tracking-wider font-semibold">Outstanding Due</span>
+                    <Clock size={18} className="text-rose-600" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black font-mono text-rose-600">
+                    ৳ {invoices.reduce((acc, inv) => acc + Number(inv.due_amount || 0), 0).toLocaleString()}
+                  </div>
+                  <p className="text-[11px] text-rose-600 font-semibold mt-1">Pending client settlements</p>
+                </div>
+
+                <div className="p-6 bg-white border border-slate-200/90 rounded-2xl shadow-sm">
+                  <div className="flex items-center justify-between text-slate-500 mb-3">
+                    <span className="text-xs font-mono uppercase tracking-wider font-semibold">Active Clients</span>
+                    <Users size={18} className="text-indigo-600" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black font-mono text-slate-900">
+                    {clients.length}
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1">Verified partner enterprises</p>
+                </div>
+              </div>
+
+              {/* Quick Actions & Recent Activity */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="p-6 bg-white border border-slate-200/90 rounded-2xl shadow-sm space-y-4">
+                  <h3 className="font-heading font-bold text-slate-900 text-base">Quick Executive Actions</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={handleOpenCreateInvoice}
+                      className="p-4 rounded-xl bg-blue-50 border border-blue-200 hover:bg-blue-100 text-blue-700 text-left transition-colors font-semibold text-xs flex flex-col gap-1"
+                    >
+                      <Plus size={18} className="text-blue-600 mb-1" />
+                      <span>Create New Invoice</span>
+                      <span className="text-[11px] font-normal text-blue-600/80">With live preview & auto due</span>
+                    </button>
                     <button
                       onClick={() => setShowClientModal(true)}
-                      className="bg-blue-600 text-white font-semibold text-xs px-4 py-2 rounded-xl inline-flex items-center gap-1.5"
+                      className="p-4 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-800 text-left transition-colors font-semibold text-xs flex flex-col gap-1"
                     >
-                      <Plus size={14} />
-                      <span>Add First Client</span>
+                      <Users size={18} className="text-slate-600 mb-1" />
+                      <span>Add New Client</span>
+                      <span className="text-[11px] font-normal text-slate-500">Corporate directory entry</span>
                     </button>
                   </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-white/[0.03] border-b border-white/10 text-slate-400 font-mono uppercase tracking-wider">
-                        <tr>
-                          <th className="py-3.5 px-6">Client Name</th>
-                          <th className="py-3.5 px-6">Company / Organization</th>
-                          <th className="py-3.5 px-6">Contact Channels</th>
-                          <th className="py-3.5 px-6">Address</th>
-                          <th className="py-3.5 px-6">Status</th>
-                          <th className="py-3.5 px-6 text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5">
-                        {clients
-                          .filter(c => (c.name || '').toLowerCase().includes(searchQuery.toLowerCase()) || (c.company || '').toLowerCase().includes(searchQuery.toLowerCase()))
-                          .map(client => (
-                            <tr key={client.id} className="hover:bg-white/[0.02] transition-colors">
-                              <td className="py-4 px-6 font-semibold text-white">
-                                {client.name}
-                              </td>
-                              <td className="py-4 px-6 text-slate-300">
-                                {client.company || 'Individual Partner'}
-                              </td>
-                              <td className="py-4 px-6 font-mono text-[11px] text-slate-300">
-                                <div>{client.email || 'N/A'}</div>
-                                {client.phone && <div className="text-slate-500">{client.phone}</div>}
-                              </td>
-                              <td className="py-4 px-6 text-slate-400 max-w-xs truncate">
-                                {client.address || 'Not specified'}
-                              </td>
-                              <td className="py-4 px-6">
-                                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono">
-                                  {client.status || 'Active'}
-                                </span>
-                              </td>
-                              <td className="py-4 px-6 text-right">
-                                <div className="flex items-center justify-end gap-2">
-                                  <button
-                                    onClick={() => {
-                                      setInvoiceForm(prev => ({
-                                        ...prev,
-                                        client_name: client.name,
-                                        client_email: client.email || '',
-                                        client_phone: client.phone || '',
-                                        client_address: client.address || ''
-                                      }));
-                                      setShowInvoiceModal(true);
-                                    }}
-                                    className="px-2.5 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/20 text-[11px]"
-                                  >
-                                    Invoice
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteClient(client.id)}
-                                    className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                                  >
-                                    <Trash2 size={14} />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                </div>
+
+                <div className="p-6 bg-white border border-slate-200/90 rounded-2xl shadow-sm space-y-4">
+                  <h3 className="font-heading font-bold text-slate-900 text-base">Recent Invoices</h3>
+                  {invoices.slice(0, 4).map(inv => (
+                    <div key={inv.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/60 text-xs">
+                      <div>
+                        <p className="font-bold text-slate-900">{inv.client_name}</p>
+                        <p className="font-mono text-[11px] text-slate-500">{inv.invoice_number} • {inv.issue_date}</p>
+                      </div>
+                      <div className="text-right">
+                        <span className="font-mono font-bold text-slate-900">৳ {Number(inv.total || 0).toLocaleString()}</span>
+                        <span className={`block text-[10px] font-mono font-bold uppercase ${
+                          inv.status === 'paid' ? 'text-emerald-600' : inv.status === 'partial' ? 'text-amber-600' : 'text-rose-600'
+                        }`}>
+                          {inv.status === 'paid' ? 'Paid' : inv.status === 'partial' ? `Due: ৳${inv.due_amount}` : 'Due'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
 
             </div>
           )}
 
-          {/* --------------------------------------------------------------- */}
-          {/* TAB: APPLICATIONS */}
-          {/* --------------------------------------------------------------- */}
-          {activeTab === 'applications' && (
-            <div className="bg-[#080d22] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
-              {applications.length === 0 ? (
-                <div className="py-16 text-center">
-                  <Briefcase size={40} className="mx-auto text-slate-600 mb-3" />
-                  <h4 className="text-base font-semibold text-white">No job applications yet</h4>
-                  <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1">
-                    When applicants apply at <Link href="/careers" className="text-blue-400 underline">tsssoft.com/careers</Link>, they will populate here.
-                  </p>
+          {/* 2. INVOICES TAB */}
+          {activeTab === 'invoices' && (
+            <div className="bg-white border border-slate-200/90 rounded-2xl shadow-sm overflow-hidden">
+              <div className="p-5 border-b border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="relative w-full sm:w-72">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search invoices by client or #..."
+                    className="w-full pl-9 pr-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-600"
+                  />
+                  <Search size={15} className="absolute left-3 top-2.5 text-slate-400" />
                 </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-white/[0.03] border-b border-white/10 text-slate-400 font-mono uppercase tracking-wider">
-                      <tr>
-                        <th className="py-3.5 px-6">Applicant</th>
-                        <th className="py-3.5 px-6">Position</th>
-                        <th className="py-3.5 px-6">Portfolio / GitHub</th>
-                        <th className="py-3.5 px-6">Submitted</th>
-                        <th className="py-3.5 px-6">Status</th>
-                        <th className="py-3.5 px-6 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {applications.map(app => (
-                        <tr key={app.id} className="hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={() => setSelectedDetail({ type: 'application', data: app })}>
-                          <td className="py-4 px-6">
-                            <div className="font-semibold text-white">{app.name}</div>
-                            <div className="text-[11px] text-slate-400 font-mono">{app.email}</div>
-                            {app.phone && <div className="text-[10px] text-slate-500 font-mono">{app.phone}</div>}
+
+                <div className="flex items-center gap-2">
+                  {['all', 'paid', 'partial', 'pending'].map(st => (
+                    <button
+                      key={st}
+                      onClick={() => setStatusFilter(st)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono font-semibold capitalize transition-colors ${
+                        statusFilter === st ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      {st === 'partial' ? 'Partially Paid' : st === 'pending' ? 'Payment Due' : st}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Invoices Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 border-b border-slate-200 font-mono uppercase text-[10px] text-slate-600 font-bold">
+                    <tr>
+                      <th className="py-3 px-4">Invoice #</th>
+                      <th className="py-3 px-4">Client</th>
+                      <th className="py-3 px-4">Issue Date</th>
+                      <th className="py-3 px-4 text-right">Total (৳)</th>
+                      <th className="py-3 px-4 text-right">Paid (৳)</th>
+                      <th className="py-3 px-4 text-right">Balance Due (৳)</th>
+                      <th className="py-3 px-4 text-center">Status</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {invoices
+                      .filter(inv => {
+                        const matchesQuery = inv.client_name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          inv.invoice_number?.toLowerCase().includes(searchQuery.toLowerCase());
+                        const matchesStatus = statusFilter === 'all' || inv.status === statusFilter;
+                        return matchesQuery && matchesStatus;
+                      })
+                      .map((inv) => (
+                        <tr key={inv.id} className="hover:bg-slate-50/70 transition-colors">
+                          <td className="py-3.5 px-4 font-mono font-bold text-slate-900">{inv.invoice_number}</td>
+                          <td className="py-3.5 px-4 font-semibold text-slate-900">{inv.client_name}</td>
+                          <td className="py-3.5 px-4 text-slate-600 font-mono">{inv.issue_date || 'N/A'}</td>
+                          <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900">
+                            ৳ {Number(inv.total || 0).toLocaleString()}
                           </td>
-                          <td className="py-4 px-6">
-                            <span className="px-2.5 py-1 rounded-md bg-sky-500/10 text-sky-300 border border-sky-500/20 text-[11px]">
-                              {app.position}
+                          <td className="py-3.5 px-4 text-right font-mono text-emerald-700 font-semibold">
+                            ৳ {Number(inv.paid_amount || 0).toLocaleString()}
+                          </td>
+                          <td className={`py-3.5 px-4 text-right font-mono font-bold ${
+                            Number(inv.due_amount || 0) > 0 ? 'text-rose-700' : 'text-slate-400'
+                          }`}>
+                            ৳ {Number(inv.due_amount || 0).toLocaleString()}
+                          </td>
+                          <td className="py-3.5 px-4 text-center">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider ${
+                              inv.status === 'paid' 
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                : inv.status === 'partial'
+                                ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                : 'bg-rose-50 text-rose-700 border border-rose-200'
+                            }`}>
+                              {inv.status === 'paid' ? 'Paid in Full' : inv.status === 'partial' ? 'Partial' : 'Payment Due'}
                             </span>
                           </td>
-                          <td className="py-4 px-6" onClick={(e) => e.stopPropagation()}>
-                            {app.portfolio_url ? (
-                              <a
-                                href={app.portfolio_url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 text-blue-400 hover:underline max-w-[200px] truncate"
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={() => handleOpenEditInvoice(inv)}
+                                className="p-1.5 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 transition-colors"
+                                title="Edit & Record Payment"
                               >
-                                <span>{app.portfolio_url}</span>
-                                <ExternalLink size={12} />
-                              </a>
-                            ) : (
-                              <span className="text-slate-500">Not provided</span>
-                            )}
-                          </td>
-                          <td className="py-4 px-6 text-slate-400 font-mono whitespace-nowrap">
-                            {app.created_at ? new Date(app.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Recent'}
-                          </td>
-                          <td className="py-4 px-6" onClick={(e) => e.stopPropagation()}>
-                            <select
-                              value={app.status || 'pending'}
-                              onChange={(e) => handleUpdateApplicationStatus(app.id, e.target.value)}
-                              className="bg-[#050814] border border-white/15 rounded-lg px-2.5 py-1 text-[11px] text-slate-200 outline-none"
-                            >
-                              <option value="pending">Pending</option>
-                              <option value="reviewing">Reviewing</option>
-                              <option value="shortlisted">Shortlisted</option>
-                              <option value="rejected">Rejected</option>
-                            </select>
-                          </td>
-                          <td className="py-4 px-6 text-right" onClick={(e) => e.stopPropagation()}>
-                            <button
-                              onClick={() => handleDeleteApplication(app.id)}
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                            >
-                              <Trash2 size={14} />
-                            </button>
+                                <Edit size={14} />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  handleOpenEditInvoice(inv);
+                                }}
+                                className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors"
+                                title="Print / PDF View"
+                              >
+                                <Printer size={14} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteInvoice(inv.id)}
+                                className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 transition-colors"
+                                title="Delete Invoice"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
-          {/* --------------------------------------------------------------- */}
-          {/* TAB: INQUIRIES */}
-          {/* --------------------------------------------------------------- */}
-          {activeTab === 'inquiries' && (
-            <div className="bg-[#080d22] border border-white/10 rounded-2xl overflow-hidden shadow-xl">
-              {inquiries.length === 0 ? (
-                <div className="py-16 text-center">
-                  <Inbox size={40} className="mx-auto text-slate-600 mb-3" />
-                  <h4 className="text-base font-semibold text-white">No inquiries received yet</h4>
-                  <p className="text-xs text-slate-400 max-w-sm mx-auto mt-1">
-                    When clients contact from <Link href="/contact" className="text-blue-400 underline">tsssoft.com/contact</Link>, their messages appear here.
-                  </p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-white/[0.03] border-b border-white/10 text-slate-400 font-mono uppercase tracking-wider">
-                      <tr>
-                        <th className="py-3.5 px-6">Client / Sender</th>
-                        <th className="py-3.5 px-6">Service Requested</th>
-                        <th className="py-3.5 px-6">Message Preview</th>
-                        <th className="py-3.5 px-6">Received</th>
-                        <th className="py-3.5 px-6">Status</th>
-                        <th className="py-3.5 px-6 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {inquiries.map(inq => (
-                        <tr key={inq.id} className="hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={() => setSelectedDetail({ type: 'inquiry', data: inq })}>
-                          <td className="py-4 px-6">
-                            <div className="font-semibold text-white">{inq.name}</div>
-                            <div className="text-[11px] text-slate-400 font-mono">{inq.email}</div>
-                          </td>
-                          <td className="py-4 px-6">
-                            <span className="px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-300 border border-blue-500/20 text-[11px]">
-                              {inq.service || 'General'}
-                            </span>
-                          </td>
-                          <td className="py-4 px-6 max-w-xs truncate text-slate-300">
-                            {inq.message}
-                          </td>
-                          <td className="py-4 px-6 text-slate-400 font-mono whitespace-nowrap">
-                            {inq.created_at ? new Date(inq.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent'}
-                          </td>
-                          <td className="py-4 px-6" onClick={(e) => e.stopPropagation()}>
-                            <select
-                              value={inq.status || 'new'}
-                              onChange={(e) => handleUpdateInquiryStatus(inq.id, e.target.value)}
-                              className="bg-[#050814] border border-white/15 rounded-lg px-2.5 py-1 text-[11px] text-slate-200 outline-none"
-                            >
-                              <option value="new">New</option>
-                              <option value="in_progress">In Progress</option>
-                              <option value="contacted">Contacted</option>
-                              <option value="archived">Archived</option>
-                            </select>
-                          </td>
-                          <td className="py-4 px-6 text-right" onClick={(e) => e.stopPropagation()}>
+          {/* 3. CLIENTS TAB */}
+          {activeTab === 'clients' && (
+            <div className="bg-white border border-slate-200/90 rounded-2xl shadow-sm overflow-hidden">
+              <div className="p-5 border-b border-slate-200">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search client directory..."
+                  className="w-full sm:w-72 pl-3.5 pr-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-blue-600"
+                />
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 border-b border-slate-200 font-mono uppercase text-[10px] text-slate-600 font-bold">
+                    <tr>
+                      <th className="py-3 px-4">Client Name</th>
+                      <th className="py-3 px-4">Company</th>
+                      <th className="py-3 px-4">Phone</th>
+                      <th className="py-3 px-4">Email</th>
+                      <th className="py-3 px-4">Address</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {clients
+                      .filter(c => c.name?.toLowerCase().includes(searchQuery.toLowerCase()) || c.company?.toLowerCase().includes(searchQuery.toLowerCase()))
+                      .map((c) => (
+                        <tr key={c.id} className="hover:bg-slate-50/70 transition-colors">
+                          <td className="py-3.5 px-4 font-bold text-slate-900">{c.name}</td>
+                          <td className="py-3.5 px-4 text-slate-700">{c.company || '—'}</td>
+                          <td className="py-3.5 px-4 font-mono text-slate-600">{c.phone || '—'}</td>
+                          <td className="py-3.5 px-4 text-slate-600">{c.email || '—'}</td>
+                          <td className="py-3.5 px-4 text-slate-600">{c.address || '—'}</td>
+                          <td className="py-3.5 px-4 text-right">
                             <button
-                              onClick={() => handleDeleteInquiry(inq.id)}
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                              onClick={() => handleDeleteClient(c.id)}
+                              className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 transition-colors"
+                              title="Delete Client"
                             >
                               <Trash2 size={14} />
                             </button>
                           </td>
                         </tr>
                       ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* 4. APPLICATIONS TAB */}
+          {activeTab === 'applications' && (
+            <div className="bg-white border border-slate-200/90 rounded-2xl shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 border-b border-slate-200 font-mono uppercase text-[10px] text-slate-600 font-bold">
+                    <tr>
+                      <th className="py-3 px-4">Candidate</th>
+                      <th className="py-3 px-4">Role</th>
+                      <th className="py-3 px-4">Email</th>
+                      <th className="py-3 px-4">Phone</th>
+                      <th className="py-3 px-4">Experience</th>
+                      <th className="py-3 px-4">Portfolio</th>
+                      <th className="py-3 px-4 text-right">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {applications.map((app) => (
+                      <tr key={app.id} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="py-3.5 px-4 font-bold text-slate-900">{app.name}</td>
+                        <td className="py-3.5 px-4 font-semibold text-blue-600">{app.position || 'Engineering'}</td>
+                        <td className="py-3.5 px-4 text-slate-600">{app.email}</td>
+                        <td className="py-3.5 px-4 font-mono text-slate-600">{app.phone || '—'}</td>
+                        <td className="py-3.5 px-4 text-slate-600">{app.experience || '—'}</td>
+                        <td className="py-3.5 px-4">
+                          {app.portfolio_url ? (
+                            <a href={app.portfolio_url} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline flex items-center gap-1 font-mono">
+                              <span>Link</span>
+                              <ExternalLink size={12} />
+                            </a>
+                          ) : '—'}
+                        </td>
+                        <td className="py-3.5 px-4 text-right font-mono text-slate-500">
+                          {new Date(app.created_at).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* 5. INQUIRIES TAB */}
+          {activeTab === 'inquiries' && (
+            <div className="bg-white border border-slate-200/90 rounded-2xl shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 border-b border-slate-200 font-mono uppercase text-[10px] text-slate-600 font-bold">
+                    <tr>
+                      <th className="py-3 px-4">Client Name</th>
+                      <th className="py-3 px-4">Email</th>
+                      <th className="py-3 px-4">Subject</th>
+                      <th className="py-3 px-4">Message</th>
+                      <th className="py-3 px-4 text-right">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {inquiries.map((inq) => (
+                      <tr key={inq.id} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="py-3.5 px-4 font-bold text-slate-900">{inq.name}</td>
+                        <td className="py-3.5 px-4 text-slate-600">{inq.email}</td>
+                        <td className="py-3.5 px-4 font-semibold text-slate-800">{inq.subject || 'Project Inquiry'}</td>
+                        <td className="py-3.5 px-4 text-slate-600 max-w-xs truncate">{inq.message}</td>
+                        <td className="py-3.5 px-4 text-right font-mono text-slate-500">
+                          {new Date(inq.created_at).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* 6. MODERATORS & ACCESS CONTROL TAB */}
+          {activeTab === 'moderators' && (
+            <div className="space-y-6">
+              <div className="bg-white border border-slate-200/90 rounded-2xl shadow-sm p-6 space-y-4">
+                <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                  <div>
+                    <h3 className="font-heading font-bold text-slate-900 text-lg">
+                      Team Moderators & Role-Based Permissions
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Grant staff access to specific modules (Invoices, Clients, etc.) or Full Access.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowModeratorModal(true)}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm"
+                  >
+                    <Plus size={15} />
+                    <span>Add Moderator</span>
+                  </button>
+                </div>
+
+                {/* Moderators List */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 border-b border-slate-200 font-mono uppercase text-[10px] text-slate-600 font-bold">
+                      <tr>
+                        <th className="py-3 px-4">Moderator Name</th>
+                        <th className="py-3 px-4">Email</th>
+                        <th className="py-3 px-4">Access Type</th>
+                        <th className="py-3 px-4">Allowed Modules</th>
+                        <th className="py-3 px-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {moderators.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="py-8 text-center text-slate-400 font-mono">
+                            No secondary moderators added yet. Master Admin has full privileges.
+                          </td>
+                        </tr>
+                      ) : (
+                        moderators.map((mod) => (
+                          <tr key={mod.id} className="hover:bg-slate-50/70 transition-colors">
+                            <td className="py-3.5 px-4 font-bold text-slate-900">{mod.name}</td>
+                            <td className="py-3.5 px-4 text-slate-700 font-mono">{mod.email}</td>
+                            <td className="py-3.5 px-4">
+                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase ${
+                                mod.access_type === 'full' 
+                                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              }`}>
+                                {mod.access_type === 'full' ? 'Full Access' : 'Selective'}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-4">
+                              <div className="flex flex-wrap gap-1">
+                                {(mod.permissions || []).map((perm, i) => (
+                                  <span key={i} className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-mono capitalize">
+                                    {perm}
+                                  </span>
+                                ))}
+                              </div>
+                            </td>
+                            <td className="py-3.5 px-4 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <button
+                                  onClick={() => {
+                                    setResetPassModerator(mod);
+                                    setNewPasswordValue('');
+                                  }}
+                                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold flex items-center gap-1 transition-colors"
+                                >
+                                  <Key size={12} />
+                                  <span>Reset Pass</span>
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteModerator(mod.id)}
+                                  className="p-1 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors"
+                                  title="Delete Moderator"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
-              )}
+
+              </div>
             </div>
           )}
 
@@ -1375,832 +2016,233 @@ export default function AdminPage() {
       </main>
 
       {/* =================================================================== */}
-      {/* MODAL: CREATE INVOICE */}
+      {/* C. MODALS (Client, Add Moderator, Reset Password)                   */}
       {/* =================================================================== */}
-      <AnimatePresence>
-        {showInvoiceModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto no-print">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-3xl bg-[#080d22] border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl my-8 max-h-[90vh] overflow-y-auto"
-            >
-              <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-6">
-                <div className="flex items-center gap-3">
-                  <img src="/brand/logo-white-cropped.png" alt="TSS Soft." className="h-6 w-auto" />
-                  <span className="text-sm font-bold text-white uppercase tracking-wider">Generate Executive Invoice</span>
-                </div>
-                <button onClick={() => setShowInvoiceModal(false)} className="text-slate-400 hover:text-white">
-                  <X size={18} />
-                </button>
-              </div>
 
-              <form onSubmit={handleSaveInvoice} className="space-y-6">
-                
-                {/* Searchable Client Picker & Auto-fill */}
-                <div className="p-4 rounded-2xl bg-blue-500/[0.06] border border-blue-500/20 space-y-3">
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                    <span className="text-xs text-blue-300 font-semibold flex items-center gap-1.5">
-                      <Search size={14} className="text-blue-400" />
-                      <span>Search &amp; Auto-fill from Existing Clients:</span>
-                    </span>
-                    {selectedClientName && (
-                      <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
-                        <CheckCircle size={12} />
-                        <span>Auto-filled: <strong>{selectedClientName}</strong></span>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedClientName('')}
-                          className="ml-1 text-slate-400 hover:text-white"
-                        >
-                          <X size={12} />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="relative">
-                    <div className="relative">
-                      <Search size={14} className="absolute left-3.5 top-3 text-slate-400" />
-                      <input
-                        type="text"
-                        placeholder="Type mobile number (+880...), client name, or company to search..."
-                        value={clientSearchTerm}
-                        onChange={(e) => {
-                          setClientSearchTerm(e.target.value);
-                          setIsClientSearchFocused(true);
-                        }}
-                        onFocus={() => setIsClientSearchFocused(true)}
-                        className="w-full bg-[#050916] border border-blue-400/30 text-white text-xs rounded-xl pl-9 pr-8 py-2.5 outline-none focus:border-blue-400 transition-colors"
-                      />
-                      {clientSearchTerm && (
-                        <button
-                          type="button"
-                          onClick={() => setClientSearchTerm('')}
-                          className="absolute right-3 top-2.5 text-slate-400 hover:text-white"
-                        >
-                          <X size={14} />
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Filtered Dropdown Results */}
-                    {isClientSearchFocused && clientSearchTerm.trim().length > 0 && (
-                      <div className="absolute z-20 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-[#070c24] border border-blue-500/30 rounded-xl shadow-2xl divide-y divide-white/5">
-                        {clients
-                          .filter(c => {
-                            const term = clientSearchTerm.toLowerCase();
-                            return (c.phone || '').includes(term) ||
-                                   (c.name || '').toLowerCase().includes(term) ||
-                                   (c.company || '').toLowerCase().includes(term);
-                          })
-                          .map(c => (
-                            <div
-                              key={c.id}
-                              onClick={() => handleSelectExistingClient(c)}
-                              className="p-3 hover:bg-blue-600/20 cursor-pointer transition-colors flex items-center justify-between gap-3 text-xs"
-                            >
-                              <div>
-                                <div className="font-semibold text-white">{c.name}</div>
-                                {c.company && <div className="text-[11px] text-slate-400">{c.company}</div>}
-                                {c.address && <div className="text-[10px] text-slate-500">{c.address}</div>}
-                              </div>
-                              <div className="text-right">
-                                {c.phone ? (
-                                  <div className="text-[11px] font-mono font-bold text-sky-400 flex items-center gap-1 justify-end">
-                                    <Phone size={11} />
-                                    <span>{c.phone}</span>
-                                  </div>
-                                ) : (
-                                  <div className="text-[10px] text-slate-500">No phone</div>
-                                )}
-                                <span className="inline-block mt-1 text-[10px] text-blue-400 underline font-medium">Click to Fill</span>
-                              </div>
-                            </div>
-                          ))}
-                        {clients.filter(c => {
-                          const term = clientSearchTerm.toLowerCase();
-                          return (c.phone || '').includes(term) ||
-                                 (c.name || '').toLowerCase().includes(term) ||
-                                 (c.company || '').toLowerCase().includes(term);
-                        }).length === 0 && (
-                          <div className="p-4 text-center text-xs text-slate-400">
-                            No clients matching <strong className="text-white">"{clientSearchTerm}"</strong>. You can manually enter details below or add to Clients CRM.
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Invoice Meta Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white/[0.02] p-4 rounded-2xl border border-white/5">
-                  <div>
-                    <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Invoice Number</label>
-                    <input
-                      required
-                      value={invoiceForm.invoice_number}
-                      onChange={(e) => setInvoiceForm(prev => ({ ...prev, invoice_number: e.target.value }))}
-                      className="w-full bg-[#040816] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Issue Date</label>
-                    <input
-                      type="date"
-                      required
-                      value={invoiceForm.issue_date}
-                      onChange={(e) => setInvoiceForm(prev => ({ ...prev, issue_date: e.target.value }))}
-                      className="w-full bg-[#040816] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Due Date</label>
-                    <input
-                      type="date"
-                      required
-                      value={invoiceForm.due_date}
-                      onChange={(e) => setInvoiceForm(prev => ({ ...prev, due_date: e.target.value }))}
-                      className="w-full bg-[#040816] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono"
-                    />
-                  </div>
-                </div>
-
-                {/* Client Information */}
-                <div>
-                  <h4 className="text-xs font-mono uppercase tracking-wider text-blue-400 mb-3">Bill To (Client Information)</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Client / Company Name *</label>
-                      <input
-                        required
-                        placeholder="Apex Technologies Ltd."
-                        value={invoiceForm.client_name}
-                        onChange={(e) => setInvoiceForm(prev => ({ ...prev, client_name: e.target.value }))}
-                        className="w-full bg-[#040816] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Client Email</label>
-                      <input
-                        type="email"
-                        placeholder="finance@apex.com"
-                        value={invoiceForm.client_email}
-                        onChange={(e) => setInvoiceForm(prev => ({ ...prev, client_email: e.target.value }))}
-                        className="w-full bg-[#040816] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Phone / Mobile</label>
-                      <input
-                        placeholder="+880 1XXX-XXXXXX"
-                        value={invoiceForm.client_phone}
-                        onChange={(e) => setInvoiceForm(prev => ({ ...prev, client_phone: e.target.value }))}
-                        className="w-full bg-[#040816] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Client Address</label>
-                      <input
-                        placeholder="Gulshan, Dhaka, Bangladesh"
-                        value={invoiceForm.client_address}
-                        onChange={(e) => setInvoiceForm(prev => ({ ...prev, client_address: e.target.value }))}
-                        className="w-full bg-[#040816] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Services / Line Items */}
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-xs font-mono uppercase tracking-wider text-blue-400">Services &amp; Line Items</h4>
-                    <button
-                      type="button"
-                      onClick={handleAddInvoiceItem}
-                      className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 font-semibold"
-                    >
-                      <Plus size={13} />
-                      <span>Add Line Item</span>
-                    </button>
-                  </div>
-
-                  <div className="space-y-2.5">
-                    {invoiceForm.items.map((item, idx) => (
-                      <div key={idx} className="flex items-center gap-3 bg-white/[0.02] p-2.5 rounded-xl border border-white/5">
-                        <input
-                          required
-                          placeholder="Service description (e.g. Next.js Enterprise Web Platform)"
-                          value={item.description}
-                          onChange={(e) => handleItemChange(idx, 'description', e.target.value)}
-                          className="flex-1 bg-[#040816] border border-white/10 rounded-lg px-3 py-2 text-xs text-white"
-                        />
-                        <input
-                          type="number"
-                          min="1"
-                          placeholder="Qty"
-                          value={item.qty}
-                          onChange={(e) => handleItemChange(idx, 'qty', e.target.value)}
-                          className="w-16 bg-[#040816] border border-white/10 rounded-lg px-2.5 py-2 text-xs text-white font-mono text-center"
-                        />
-                        <input
-                          type="number"
-                          min="0"
-                          placeholder="Rate"
-                          value={item.rate}
-                          onChange={(e) => handleItemChange(idx, 'rate', e.target.value)}
-                          className="w-28 bg-[#040816] border border-white/10 rounded-lg px-2.5 py-2 text-xs text-white font-mono text-right"
-                        />
-                        <div className="w-24 text-right font-mono font-semibold text-xs text-white">
-                          ৳ {(Number(item.qty || 0) * Number(item.rate || 0)).toLocaleString()}
-                        </div>
-                        {invoiceForm.items.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveInvoiceItem(idx)}
-                            className="text-slate-500 hover:text-rose-400 p-1"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Financial Breakdown & Due Management */}
-                {(() => {
-                  const formSubtotal = calculateInvoiceSubtotal(invoiceForm.items);
-                  const formTotal = calculateInvoiceTotal(invoiceForm.items, invoiceForm.discount);
-                  const formPaid = Number(invoiceForm.paid_amount || 0);
-                  const formDue = Math.max(0, formTotal - formPaid);
-
-                  return (
-                    <div className="bg-[#050917] p-5 rounded-2xl border border-white/10 space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div>
-                          <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Discount (৳)</label>
-                          <input
-                            type="number"
-                            min="0"
-                            placeholder="0"
-                            value={invoiceForm.discount}
-                            onChange={(e) => setInvoiceForm(prev => ({ ...prev, discount: Number(e.target.value) }))}
-                            className="w-full bg-[#030612] border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-[10px] font-mono uppercase text-emerald-400 block mb-1">Paid Amount (৳)</label>
-                          <input
-                            type="number"
-                            min="0"
-                            placeholder="0"
-                            value={invoiceForm.paid_amount}
-                            onChange={(e) => {
-                              const paid = Number(e.target.value);
-                              const due = Math.max(0, formTotal - paid);
-                              let newStatus = invoiceForm.status;
-                              if (due === 0 && formTotal > 0) newStatus = 'paid';
-                              else if (paid > 0 && due > 0) newStatus = 'partial';
-                              else if (paid === 0) newStatus = 'pending';
-                              setInvoiceForm(prev => ({ ...prev, paid_amount: paid, status: newStatus }));
-                            }}
-                            className="w-full bg-[#030612] border border-emerald-500/30 text-emerald-300 rounded-xl px-3 py-2 text-xs font-mono font-semibold"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Payment Status</label>
-                          <select
-                            value={invoiceForm.status || 'pending'}
-                            onChange={(e) => setInvoiceForm(prev => ({ ...prev, status: e.target.value }))}
-                            className="w-full bg-[#030612] border border-white/10 text-white rounded-xl px-3 py-2 text-xs outline-none"
-                          >
-                            <option value="pending">Pending (Unpaid)</option>
-                            <option value="partial">Partial (Due)</option>
-                            <option value="paid">Paid in Full</option>
-                            <option value="overdue">Overdue</option>
-                            <option value="cancelled">Cancelled</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      {/* Calculated Financial Summary Cards */}
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-white/10">
-                        <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5">
-                          <span className="text-[10px] font-mono text-slate-500 block">Subtotal</span>
-                          <span className="text-xs font-bold text-slate-300 font-mono">৳ {formSubtotal.toLocaleString()}</span>
-                        </div>
-                        <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5">
-                          <span className="text-[10px] font-mono text-slate-500 block">Grand Total</span>
-                          <span className="text-sm font-black text-white font-mono">৳ {formTotal.toLocaleString()}</span>
-                        </div>
-                        <div className="p-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/20">
-                          <span className="text-[10px] font-mono text-emerald-400 block">Paid Amount</span>
-                          <span className="text-sm font-black text-emerald-300 font-mono">৳ {formPaid.toLocaleString()}</span>
-                        </div>
-                        <div className={`p-3 rounded-xl border ${
-                          formDue > 0 ? 'bg-amber-500/[0.08] border-amber-500/30' : 'bg-white/[0.02] border-white/5'
-                        }`}>
-                          <span className={`text-[10px] font-mono block ${formDue > 0 ? 'text-amber-400' : 'text-slate-500'}`}>
-                            Balance Due
-                          </span>
-                          <span className={`text-sm font-black font-mono ${formDue > 0 ? 'text-amber-300' : 'text-slate-400'}`}>
-                            ৳ {formDue.toLocaleString()}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                {/* Payment Notes */}
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Notes / Remittance Instructions</label>
-                  <textarea
-                    rows="2"
-                    value={invoiceForm.notes}
-                    onChange={(e) => setInvoiceForm(prev => ({ ...prev, notes: e.target.value }))}
-                    className="w-full bg-[#040816] border border-white/10 rounded-xl p-3 text-xs text-white resize-none"
-                  />
-                </div>
-
-                {/* Form Submit */}
-                <div className="flex items-center justify-end gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowInvoiceModal(false)}
-                    className="px-5 py-2.5 rounded-xl border border-white/10 text-xs text-slate-300 hover:bg-white/[0.05]"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs px-6 py-2.5 rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.4)]"
-                  >
-                    Save &amp; Generate Invoice
-                  </button>
-                </div>
-
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* =================================================================== */}
-      {/* MODAL: VIEW & PRINT INVOICE (Executive Global Grade Layout) */}
-      {/* =================================================================== */}
-      <AnimatePresence>
-        {viewInvoice && (() => {
-          const invSubtotal = Number(viewInvoice.subtotal || viewInvoice.total || 0);
-          const invDiscount = Number(viewInvoice.discount || 0);
-          const invTotal = Number(viewInvoice.total || (invSubtotal - invDiscount));
-          const invPaid = Number(viewInvoice.paid_amount !== undefined ? viewInvoice.paid_amount : (viewInvoice.status === 'paid' ? invTotal : 0));
-          const invDue = Number(viewInvoice.due_amount !== undefined ? viewInvoice.due_amount : Math.max(0, invTotal - invPaid));
-
-          return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/75 backdrop-blur-sm overflow-y-auto invoice-modal-backdrop print:p-0 print:m-0 print:static print:block print:bg-white">
-              <div className="relative w-full max-w-3xl my-4 flex flex-col print:my-0 print:p-0 print:static print:w-full print:max-w-none print:block">
-                
-                {/* 1. Modal Toolbar (STRICTLY OUTSIDE INVOICE - NEVER APPEARS IN PRINT) */}
-                <div className="flex items-center justify-between p-3 mb-3 bg-[#080d22] border border-white/10 rounded-xl text-white shadow-xl no-print">
-                  <div className="flex items-center gap-2 text-xs font-mono text-slate-300 uppercase tracking-widest">
-                    <ShieldCheck size={14} className="text-blue-400" />
-                    <span>Official Executive Invoice Preview</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => window.print()}
-                      className="bg-blue-600 hover:bg-blue-500 text-white font-medium text-xs px-4 py-2 rounded-lg flex items-center gap-1.5 shadow-md transition-all active:scale-95"
-                    >
-                      <Printer size={13} />
-                      <span>Print / Save PDF</span>
-                    </button>
-                    <button onClick={() => setViewInvoice(null)} className="p-1.5 text-slate-400 hover:text-white transition-colors">
-                      <X size={18} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* 2. PURE INVOICE DOCUMENT (A4 Proportionate with Signatures at True Bottom) */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  className="bg-white text-slate-800 rounded-xl p-8 sm:p-12 shadow-2xl overflow-hidden invoice-printable border border-slate-200 flex flex-col justify-between min-h-[860px] print:border-none print:shadow-none print:rounded-none print:p-0 print:m-0"
-                >
-
-                {/* Minimal, Professional Invoice Body */}
-                <div className="flex-1 flex flex-col justify-start space-y-5 font-sans">
-                  
-                  {/* 1. Header: Minimalist Agency Meta & Invoice Header */}
-                  <div className="flex flex-col sm:flex-row items-start justify-between gap-4 pb-4 border-b border-slate-200">
-                    <div>
-                      <img 
-                        src="/brand/logo-blue-cropped.png" 
-                        alt="TSS Soft." 
-                        className="h-7 w-auto object-contain mb-2" 
-                      />
-                      <div className="text-[11px] text-slate-500 leading-relaxed font-sans">
-                        <p className="font-semibold text-slate-900">TSS Soft.</p>
-                        <p>Digital Systems &amp; Software Architecture</p>
-                        <p>Kushtia, Khulna Division, Bangladesh • Global Delivery</p>
-                        <p>Tel: +880 1870 955 900 • Email: hello@tsssoft.com</p>
-                      </div>
-                    </div>
-
-                    <div className="text-left sm:text-right sm:min-w-[200px]">
-                      <h2 className="text-xl font-bold tracking-tight text-slate-900 font-sans">INVOICE</h2>
-                      <div className="mt-2 space-y-1 text-[11px] text-slate-600 font-mono">
-                        <p>
-                          <span className="text-slate-400 font-sans">Invoice #:</span>{' '}
-                          <strong className="text-slate-900">{viewInvoice.invoice_number}</strong>
-                        </p>
-                        <p><span className="text-slate-400 font-sans">Issue Date:</span> {viewInvoice.issue_date || 'N/A'}</p>
-                        <p><span className="text-slate-400 font-sans">Due Date:</span> {viewInvoice.due_date || 'N/A'}</p>
-                        <p className="pt-0.5 font-sans text-[10px] uppercase tracking-wider">
-                          <span className="text-slate-400">Status: </span>
-                          <strong className={
-                            viewInvoice.status === 'paid' 
-                              ? 'text-emerald-700' 
-                              : viewInvoice.status === 'partial' 
-                              ? 'text-sky-700' 
-                              : viewInvoice.status === 'overdue' 
-                              ? 'text-rose-700' 
-                              : 'text-amber-700'
-                          }>
-                            {viewInvoice.status === 'paid' 
-                              ? 'Paid in Full' 
-                              : viewInvoice.status === 'partial' 
-                              ? `Partial (Due: ৳ ${invDue.toLocaleString()})`
-                              : viewInvoice.status === 'overdue'
-                              ? 'Overdue'
-                              : 'Pending'}
-                          </strong>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 2. Client & Remittance Info (Clean Typography, No Heavy Boxes) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-[11px] py-1">
-                    <div>
-                      <span className="text-[9px] font-mono uppercase tracking-widest text-slate-400 font-semibold block mb-1">
-                        Billed To
-                      </span>
-                      <h4 className="text-xs font-bold text-slate-900">{viewInvoice.client_name}</h4>
-                      <div className="text-slate-600 space-y-0.5 mt-1 leading-relaxed">
-                        {viewInvoice.client_address && <p>{viewInvoice.client_address}</p>}
-                        {viewInvoice.client_phone && <p>Tel / Mobile: {viewInvoice.client_phone}</p>}
-                        {viewInvoice.client_email && <p>Email: {viewInvoice.client_email}</p>}
-                      </div>
-                    </div>
-
-                    <div>
-                      <span className="text-[9px] font-mono uppercase tracking-widest text-slate-400 font-semibold block mb-1">
-                        Payment Remittance
-                      </span>
-                      <div className="text-slate-600 space-y-0.5 leading-relaxed">
-                        <p><span className="text-slate-400">Beneficiary:</span> TSS Soft</p>
-                        <p><span className="text-slate-400">bKash / Nagad:</span> +880 1870 955 900</p>
-                        <p><span className="text-slate-400">Bank Transfer:</span> Commercial Banking Network (Kushtia)</p>
-                        <p><span className="text-slate-400">Reference:</span> {viewInvoice.invoice_number}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 3. Items & Deliverables Table (Minimal, Delicate 1px Border, No Heavy Dark Fills) */}
-                  <div className="pt-2">
-                    <table className="w-full text-left text-[11px]">
-                      <thead>
-                        <tr className="border-b border-slate-300 text-slate-500 font-mono uppercase tracking-wider text-[10px]">
-                          <th className="py-2 px-2 w-8 text-center font-normal">#</th>
-                          <th className="py-2 px-2 font-normal">Service &amp; Architecture Deliverables</th>
-                          <th className="py-2 px-2 text-center w-14 font-normal">Qty</th>
-                          <th className="py-2 px-2 text-right w-24 font-normal">Unit Rate</th>
-                          <th className="py-2 px-2 text-right w-28 font-normal">Amount</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {(viewInvoice.items || []).map((item, idx) => (
-                          <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                            <td className="py-2.5 px-2 text-center font-mono text-slate-400">{idx + 1}</td>
-                            <td className="py-2.5 px-2 font-medium text-slate-900 leading-snug">{item.description}</td>
-                            <td className="py-2.5 px-2 text-center text-slate-600 font-mono">{item.qty}</td>
-                            <td className="py-2.5 px-2 text-right text-slate-600 font-mono">৳ {Number(item.rate || 0).toLocaleString()}</td>
-                            <td className="py-2.5 px-2 text-right font-medium text-slate-900 font-mono">
-                              ৳ {(Number(item.qty || 0) * Number(item.rate || 0)).toLocaleString()}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* 4. Financial Summary (Minimalist, Crisp & Understated) */}
-                  <div className="flex justify-end pt-2">
-                    <div className="w-64 space-y-1 text-[11px] text-right">
-                      <div className="flex justify-between text-slate-500">
-                        <span>Subtotal:</span>
-                        <span className="font-mono text-slate-800">৳ {invSubtotal.toLocaleString()}</span>
-                      </div>
-                      {invDiscount > 0 && (
-                        <div className="flex justify-between text-slate-500">
-                          <span>Discount:</span>
-                          <span className="font-mono text-slate-800">- ৳ {invDiscount.toLocaleString()}</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between text-xs font-semibold text-slate-900 pt-1.5 border-t border-slate-200">
-                        <span>Total:</span>
-                        <span className="font-mono">৳ {invTotal.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between text-slate-600 pt-0.5">
-                        <span>Paid Amount:</span>
-                        <span className="font-mono text-slate-900">৳ {invPaid.toLocaleString()}</span>
-                      </div>
-                      <div className={`flex justify-between text-xs font-semibold pt-1 border-t border-slate-200 ${
-                        invDue > 0 ? 'text-slate-900 font-bold' : 'text-slate-600'
-                      }`}>
-                        <span>Balance Due:</span>
-                        <span className="font-mono">৳ {invDue.toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 5. Notes & Terms */}
-                  <div className="pt-2 text-[10px] text-slate-500 border-t border-slate-100">
-                    <span className="font-mono uppercase text-slate-400 font-semibold block mb-0.5">Notes</span>
-                    <p className="leading-relaxed">
-                      {viewInvoice.notes || 'All intellectual property and production deliverables transfer upon full invoice settlement.'}
-                    </p>
-                  </div>
-
-                </div>
-
-                {/* BOTTOM ANCHORED SECTION: Signatures at True Bottom of A4 + Blue Official Seal */}
-                <div className="mt-auto pt-8 border-t border-slate-200 font-sans">
-                    
-                    {/* Two Signatures Grid */}
-                    <div className="grid grid-cols-2 gap-6 items-end">
-                      
-                      {/* Left: Customer Signature */}
-                      <div className="text-left">
-                        <div className="w-44 border-b border-slate-300 mb-1.5"></div>
-                        <span className="text-[9px] font-mono uppercase text-slate-400 tracking-wider block">
-                          Customer Signature
-                        </span>
-                        <p className="text-xs font-semibold text-slate-900 mt-0.5">
-                          {viewInvoice.client_name || 'Valued Client'}
-                        </p>
-                        <p className="text-[9px] text-slate-400">Authorized Client Representative</p>
-                      </div>
-
-                      {/* Right: Authority with TSS Soft Blue Official Circular Seal */}
-                      <div className="text-right flex flex-col items-end">
-                        {/* Blue Vector Seal */}
-                        <div className="relative w-20 h-20 flex items-center justify-center select-none text-blue-600 -mb-2 mr-3">
-                          <svg viewBox="0 0 100 100" className="w-20 h-20">
-                            <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="1.6" strokeDasharray="3 2" opacity="0.9" />
-                            <circle cx="50" cy="50" r="41" fill="none" stroke="currentColor" strokeWidth="1.2" />
-                            <circle cx="50" cy="50" r="28" fill="none" stroke="currentColor" strokeWidth="0.8" strokeDasharray="2 1.5" opacity="0.6" />
-                            <path id="sealUpperBlue" d="M 16,50 A 34,34 0 0,1 84,50" fill="none" />
-                            <path id="sealLowerBlue" d="M 84,50 A 34,34 0 0,1 16,50" fill="none" />
-                            <text fontSize="5.8" fontWeight="bold" fill="currentColor" letterSpacing="0.9">
-                              <textPath href="#sealUpperBlue" startOffset="50%" textAnchor="middle">
-                                ★ TSS SOFT. OFFICIAL SEAL ★
-                              </textPath>
-                            </text>
-                            <text fontSize="5" fontWeight="bold" fill="currentColor" letterSpacing="0.8">
-                              <textPath href="#sealLowerBlue" startOffset="50%" textAnchor="middle">
-                                • DIGITALLY VERIFIED •
-                              </textPath>
-                            </text>
-                          </svg>
-                          <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
-                            <span className="text-xs font-black font-mono tracking-tighter text-blue-600 leading-none">&lt;/&gt;</span>
-                            <span className="text-[5px] font-bold tracking-widest text-blue-700 uppercase mt-0.5">VERIFIED</span>
-                            <span className="text-[3.5px] font-semibold text-slate-500 font-mono">TSSSOFT.COM</span>
-                          </div>
-                        </div>
-
-                        <div className="w-44 border-b border-slate-300 mb-1.5"></div>
-                        <span className="text-[9px] font-mono uppercase text-slate-400 tracking-wider block">
-                          Authorized Authority
-                        </span>
-                        <p className="text-xs font-semibold text-slate-900 mt-0.5">TSS Soft Management</p>
-                        <p className="text-[9px] text-slate-400">Digital Systems &amp; Software Architecture</p>
-                      </div>
-
-                    </div>
-
-                    {/* Digital Disclaimer */}
-                    <div className="mt-4 pt-2 border-t border-slate-100 text-center">
-                      <p className="text-[9px] text-slate-400 tracking-wide">
-                        This document is computer-generated and electronically verified by TSS Soft. No physical signature is required.
-                      </p>
-                    </div>
-
-                  </div>
-
-                </motion.div>
-              </div>
-            </div>
-          );
-        })()}
-      </AnimatePresence>
-
-      {/* =================================================================== */}
-      {/* MODAL: ADD CLIENT */}
-      {/* =================================================================== */}
-      <AnimatePresence>
-        {showClientModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto no-print">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-lg bg-[#080d22] border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl"
-            >
-              <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-6">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <Users size={16} className="text-blue-400" />
-                  <span>Add New Enterprise Client</span>
-                </h3>
-                <button onClick={() => setShowClientModal(false)} className="text-slate-400 hover:text-white">
-                  <X size={18} />
-                </button>
-              </div>
-
-              <form onSubmit={handleSaveClient} className="space-y-4">
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Client Contact Name *</label>
-                  <input
-                    required
-                    placeholder="e.g. Mahfuzur Rahman"
-                    value={clientForm.name}
-                    onChange={(e) => setClientForm(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full bg-[#040816] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Company / Organization</label>
-                  <input
-                    placeholder="e.g. Apex Global Ventures Ltd."
-                    value={clientForm.company}
-                    onChange={(e) => setClientForm(prev => ({ ...prev, company: e.target.value }))}
-                    className="w-full bg-[#040816] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Email Address</label>
-                    <input
-                      type="email"
-                      placeholder="client@apex.com"
-                      value={clientForm.email}
-                      onChange={(e) => setClientForm(prev => ({ ...prev, email: e.target.value }))}
-                      className="w-full bg-[#040816] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Mobile / WhatsApp</label>
-                    <input
-                      placeholder="+880 17XX-XXXXXX"
-                      value={clientForm.phone}
-                      onChange={(e) => setClientForm(prev => ({ ...prev, phone: e.target.value }))}
-                      className="w-full bg-[#040816] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Office / Billing Address</label>
-                  <input
-                    placeholder="Gulshan 2, Dhaka, Bangladesh"
-                    value={clientForm.address}
-                    onChange={(e) => setClientForm(prev => ({ ...prev, address: e.target.value }))}
-                    className="w-full bg-[#040816] border border-white/10 rounded-xl px-3 py-2 text-xs text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-mono uppercase text-slate-400 block mb-1">Notes / Relationship Summary</label>
-                  <textarea
-                    rows="2"
-                    placeholder="Enterprise partnership, annual retainer..."
-                    value={clientForm.notes}
-                    onChange={(e) => setClientForm(prev => ({ ...prev, notes: e.target.value }))}
-                    className="w-full bg-[#040816] border border-white/10 rounded-xl p-3 text-xs text-white resize-none"
-                  />
-                </div>
-
-                <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/10">
-                  <button
-                    type="button"
-                    onClick={() => setShowClientModal(false)}
-                    className="px-4 py-2 rounded-xl border border-white/10 text-xs text-slate-300 hover:bg-white/[0.05]"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs px-5 py-2 rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.4)]"
-                  >
-                    Save Client
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* =================================================================== */}
-      {/* MODAL: DETAIL VIEWER (Applications & Inquiries) */}
-      {/* =================================================================== */}
-      <AnimatePresence>
-        {selectedDetail && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md no-print">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-lg bg-[#080d22] border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl max-h-[85vh] overflow-y-auto"
-            >
-              <button
-                onClick={() => setSelectedDetail(null)}
-                className="absolute top-5 right-5 text-slate-400 hover:text-white"
-              >
+      {/* Add Client Modal */}
+      {showClientModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-900">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+              <h3 className="font-heading font-bold text-lg text-slate-900">Add New Enterprise Client</h3>
+              <button onClick={() => setShowClientModal(false)} className="text-slate-400 hover:text-slate-700">
                 <X size={18} />
               </button>
-
-              <div className="mb-4">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-blue-400">
-                  {selectedDetail.type === 'inquiry' ? 'Inquiry Details' : 'Job Application Details'}
-                </span>
-                <h3 className="text-xl font-bold text-white mt-1">{selectedDetail.data.name}</h3>
-                <p className="text-xs text-slate-400 font-mono mt-0.5">{selectedDetail.data.email}</p>
+            </div>
+            <form onSubmit={handleSaveClient} className="space-y-3.5 text-xs">
+              <div>
+                <label className="font-semibold block mb-1">Client Contact Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={clientForm.name}
+                  onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })}
+                  placeholder="e.g. Tahsin Ahmed"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl"
+                />
               </div>
-
-              <div className="space-y-3 text-xs">
-                {selectedDetail.type === 'inquiry' ? (
-                  <>
-                    <div className="bg-white/[0.03] p-3 rounded-xl border border-white/5">
-                      <span className="text-[10px] uppercase font-mono text-slate-400 block mb-1">Service Requested</span>
-                      <span className="text-white font-medium">{selectedDetail.data.service || 'General Inquiry'}</span>
-                    </div>
-
-                    <div className="bg-white/[0.03] p-4 rounded-xl border border-white/5">
-                      <span className="text-[10px] uppercase font-mono text-slate-400 block mb-2">Message Body</span>
-                      <p className="text-slate-200 whitespace-pre-wrap leading-relaxed">{selectedDetail.data.message}</p>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-white/[0.03] p-3 rounded-xl border border-white/5">
-                        <span className="text-[10px] uppercase font-mono text-slate-400 block mb-1">Position</span>
-                        <span className="text-white font-medium">{selectedDetail.data.position}</span>
-                      </div>
-                      <div className="bg-white/[0.03] p-3 rounded-xl border border-white/5">
-                        <span className="text-[10px] uppercase font-mono text-slate-400 block mb-1">Experience</span>
-                        <span className="text-white font-medium">{selectedDetail.data.experience || 'Not specified'}</span>
-                      </div>
-                    </div>
-
-                    {selectedDetail.data.portfolio_url && (
-                      <div className="bg-white/[0.03] p-3 rounded-xl border border-white/5">
-                        <span className="text-[10px] uppercase font-mono text-slate-400 block mb-1">Portfolio / Profile Link</span>
-                        <a 
-                          href={selectedDetail.data.portfolio_url} 
-                          target="_blank" 
-                          rel="noreferrer" 
-                          className="text-blue-400 hover:underline flex items-center gap-1"
-                        >
-                          <span>{selectedDetail.data.portfolio_url}</span>
-                          <ExternalLink size={12} />
-                        </a>
-                      </div>
-                    )}
-
-                    <div className="bg-white/[0.03] p-4 rounded-xl border border-white/5">
-                      <span className="text-[10px] uppercase font-mono text-slate-400 block mb-2">Applicant Statement / Notes</span>
-                      <p className="text-slate-200 whitespace-pre-wrap leading-relaxed">
-                        {selectedDetail.data.message || 'No additional note provided.'}
-                      </p>
-                    </div>
-                  </>
-                )}
+              <div>
+                <label className="font-semibold block mb-1">Company / Organization</label>
+                <input
+                  type="text"
+                  value={clientForm.company}
+                  onChange={(e) => setClientForm({ ...clientForm, company: e.target.value })}
+                  placeholder="e.g. Apex Technologies"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl"
+                />
               </div>
-            </motion.div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-semibold block mb-1">Phone Number</label>
+                  <input
+                    type="text"
+                    value={clientForm.phone}
+                    onChange={(e) => setClientForm({ ...clientForm, phone: e.target.value })}
+                    placeholder="+880 1..."
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="font-semibold block mb-1">Email Address</label>
+                  <input
+                    type="email"
+                    value={clientForm.email}
+                    onChange={(e) => setClientForm({ ...clientForm, email: e.target.value })}
+                    placeholder="client@mail.com"
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="font-semibold block mb-1">Physical Address</label>
+                <textarea
+                  rows={2}
+                  value={clientForm.address}
+                  onChange={(e) => setClientForm({ ...clientForm, address: e.target.value })}
+                  placeholder="Office address..."
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl resize-none"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-xs transition-colors mt-2"
+              >
+                Save Client to Directory
+              </button>
+            </form>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
+
+      {/* Add Moderator Modal */}
+      {showModeratorModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl text-slate-900">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+              <h3 className="font-heading font-bold text-lg text-slate-900">Create Staff Moderator Account</h3>
+              <button onClick={() => setShowModeratorModal(false)} className="text-slate-400 hover:text-slate-700">
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={handleSaveModerator} className="space-y-4 text-xs">
+              <div>
+                <label className="font-semibold block mb-1">Moderator Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={moderatorForm.name}
+                  onChange={(e) => setModeratorForm({ ...moderatorForm, name: e.target.value })}
+                  placeholder="e.g. Shafaur Rahman"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl"
+                />
+              </div>
+              <div>
+                <label className="font-semibold block mb-1">Email Address (Login Username) *</label>
+                <input
+                  type="email"
+                  required
+                  value={moderatorForm.email}
+                  onChange={(e) => setModeratorForm({ ...moderatorForm, email: e.target.value })}
+                  placeholder="moderator@tsssoft.com"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl"
+                />
+              </div>
+              <div>
+                <label className="font-semibold block mb-1">Password *</label>
+                <input
+                  type="password"
+                  required
+                  value={moderatorForm.password}
+                  onChange={(e) => setModeratorForm({ ...moderatorForm, password: e.target.value })}
+                  placeholder="••••••••••••"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold block mb-1.5">Access Privilege Type</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setModeratorForm({ ...moderatorForm, access_type: 'full' })}
+                    className={`py-2 px-3 rounded-xl border text-center font-semibold transition-all ${
+                      moderatorForm.access_type === 'full'
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                        : 'bg-slate-50 text-slate-700 border-slate-200'
+                    }`}
+                  >
+                    Full Access (All)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModeratorForm({ ...moderatorForm, access_type: 'selective' })}
+                    className={`py-2 px-3 rounded-xl border text-center font-semibold transition-all ${
+                      moderatorForm.access_type === 'selective'
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                        : 'bg-slate-50 text-slate-700 border-slate-200'
+                    }`}
+                  >
+                    Selective Access
+                  </button>
+                </div>
+              </div>
+
+              {moderatorForm.access_type === 'selective' && (
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                  <span className="font-semibold block text-[11px] text-slate-700">Choose Allowed Modules:</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'invoices', label: 'Invoices' },
+                      { id: 'clients', label: 'Clients' },
+                      { id: 'applications', label: 'Applications' },
+                      { id: 'inquiries', label: 'Inquiries' }
+                    ].map(mod => {
+                      const isChecked = moderatorForm.permissions.includes(mod.id);
+                      return (
+                        <label key={mod.id} className="flex items-center gap-2 cursor-pointer text-slate-800">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setModeratorForm(prev => ({ ...prev, permissions: [...prev.permissions, mod.id] }));
+                              } else {
+                                setModeratorForm(prev => ({ ...prev, permissions: prev.permissions.filter(p => p !== mod.id) }));
+                              }
+                            }}
+                            className="rounded border-slate-300 text-blue-600 focus:ring-0"
+                          />
+                          <span>{mod.label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold text-xs transition-colors mt-2 shadow-md"
+              >
+                Create Moderator Account
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Password Modal */}
+      {resetPassModerator && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="w-full max-w-sm bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl text-slate-900">
+            <h3 className="font-heading font-bold text-base text-slate-900 mb-1">
+              Reset Password for {resetPassModerator.name}
+            </h3>
+            <p className="text-xs text-slate-500 mb-4">{resetPassModerator.email}</p>
+            <input
+              type="password"
+              placeholder="Enter new password..."
+              value={newPasswordValue}
+              onChange={(e) => setNewPasswordValue(e.target.value)}
+              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs mb-4"
+            />
+            <div className="flex items-center justify-end gap-2 text-xs">
+              <button
+                onClick={() => setResetPassModerator(null)}
+                className="px-3 py-2 rounded-xl text-slate-600 hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleResetPassword}
+                className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+              >
+                Save New Password
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

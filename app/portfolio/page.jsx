@@ -120,7 +120,7 @@ export default function PortfolioPage() {
             <div className="p-6 pt-0 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
               <Link
                 href={`/projects/${project.slug}`}
-                className="text-xs font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1.5 hover:underline"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-heading font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 active:scale-95"
               >
                 <span>Explore Case Study</span>
                 <ArrowRight className="w-3.5 h-3.5" />
