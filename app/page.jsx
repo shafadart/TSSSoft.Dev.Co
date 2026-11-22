@@ -142,7 +142,7 @@ export default function HomePage() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span>6+ Years Experience</span>
+                  <span>3+ Years Experience</span>
                 </div>
               </motion.div>
 
@@ -344,12 +344,12 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* Stat Counter Grid (6+ yrs experience, flagship products) */}
+          {/* Stat Counter Grid (3+ yrs experience, flagship products) */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-200 dark:border-white/10 max-w-4xl mx-auto text-left">
             
             <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 rounded-2xl p-5">
               <div className="text-3xl sm:text-4xl font-black text-emerald-600 dark:text-emerald-400 font-mono tracking-tight mb-1">
-                6+ yrs
+                3+ yrs
               </div>
               <div className="text-xs font-semibold text-slate-900 dark:text-white">Experience</div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">Deep software engineering &amp; architecture</p>
@@ -656,61 +656,61 @@ export default function HomePage() {
         {/* 3 Featured Products Showcase */}
         <div className="space-y-12">
           
-          {/* Showcase Item 1: TSS PC Controller */}
-          <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/15 rounded-3xl overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 transition-all duration-300 hover:shadow-2xl hover:border-blue-500">
-            <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-auto overflow-hidden bg-slate-950 flex items-center justify-center">
+          {/* Showcase Item 1: Cholo Jai */}
+          <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/15 rounded-3xl overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 transition-all duration-300 hover:shadow-2xl hover:border-emerald-500">
+            <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-auto overflow-hidden bg-white dark:bg-slate-950 flex items-center justify-center">
               <img 
-                src="/projects/tss-pc-controller-banner.jpg" 
-                alt="TSS PC Controller Banner" 
+                src="/projects/cholo-jai-app-banner.jpg" 
+                alt="Cholo Jai Banner" 
                 className="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-700"
               />
-              <div className="absolute top-4 left-4 bg-blue-600 text-white text-xs font-mono px-3 py-1 rounded-full shadow-md">
-                Live Screen Control
+              <div className="absolute top-4 left-4 bg-emerald-600 text-white text-xs font-mono px-3 py-1 rounded-full shadow-md">
+                Mobility &amp; Transit
               </div>
             </div>
             <div className="lg:col-span-5 p-8 sm:p-10 flex flex-col justify-between">
               <div>
-                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-xs font-mono uppercase tracking-wider mb-2 font-semibold">
-                  <span>System Utility</span>
+                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-xs font-mono uppercase tracking-wider mb-2 font-semibold">
+                  <span>Ride Sharing</span>
                   <span>•</span>
-                  <span>Low Latency</span>
+                  <span>Regional Transit</span>
                 </div>
                 <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-3">
-                  TSS PC Controller
+                  Cholo Jai (চলো যায়)
                 </h3>
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-4">
-                  "Your PC. Your Control. Anywhere."
+                  "Your Journey, Made Simpler."
                 </p>
                 <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6">
-                  Engineered to stream live Windows PC screens directly to smartphones over Wi-Fi. Features low-latency touchpad mouse, virtual keyboard, shutdown, sleep, and system commands.
+                  Developed by TSS Soft to make transportation convenient, predictable, and fair in Kushtia and its surrounding designated routes with dual passenger and rider applications.
                 </p>
                 <div className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
                   <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-blue-600" />
-                    <span>Real-Time Screen Mirroring (&lt; 50ms)</span>
+                    <Check className="w-4 h-4 text-emerald-600" />
+                    <span>Real-Time Route &amp; Pickup Selection</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-blue-600" />
-                    <span>Remote Windows Power &amp; Command Controls</span>
+                    <Check className="w-4 h-4 text-emerald-600" />
+                    <span>Transparent Fare Estimation &amp; Rider Dispatch</span>
                   </div>
                 </div>
               </div>
               <div className="pt-6 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
                 <Link
-                  href="/projects/tss-pc-controller"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                  href="/projects/cholo-jai"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
                 >
                   <span>Read Full Case Study</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
-                <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">Desktop + Mobile</span>
+                <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">Mobile + Backend</span>
               </div>
             </div>
           </div>
 
           {/* Showcase Item 2: Tutors Kushtia */}
           <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/15 rounded-3xl overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 transition-all duration-300 hover:shadow-2xl hover:border-purple-500">
-            <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-auto overflow-hidden bg-slate-950 flex items-center justify-center">
+            <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-auto overflow-hidden bg-white dark:bg-slate-950 flex items-center justify-center">
               <img 
                 src="/projects/tutors-kushtia-banner.jpg" 
                 alt="Tutors Kushtia Banner" 
@@ -760,54 +760,54 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Showcase Item 3: Cholo Jai */}
-          <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/15 rounded-3xl overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 transition-all duration-300 hover:shadow-2xl hover:border-emerald-500">
-            <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-auto overflow-hidden bg-slate-950 flex items-center justify-center">
+          {/* Showcase Item 3: TSS PC Controller */}
+          <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/15 rounded-3xl overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 transition-all duration-300 hover:shadow-2xl hover:border-blue-500">
+            <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-auto overflow-hidden bg-white dark:bg-slate-950 flex items-center justify-center">
               <img 
-                src="/projects/cholo-jai-app-banner.jpg" 
-                alt="Cholo Jai Banner" 
+                src="/projects/tss-pc-controller-banner.jpg" 
+                alt="TSS PC Controller Banner" 
                 className="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-700"
               />
-              <div className="absolute top-4 left-4 bg-emerald-600 text-white text-xs font-mono px-3 py-1 rounded-full shadow-md">
-                Mobility &amp; Transit
+              <div className="absolute top-4 left-4 bg-blue-600 text-white text-xs font-mono px-3 py-1 rounded-full shadow-md">
+                Live Screen Control
               </div>
             </div>
             <div className="lg:col-span-5 p-8 sm:p-10 flex flex-col justify-between">
               <div>
-                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-xs font-mono uppercase tracking-wider mb-2 font-semibold">
-                  <span>Ride Sharing</span>
+                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-xs font-mono uppercase tracking-wider mb-2 font-semibold">
+                  <span>System Utility</span>
                   <span>•</span>
-                  <span>Regional Transit</span>
+                  <span>Low Latency</span>
                 </div>
                 <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-3">
-                  Cholo Jai (চলো যায়)
+                  TSS PC Controller
                 </h3>
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-4">
-                  "Your Journey, Made Simpler."
+                  "Your PC. Your Control. Anywhere."
                 </p>
                 <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6">
-                  Developed by TSS Soft to make transportation convenient, predictable, and fair in Kushtia and its surrounding designated routes with dual passenger and rider applications.
+                  Engineered to stream live Windows PC screens directly to smartphones over Wi-Fi. Features low-latency touchpad mouse, virtual keyboard, shutdown, sleep, and system commands.
                 </p>
                 <div className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
                   <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600" />
-                    <span>Real-Time Route &amp; Pickup Selection</span>
+                    <Check className="w-4 h-4 text-blue-600" />
+                    <span>Real-Time Screen Mirroring (&lt; 50ms)</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600" />
-                    <span>Transparent Fare Estimation &amp; Rider Dispatch</span>
+                    <Check className="w-4 h-4 text-blue-600" />
+                    <span>Remote Windows Power &amp; Command Controls</span>
                   </div>
                 </div>
               </div>
               <div className="pt-6 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
                 <Link
-                  href="/projects/cholo-jai"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+                  href="/projects/tss-pc-controller"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline"
                 >
                   <span>Read Full Case Study</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
-                <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">Mobile + Backend</span>
+                <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">Desktop + Mobile</span>
               </div>
             </div>
           </div>

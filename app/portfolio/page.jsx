@@ -87,10 +87,10 @@ export default function PortfolioPage() {
             className="bg-white dark:bg-[#070e24]/90 border border-slate-200/90 dark:border-white/10 hover:border-blue-500 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
           >
             <div>
-              {/* Thumbnail */}
-              <div className="relative h-56 overflow-hidden bg-slate-900">
+              {/* Thumbnail Banner */}
+              <div className="relative h-56 overflow-hidden bg-white dark:bg-slate-900">
                 <img
-                  src={project.heroMockup || project.logo}
+                  src={project.banner || project.heroMockup || project.logo}
                   alt={project.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
