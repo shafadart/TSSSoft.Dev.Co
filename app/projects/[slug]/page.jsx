@@ -20,6 +20,7 @@ import {
   FileText
 } from 'lucide-react';
 import { projectsData, getProjectBySlug, getAllProjectSlugs } from '../../../lib/projectsData';
+import SohojBebshaCaseStudy from '../components/SohojBebshaCaseStudy';
 
 export function generateStaticParams() {
   return getAllProjectSlugs().map((slug) => ({ slug }));
@@ -46,6 +47,11 @@ export default function CaseStudyPage({ params }) {
 
   // Related projects
   const relatedProjects = projectsData.filter((p) => p.slug !== project.slug).slice(0, 3);
+
+  // Dedicated Enterprise SaaS Layout for Sohoj Bebsha
+  if (project.slug === 'sohoj-bebsha') {
+    return <SohojBebshaCaseStudy project={project} relatedProjects={relatedProjects} />;
+  }
 
   return (
     <main className="min-h-screen text-slate-900 dark:text-slate-100 pb-28 relative overflow-hidden transition-colors duration-200">
@@ -291,7 +297,7 @@ export default function CaseStudyPage({ params }) {
             href="/portfolio" 
             className="text-xs font-heading font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 flex items-center gap-1 group"
           >
-            <span>View All 5 Projects</span>
+            <span>View All Projects in Portfolio</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>

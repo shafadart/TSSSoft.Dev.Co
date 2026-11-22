@@ -324,9 +324,10 @@ export default function HomePage() {
             </span>
           </div>
 
-          {/* Client Brand Tags Row (Real Partners: AFC, Cholo Jai, etc.) */}
+          {/* Client Brand Tags Row (Real Partners: Sohoj Bebsha, AFC, Cholo Jai, etc.) */}
           <div className="flex flex-wrap items-center justify-center gap-2.5 max-w-4xl mx-auto">
             {[
+              'Sohoj Bebsha',
               'AFC',
               'Cholo Jai',
               'GramAlo Solar Solution',

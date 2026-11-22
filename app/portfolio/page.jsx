@@ -23,10 +23,10 @@ export default function PortfolioPage() {
   const [previewProject, setPreviewProject] = useState(null);
 
   const filterTabs = [
-    { id: 'all', label: 'All Projects (5)', count: 5 },
-    { id: 'mobile', label: 'Mobile Apps (2)', count: 2 },
-    { id: 'web', label: 'Web Platforms (2)', count: 2 },
-    { id: 'system', label: 'Windows & Systems (1)', count: 1 },
+    { id: 'all', label: `All Projects (${projectsData.length})`, count: projectsData.length },
+    { id: 'web', label: `Web Platforms (${projectsData.filter(p => p.type === 'web').length})`, count: projectsData.filter(p => p.type === 'web').length },
+    { id: 'mobile', label: `Mobile Apps (${projectsData.filter(p => p.type === 'mobile' || p.type === 'mobile-web').length})`, count: projectsData.filter(p => p.type === 'mobile' || p.type === 'mobile-web').length },
+    { id: 'system', label: `Windows & Systems (${projectsData.filter(p => p.type === 'system').length})`, count: projectsData.filter(p => p.type === 'system').length },
   ];
 
   const filteredProjects = projectsData.filter((project) => {
