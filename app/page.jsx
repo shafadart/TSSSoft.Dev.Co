@@ -1067,20 +1067,20 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Real Interactive Map Centered on Kushtia, Bangladesh */}
+        {/* Real Interactive Map Centered on Kushtia, Bangladesh (Default Satellite Mode) */}
         <div className="relative w-full max-w-5xl mx-auto my-6 rounded-3xl overflow-hidden border border-slate-200/90 dark:border-blue-500/25 shadow-xl bg-slate-100 dark:bg-[#070e24]">
           <div className="relative w-full h-[420px] sm:h-[480px]">
             <iframe
               title="TSS Soft Kushtia Headquarters Location"
-              src="https://maps.google.com/maps?q=Kushtia,%20Bangladesh&t=&z=13&ie=UTF8&iwloc=&output=embed"
+              src="https://maps.google.com/maps?q=Kushtia,%20Bangladesh&t=k&z=14&ie=UTF8&iwloc=&output=embed"
               className="w-full h-full border-0"
               allowFullScreen=""
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
             />
 
-            {/* Floating Location Card Over Map */}
-            <div className="absolute top-4 left-4 sm:top-6 sm:left-6 max-w-xs sm:max-w-sm p-4 rounded-2xl bg-white/95 dark:bg-[#070e24]/95 backdrop-blur-md border border-slate-200/90 dark:border-blue-500/30 shadow-lg pointer-events-auto">
+            {/* Floating Location Card Over Map - Positioned at Bottom-Left to avoid overlap with Google Maps controls */}
+            <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 max-w-xs sm:max-w-sm p-4 rounded-2xl bg-white/95 dark:bg-[#070e24]/95 backdrop-blur-md border border-slate-200/90 dark:border-blue-500/30 shadow-xl pointer-events-auto z-10">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="font-heading font-bold text-slate-900 dark:text-white text-sm">
