@@ -2,26 +2,48 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowUpRight, Menu, X } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
+      const currentScrollY = window.scrollY;
+      setScrolled(currentScrollY > 15);
 
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
+      if (currentScrollY > 80) {
+        if (currentScrollY > lastScrollY && currentScrollY - lastScrollY > 5) {
+          // Scrolling down -> hide navbar
+          setVisible(false);
+        } else if (lastScrollY - currentScrollY > 5) {
+          // Scrolling up -> show navbar
+          setVisible(true);
+        }
+      } else {
+        setVisible(true);
+      }
+      setLastScrollY(currentScrollY);
     };
-  }, []);
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
+
+  const handleLogoClick = (e) => {
+    if (pathname === '/') {
+      e.preventDefault();
+      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    }
+  };
 
   const navLinks = [
     { name: 'Overview', href: '/' },
@@ -39,85 +61,87 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed top-4 sm:top-5 left-0 right-0 z-50 px-4 sm:px-8 max-w-7xl mx-auto flex items-center justify-between transition-all duration-300">
-        
-        {/* Brand: Dual-mode Logo (Blue in Light, White in Dark) */}
-        <Link href="/" className="flex items-center gap-2 group relative z-10">
-          <div className="h-8 sm:h-9 relative flex items-center">
-            {/* Light Mode Logo */}
-            <img
-              src="/brand/logo-blue-cropped.png"
-              alt="TSS Soft."
-              className="h-full w-auto object-contain block dark:hidden transition-opacity group-hover:opacity-90"
-            />
-            {/* Dark Mode Logo */}
-            <img
-              src="/brand/logo-white-cropped.png"
-              alt="TSS Soft."
-              className="h-full w-auto object-contain hidden dark:block transition-opacity group-hover:opacity-90 filter drop-shadow-[0_2px_10px_rgba(59,130,246,0.3)]"
-            />
-          </div>
-        </Link>
-
-        {/* Center: Frosted Floating Nav Pill */}
-        <nav 
-          className={`hidden md:flex items-center gap-1 px-3 py-1.5 rounded-full border transition-all duration-300 ${
-            scrolled
-              ? 'bg-white/90 dark:bg-[#080d22]/85 backdrop-blur-2xl border-slate-200/90 dark:border-white/15 shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)]'
-              : 'bg-white/75 dark:bg-[#09112a]/60 backdrop-blur-xl border-slate-200/70 dark:border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.35)]'
-          }`}
-        >
-          {navLinks.map((link) => {
-            const active = isActive(link.href);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`relative px-4 py-1.5 rounded-full text-[14px] font-heading font-medium tracking-[-0.01em] transition-all duration-200 flex items-center gap-1.5 ${
-                  active
-                    ? 'text-blue-700 dark:text-white font-semibold'
-                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/[0.06]'
-                }`}
-              >
-                {active && (
-                  <motion.div
-                    layoutId="navbarActiveIndicator"
-                    className="absolute inset-0 rounded-full bg-blue-50 dark:bg-white/15 border border-blue-200/70 dark:border-white/20 -z-10 shadow-sm dark:shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                  />
-                )}
-                {active && <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400" />}
-                <span>{link.name}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Right Section: Theme Toggle & Start Project CTA */}
-        <div className="flex items-center gap-2 sm:gap-3 relative z-10">
+      <header 
+        className={`fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ease-in-out ${
+          visible ? 'translate-y-0' : '-translate-y-full'
+        } ${
+          scrolled
+            ? 'bg-white/95 dark:bg-[#060b1e]/95 backdrop-blur-md border-b border-slate-200/90 dark:border-white/10 shadow-sm'
+            : 'bg-white dark:bg-[#070e24] border-b border-slate-200/80 dark:border-white/10 shadow-sm'
+        }`}
+      >
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-8 h-20 flex items-center justify-between">
           
-          {/* Light / Dark Mode Toggle Button */}
-          <ThemeToggle />
-
-          {/* Start Project Pill Button */}
-          <Link
-            href="/contact"
-            className="hidden sm:inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100 font-heading font-semibold text-[14px] leading-tight tracking-[-0.01em] px-5 py-2.5 rounded-full shadow-md shadow-blue-500/25 dark:shadow-[0_0_20px_rgba(255,255,255,0.25)] transition-all duration-200 active:scale-95"
+          {/* Brand: Dual-mode Logo (Click to navigate to home from anywhere) */}
+          <Link 
+            href="/" 
+            onClick={handleLogoClick}
+            className="flex items-center gap-2 group relative z-10 cursor-pointer"
+            aria-label="TSS Soft Home"
           >
-            <span>Start a Project</span>
-            <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
+            <div className="h-8 sm:h-9 relative flex items-center">
+              {/* Light Mode Logo */}
+              <img
+                src="/brand/logo-blue-cropped.png"
+                alt="TSS Soft."
+                className="h-full w-auto object-contain block dark:hidden transition-opacity group-hover:opacity-90"
+              />
+              {/* Dark Mode Logo */}
+              <img
+                src="/brand/logo-white-cropped.png"
+                alt="TSS Soft."
+                className="h-full w-auto object-contain hidden dark:block transition-opacity group-hover:opacity-90 filter drop-shadow-[0_2px_10px_rgba(59,130,246,0.3)]"
+              />
+            </div>
           </Link>
 
-          {/* Mobile Menu Toggle Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-full bg-white/80 dark:bg-white/10 border border-slate-200 dark:border-white/15 text-slate-800 dark:text-white transition-colors"
-            aria-label="Toggle navigation"
-          >
-            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-          </button>
-        </div>
+          {/* Center Navigation Links */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) => {
+              const active = isActive(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`relative px-4 py-2 rounded-full text-[14px] font-heading font-medium tracking-[-0.01em] transition-all duration-200 flex items-center gap-1.5 ${
+                    active
+                      ? 'text-blue-600 dark:text-blue-400 font-semibold bg-blue-50/80 dark:bg-white/10'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/[0.06]'
+                  }`}
+                >
+                  {active && <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400" />}
+                  <span>{link.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
 
+          {/* Right Section: Theme Toggle & Start Project CTA */}
+          <div className="flex items-center gap-2.5 sm:gap-3 relative z-10">
+            
+            {/* Light / Dark Mode Toggle Button */}
+            <ThemeToggle />
+
+            {/* Start Project Pill Button */}
+            <Link
+              href="/contact"
+              className="hidden sm:inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-heading font-semibold text-[14px] leading-tight tracking-[-0.01em] px-5 py-2.5 rounded-full shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200 active:scale-95"
+            >
+              <span>Start a Project</span>
+              <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
+            </Link>
+
+            {/* Mobile Menu Toggle Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-xl bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/15 text-slate-800 dark:text-white transition-colors"
+              aria-label="Toggle navigation"
+            >
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
+
+        </div>
       </header>
 
       {/* Mobile Drawer Navigation */}
@@ -128,7 +152,7 @@ export default function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-x-4 top-20 z-40 bg-white/95 dark:bg-[#080d24]/95 backdrop-blur-2xl border border-slate-200 dark:border-white/15 rounded-3xl p-6 shadow-2xl md:hidden"
+            className="fixed inset-x-4 top-24 z-40 bg-white/98 dark:bg-[#080d24]/98 backdrop-blur-2xl border border-slate-200 dark:border-white/15 rounded-3xl p-6 shadow-2xl md:hidden"
           >
             <div className="flex flex-col gap-3">
               {navLinks.map((link) => {
@@ -158,7 +182,7 @@ export default function Navbar() {
               <Link
                 href="/contact"
                 onClick={() => setMobileMenuOpen(false)}
-                className="mt-2 w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white dark:bg-white dark:text-slate-950 font-heading font-semibold text-center shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2"
+                className="mt-2 w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-heading font-semibold text-center shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2"
               >
                 <span>Start a Project</span>
                 <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />

@@ -1,25 +1,42 @@
+'use client';
+
 import { Mail, MapPin } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function Footer() {
+  const pathname = usePathname();
+
+  const handleLogoClick = (e) => {
+    if (pathname === '/') {
+      e.preventDefault();
+      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
-    <footer className="w-full relative bg-[#060a1a] dark:bg-[#030612] text-slate-300 border-t border-slate-200/10 dark:border-white/10 pt-20 pb-16 overflow-hidden z-10 mt-24 transition-colors duration-300">
+    <footer className="w-full relative bg-[#060a1a] dark:bg-[#030612] text-slate-300 border-t border-slate-200/10 dark:border-white/10 pt-20 pb-16 overflow-hidden z-10 transition-colors duration-300">
       
       {/* Background Volumetric Accent Line */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
       <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[700px] h-[250px] bg-blue-600/15 rounded-full blur-[140px] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 relative z-10">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8 mb-16">
           
           {/* Brand Column */}
           <div className="lg:col-span-2 space-y-5">
-            <Link href="/" className="inline-block group">
+            <Link 
+              href="/" 
+              onClick={handleLogoClick}
+              className="inline-block group cursor-pointer"
+              aria-label="TSS Soft Home"
+            >
               <div className="h-8 relative flex items-center">
                 <img
                   src="/brand/logo-white-cropped.png"
                   alt="TSS Soft."
-                  className="h-full w-auto object-contain filter drop-shadow-[0_2px_8px_rgba(59,130,246,0.3)]"
+                  className="h-full w-auto object-contain filter drop-shadow-[0_2px_8px_rgba(59,130,246,0.3)] transition-opacity group-hover:opacity-90"
                 />
               </div>
             </Link>
@@ -93,7 +110,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-2.5 text-slate-400">
                 <MapPin size={16} className="mt-0.5 flex-shrink-0 text-blue-400" />
-                <span className="text-xs">Kushtia, Bangladesh<br/><span className="text-slate-500 font-mono text-[11px]">Delivering Across Bangladesh</span></span>
+                <span className="text-xs">Kushtia, Bangladesh<br/><span className="text-slate-500 font-mono text-[11px]">Operating Worldwide</span></span>
               </li>
             </ul>
           </div>

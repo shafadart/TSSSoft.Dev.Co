@@ -34,11 +34,10 @@ export default function ClientShell({ children }) {
       <CloudBackground />
       <Preloader />
       <Navbar />
-      <div className="flex-grow pt-24 md:pt-28">
+      <div className="flex-grow pt-20">
         {children}
       </div>
       <Footer />
     </>
   );
 }
-

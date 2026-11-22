@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowUpRight, 
@@ -27,24 +26,16 @@ import {
   Users, 
   Activity,
   Laptop,
-  Search,
-  CheckCircle,
-  ExternalLink
+  MapPin,
+  Building2,
+  PhoneCall
 } from 'lucide-react';
 
 export default function HomePage() {
-  const router = useRouter();
   const [openFaq, setOpenFaq] = useState(0);
-  const [selectedService, setSelectedService] = useState('web');
-  const [customRequirement, setCustomRequirement] = useState('');
 
   const toggleFaq = (idx) => {
     setOpenFaq(openFaq === idx ? null : idx);
-  };
-
-  const handleEstimateSubmit = (e) => {
-    e.preventDefault();
-    router.push(`/contact?service=${encodeURIComponent(selectedService)}&note=${encodeURIComponent(customRequirement)}`);
   };
 
   return (
@@ -56,7 +47,7 @@ export default function HomePage() {
       <section className="relative w-full overflow-hidden">
         
         {/* Full-Width Deep Royal Blue Banner Container */}
-        <div className="w-full bg-gradient-to-r from-[#031542] via-[#092978] to-[#041a4a] text-white pt-14 pb-28 sm:pb-36 relative overflow-hidden">
+        <div className="w-full bg-gradient-to-r from-[#031542] via-[#092978] to-[#041a4a] text-white pt-10 sm:pt-14 pb-28 sm:pb-36 relative overflow-hidden">
           
           {/* Subtle Ambient Tech Mesh & Radial Accents */}
           <div className="absolute inset-0 opacity-15 pointer-events-none"
@@ -74,7 +65,7 @@ export default function HomePage() {
             {/* Left Column: Value Proposition & Action CTAs */}
             <div className="lg:col-span-7 space-y-6 text-left">
               
-              {/* Notification Badge Pill (GotMyHost 20% discount badge style) */}
+              {/* Notification Badge Pill (GotMyHost discount badge style) */}
               <motion.div 
                 initial={{ opacity: 0, y: -12 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -224,7 +215,7 @@ export default function HomePage() {
 
                 {/* Footer Stat Row */}
                 <div className="pt-3 border-t border-white/10 flex items-center justify-between text-[11px] font-mono text-slate-300">
-                  <span>DEPLOYED: BANGLADESH</span>
+                  <span>DELIVERY: BANGLADESH</span>
                   <span className="text-sky-300">ENTERPRISE GRADE</span>
                 </div>
 
@@ -236,69 +227,55 @@ export default function HomePage() {
         </div>
 
         {/* ----------------------------------------------------------------- */}
-        {/* Floating Overlapping Project Estimator Card (GotMyHost Search Bar) */}
+        {/* Floating Overlapping Project Starter Card (Soft Shadow & Clean)   */}
         {/* ----------------------------------------------------------------- */}
         <div className="max-w-4xl mx-auto px-4 -mt-14 sm:-mt-20 relative z-20">
           <motion.div 
-            initial={{ opacity: 0, y: 25 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.35 }}
-            className="bg-white dark:bg-[#080e22] border border-slate-200 dark:border-white/15 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-2xl"
+            className="bg-white dark:bg-[#080e22] border border-slate-100 dark:border-white/10 rounded-3xl p-6 sm:p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.07)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] backdrop-blur-2xl text-center space-y-6"
           >
-            <div className="text-center mb-5">
-              <span className="text-xs font-mono uppercase tracking-widest text-blue-600 dark:text-blue-400 font-semibold block mb-1">
-                INSTANT REQUIREMENT DISCOVERY
+            <div className="space-y-2">
+              <span className="text-xs font-mono uppercase tracking-widest text-blue-600 dark:text-blue-400 font-semibold inline-block">
+                ✦ READY TO BRING YOUR VISION TO LIFE?
               </span>
-              <h3 className="font-heading text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
-                What Software Are You Looking To Build?
+              <h3 className="font-heading text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+                Let's Engineer Your Next Digital Masterpiece.
               </h3>
+              <p className="font-body text-slate-600 dark:text-slate-300 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+                Whether you need a cross-platform mobile application, high-concurrency web platform, or custom enterprise architecture — our software architects are ready to build with you.
+              </p>
             </div>
 
-            {/* Quick Requirement Search & Submit Form */}
-            <form onSubmit={handleEstimateSubmit} className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    value={customRequirement}
-                    onChange={(e) => setCustomRequirement(e.target.value)}
-                    placeholder="e.g. Ride-sharing app, E-commerce flagship, or PC remote tool..."
-                    className="w-full pl-5 pr-4 py-4 rounded-2xl bg-slate-50 dark:bg-[#030614] border border-slate-200 dark:border-white/15 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 text-sm font-body transition-all"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-heading font-semibold text-sm px-8 py-4 rounded-2xl shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 flex-shrink-0 active:scale-95"
-                >
-                  <Search className="w-4 h-4" />
-                  <span>Get Architecture Estimate</span>
-                </button>
-              </div>
+            {/* Direct Project Start Button */}
+            <div className="pt-2 flex flex-wrap items-center justify-center gap-4">
+              <Link
+                href="/contact"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-heading font-semibold text-base px-9 py-4 rounded-2xl shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/35 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 inline-flex items-center gap-2.5"
+              >
+                <span>Start Your Project</span>
+                <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+              </Link>
+            </div>
 
-              {/* Service Selection Tags (GotMyHost .com, .net, .BD pills style) */}
-              <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
-                {[
-                  { id: 'web', label: 'Web Platform (Next.js)' },
-                  { id: 'mobile', label: 'Mobile App (Flutter / React Native)' },
-                  { id: 'enterprise', label: 'Enterprise Cloud & APIs' },
-                  { id: 'system', label: 'Windows & Desktop Systems' },
-                  { id: 'design', label: 'UI/UX Design Systems' }
-                ].map((item) => (
-                  <button
-                    type="button"
-                    key={item.id}
-                    onClick={() => setSelectedService(item.id)}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-medium font-mono transition-all ${
-                      selectedService === item.id
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </form>
+            {/* Service Discovery Pills */}
+            <div className="pt-4 border-t border-slate-100 dark:border-white/5 flex flex-wrap items-center justify-center gap-2">
+              {[
+                '📱 Mobile Applications (Flutter / React Native)',
+                '🌐 Next.js Web Platforms',
+                '☁️ Enterprise Cloud & APIs',
+                '🖥️ Windows Desktop Systems',
+                '🎨 UI/UX Design Systems'
+              ].map((service, idx) => (
+                <span
+                  key={idx}
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-medium font-mono bg-slate-50 dark:bg-white/5 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-white/10"
+                >
+                  {service}
+                </span>
+              ))}
+            </div>
 
           </motion.div>
         </div>
@@ -361,7 +338,7 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* Stat Counter Grid (6+ yrs experience, 5+ flagship products) */}
+          {/* Stat Counter Grid (6+ yrs experience, flagship products) */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-200 dark:border-white/10 max-w-4xl mx-auto text-left">
             
             <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 rounded-2xl p-5">
@@ -382,7 +359,7 @@ export default function HomePage() {
 
             <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 rounded-2xl p-5">
               <div className="text-3xl sm:text-4xl font-black text-indigo-600 dark:text-sky-400 font-mono tracking-tight mb-1">
-                5+
+                Multi-Stack
               </div>
               <div className="text-xs font-semibold text-slate-900 dark:text-white">Flagship Platforms</div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">Engineered production web, mobile &amp; systems</p>
@@ -831,13 +808,13 @@ export default function HomePage() {
 
         </div>
 
-        {/* Prominent "See More / View All 5 Projects" Button */}
+        {/* Clean, Prominent "Explore All Projects" Button (NO number '5' mentioned) */}
         <div className="pt-12 text-center">
           <Link
             href="/portfolio"
             className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-heading font-semibold text-base shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/35 hover:-translate-y-1 active:scale-95 transition-all duration-200"
           >
-            <span>View All 5 Projects in Portfolio</span>
+            <span>Explore All Projects in Portfolio</span>
             <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
@@ -1061,7 +1038,7 @@ export default function HomePage() {
       </motion.section>
 
       {/* =================================================================== */}
-      {/* 8. BOTTOM CONVERSION CTA: GotMyHost-style Deep Blue Banner          */}
+      {/* 8. WORLD MAP SECTION: "Where We Are Available" (GotMyHost Style)    */}
       {/* =================================================================== */}
       <motion.section 
         initial={{ opacity: 0, y: 35 }}
@@ -1070,43 +1047,170 @@ export default function HomePage() {
         transition={{ duration: 0.6 }}
         className="px-4 sm:px-8 max-w-[1400px] mx-auto relative z-10"
       >
-        <div className="bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-950 text-white rounded-3xl p-8 sm:p-14 shadow-2xl relative overflow-hidden text-center space-y-8">
+        <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/15 rounded-3xl p-8 sm:p-14 shadow-xl backdrop-blur-2xl">
           
-          {/* Subtle Ambient Radial Rings */}
-          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/10 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-sky-400/15 rounded-full blur-[90px] pointer-events-none" />
-
-          <div className="relative z-10 max-w-3xl mx-auto space-y-4">
-            <span className="inline-block px-3.5 py-1 rounded-full bg-white/15 text-white text-xs font-mono uppercase tracking-widest border border-white/20">
-              LET'S BUILD TOGETHER
-            </span>
-            <h2 className="font-heading text-section-title font-extrabold tracking-[-0.025em] leading-[1.15]">
-              Ready to turn your vision into production-ready software?
+          {/* Header */}
+          <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest">
+              <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+              <span>PHYSICAL PRESENCE &amp; GLOBAL DELIVERY</span>
+            </div>
+            <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-[-0.025em]">
+              Where We Are Available.
             </h2>
-            <p className="font-body text-body-p text-blue-100 leading-[1.7] max-w-2xl mx-auto">
-              Schedule a discovery session directly with our lead software architects. Clear scope, realistic timelines, and zero sales fluff.
+            <p className="font-body text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
+              We are <strong>physically headquartered in Kushtia, Bangladesh</strong> with dedicated engineering pods on-site, delivering custom software, mobile apps, and enterprise cloud architecture across Bangladesh and worldwide.
             </p>
           </div>
 
-          <div className="relative z-10 flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="/contact"
-              className="bg-white hover:bg-slate-100 text-slate-950 font-heading font-semibold text-[15px] px-8 py-3.5 rounded-full shadow-xl transition-all duration-200 flex items-center gap-2 active:scale-95"
-            >
-              <span>Schedule a Discovery Call</span>
-              <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
-            </Link>
-            <a
-              href="tel:+8801870955900"
-              className="bg-white/15 hover:bg-white/20 text-white border border-white/25 font-heading font-medium text-[15px] px-7 py-3.5 rounded-full backdrop-blur-xl transition-all duration-200 flex items-center gap-2 active:scale-95"
-            >
-              <span>Call: +880 1870 955 900</span>
-            </a>
+          {/* Interactive World Map SVG Container (GotMyHost Style) */}
+          <div className="relative w-full rounded-2xl bg-slate-50/70 dark:bg-[#030717]/80 border border-slate-200/80 dark:border-white/10 p-6 sm:p-10 overflow-hidden shadow-inner">
+            
+            {/* World Map Vector Graphic */}
+            <div className="relative w-full aspect-[2/1] min-h-[320px] max-h-[550px] flex items-center justify-center">
+              
+              {/* Responsive SVG Continents Silhouette */}
+              <svg 
+                viewBox="0 0 1000 500" 
+                className="w-full h-full object-contain text-slate-300 dark:text-slate-800"
+                fill="currentColor"
+              >
+                {/* North America */}
+                <path d="M140,90 Q170,80 230,95 Q260,130 250,170 Q210,190 190,220 Q160,250 145,230 Q120,180 115,140 Z" />
+                <path d="M70,80 Q120,60 150,75 Q130,110 90,115 Z" />
+                {/* Central & South America */}
+                <path d="M220,260 Q260,260 270,300 Q280,360 260,420 Q240,440 225,410 Q215,340 210,300 Z" />
+                {/* Europe */}
+                <path d="M470,110 Q540,95 560,130 Q540,165 490,170 Q465,140 470,110 Z" />
+                <path d="M440,115 Q465,110 460,135 Q435,135 440,115 Z" />
+                {/* Africa */}
+                <path d="M470,190 Q545,185 565,245 Q565,330 520,380 Q480,360 465,290 Q450,225 470,190 Z" />
+                {/* Asia */}
+                <path d="M570,90 Q720,70 820,115 Q840,180 810,220 Q760,260 700,240 Q660,220 620,230 Q565,180 570,90 Z" />
+                {/* Australia */}
+                <path d="M770,320 Q850,310 870,360 Q850,420 790,410 Q760,370 770,320 Z" />
+              </svg>
+
+              {/* Pin 1: BANGLADESH (PROMINENT - PHYSICALLY AVAILABLE HERE) */}
+              <div className="absolute left-[68%] top-[45%] -translate-x-1/2 -translate-y-1/2 z-20 group">
+                {/* Pulsing Beacon Rings */}
+                <div className="absolute -inset-4 rounded-full bg-blue-500/30 animate-ping" />
+                <div className="absolute -inset-8 rounded-full bg-blue-500/15 animate-pulse" />
+                
+                {/* Center Pin Button */}
+                <div className="relative w-6 h-6 rounded-full bg-blue-600 border-2 border-white shadow-xl flex items-center justify-center text-white cursor-pointer transform group-hover:scale-125 transition-transform duration-200">
+                  <div className="w-2 h-2 rounded-full bg-white" />
+                </div>
+
+                {/* Always-Visible / High-Impact Tooltip Badge */}
+                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-64 bg-slate-950 text-white rounded-2xl p-3.5 shadow-2xl border border-blue-500/50 text-center pointer-events-none transform -translate-y-1 transition-all">
+                  <div className="flex items-center justify-center gap-1.5 text-xs font-mono font-bold text-emerald-400 mb-0.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>🇧🇩 BANGLADESH (HQ)</span>
+                  </div>
+                  <div className="text-xs font-bold text-white mb-0.5">
+                    Physically Available Here
+                  </div>
+                  <p className="text-[11px] text-slate-300 font-mono">
+                    Kushtia Physical Delivery Center
+                  </p>
+                  <div className="mt-1.5 pt-1.5 border-t border-white/10 text-[10px] text-blue-300 font-mono">
+                    On-Site Engineers &amp; Leadership
+                  </div>
+                </div>
+              </div>
+
+              {/* Pin 2: United States (Global Delivery) */}
+              <div className="absolute left-[20%] top-[34%] -translate-x-1/2 -translate-y-1/2 z-10 group">
+                <div className="w-3.5 h-3.5 rounded-full bg-slate-400 dark:bg-slate-600 border border-white dark:border-slate-800 shadow cursor-pointer group-hover:bg-blue-500 transition-colors" />
+                <div className="absolute top-5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900/90 text-white text-[10px] font-mono px-2.5 py-1 rounded-md shadow border border-white/10 opacity-80 group-hover:opacity-100 transition-opacity">
+                  <span>🇺🇸 United States (Global Delivery)</span>
+                </div>
+              </div>
+
+              {/* Pin 3: United Kingdom / Europe (Global Delivery) */}
+              <div className="absolute left-[49%] top-[25%] -translate-x-1/2 -translate-y-1/2 z-10 group">
+                <div className="w-3.5 h-3.5 rounded-full bg-slate-400 dark:bg-slate-600 border border-white dark:border-slate-800 shadow cursor-pointer group-hover:bg-blue-500 transition-colors" />
+                <div className="absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900/90 text-white text-[10px] font-mono px-2.5 py-1 rounded-md shadow border border-white/10 opacity-80 group-hover:opacity-100 transition-opacity">
+                  <span>🇬🇧 UK &amp; Europe</span>
+                </div>
+              </div>
+
+              {/* Pin 4: UAE / Middle East (Expanding Soon) */}
+              <div className="absolute left-[59%] top-[37%] -translate-x-1/2 -translate-y-1/2 z-10 group">
+                <div className="w-3.5 h-3.5 rounded-full bg-slate-400 dark:bg-slate-600 border border-white dark:border-slate-800 shadow cursor-pointer group-hover:bg-blue-500 transition-colors" />
+                <div className="absolute top-5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900/90 text-white text-[10px] font-mono px-2.5 py-1 rounded-md shadow border border-white/10 opacity-80 group-hover:opacity-100 transition-opacity">
+                  <span>🇦🇪 UAE (Expanding Soon)</span>
+                </div>
+              </div>
+
+              {/* Pin 5: Singapore / Southeast Asia (Expanding Soon) */}
+              <div className="absolute left-[74%] top-[56%] -translate-x-1/2 -translate-y-1/2 z-10 group">
+                <div className="w-3.5 h-3.5 rounded-full bg-slate-400 dark:bg-slate-600 border border-white dark:border-slate-800 shadow cursor-pointer group-hover:bg-blue-500 transition-colors" />
+                <div className="absolute top-5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900/90 text-white text-[10px] font-mono px-2.5 py-1 rounded-md shadow border border-white/10 opacity-80 group-hover:opacity-100 transition-opacity">
+                  <span>🇸🇬 Singapore (Edge Nodes)</span>
+                </div>
+              </div>
+
+              {/* Pin 6: Australia */}
+              <div className="absolute left-[82%] top-[74%] -translate-x-1/2 -translate-y-1/2 z-10 group">
+                <div className="w-3.5 h-3.5 rounded-full bg-slate-400 dark:bg-slate-600 border border-white dark:border-slate-800 shadow cursor-pointer group-hover:bg-blue-500 transition-colors" />
+                <div className="absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900/90 text-white text-[10px] font-mono px-2.5 py-1 rounded-md shadow border border-white/10 opacity-80 group-hover:opacity-100 transition-opacity">
+                  <span>🇦🇺 Australia</span>
+                </div>
+              </div>
+
+            </div>
+
           </div>
 
-          <div className="relative z-10 pt-4 text-xs font-mono text-blue-200 flex items-center justify-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Currently onboarding new client partners for Q1/Q2 2026</span>
+          {/* Physical Headquarters Detail Banner */}
+          <div className="mt-8 pt-8 border-t border-slate-200 dark:border-white/10 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+            
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-500/15 border border-blue-200 dark:border-blue-500/30 flex items-center justify-center text-blue-600 dark:text-blue-400 flex-shrink-0">
+                <Building2 className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-[11px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
+                  PHYSICAL HEADQUARTERS
+                </span>
+                <h4 className="font-heading font-bold text-slate-900 dark:text-white text-base">
+                  Kushtia, Bangladesh
+                </h4>
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  Walk-in meetings &amp; engineering lab
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+                <PhoneCall className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-[11px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
+                  DIRECT PHONE &amp; WHATSAPP
+                </span>
+                <a href="tel:+8801870955900" className="font-heading font-bold text-slate-900 dark:text-white text-base hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                  +880 1870 955 900
+                </a>
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  Sun - Thu: 9:00 AM - 6:00 PM (GMT+6)
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-start md:justify-end">
+              <Link
+                href="/contact"
+                className="w-full md:w-auto text-center bg-blue-600 hover:bg-blue-700 text-white font-heading font-semibold text-sm px-7 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 flex items-center justify-center gap-2"
+              >
+                <span>Schedule an In-Person Meeting</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
           </div>
 
         </div>
