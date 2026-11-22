@@ -1079,8 +1079,8 @@ export default function HomePage() {
               referrerPolicy="no-referrer-when-downgrade"
             />
 
-            {/* Floating TSS Soft Headquarters Card - Perfectly positioned at top-left, completely covering Google's default white card */}
-            <div className="absolute top-2 left-2 sm:top-2.5 sm:left-2.5 w-[calc(100%-16px)] sm:w-[370px] p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#070e24] border border-slate-200/90 dark:border-blue-500/40 shadow-2xl pointer-events-auto z-20">
+            {/* Docked TSS Soft Headquarters Card - Flawlessly docked at top-0 left-0, 100% covering Google's default card */}
+            <div className="absolute top-0 left-0 w-full max-w-[395px] p-4 sm:p-5 rounded-tl-[22px] rounded-br-2xl bg-white dark:bg-[#070e24] border-r border-b border-slate-200/90 dark:border-blue-500/35 shadow-2xl pointer-events-auto z-20">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
@@ -1093,12 +1093,12 @@ export default function HomePage() {
                 </span>
               </div>
 
-              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 flex items-start gap-1.5 leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 flex items-start gap-1.5 leading-relaxed">
                 <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                 <span>Kushtia Sadar, Khulna Division, Bangladesh</span>
               </p>
 
-              <div className="mt-3.5 pt-2.5 border-t border-slate-100 dark:border-white/10 flex items-center justify-between gap-2">
+              <div className="mt-4 pt-2.5 border-t border-slate-100 dark:border-white/10 flex items-center justify-between gap-2">
                 <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
                   23.9015° N, 89.1205° E
                 </span>
