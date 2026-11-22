@@ -416,3 +416,4 @@ export default function CaseStudyPage({ params }) {
     </main>
   );
 }
+

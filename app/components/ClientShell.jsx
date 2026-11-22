@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import Preloader from './Preloader';
@@ -9,6 +10,16 @@ import CloudBackground from './CloudBackground';
 export default function ClientShell({ children }) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith('/admin');
+
+  // Ensure refresh on any page (especially Home) resets scroll to top immediately
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if ('scrollRestoration' in window.history) {
+        window.history.scrollRestoration = 'manual';
+      }
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+  }, [pathname]);
 
   if (isAdmin) {
     return (

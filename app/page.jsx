@@ -271,60 +271,51 @@ export default function LandingPage() {
       </section>
 
       {/* =================================================================== */}
-      {/* 2. GLOBAL TRUST: "Working with ambitious businesses across borders"  */}
-      {/*    (Exact match to Reference Video frame 28s)                      */}
+      {/* 2. TRUST & IMPACT: Engineering software for ambitious businesses   */}
       {/* =================================================================== */}
-      <section className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10">
+      <motion.section 
+        initial={{ opacity: 0, y: 35 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10"
+      >
         <div className="bg-gradient-to-b from-[#08102a]/90 via-[#060b1e]/90 to-[#040816]/95 border border-white/15 rounded-3xl p-8 sm:p-14 shadow-[0_25px_60px_rgba(0,0,0,0.8)] backdrop-blur-2xl text-center space-y-10">
           
           {/* Header */}
           <div className="max-w-3xl mx-auto space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-mono text-blue-300 uppercase tracking-widest">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-mono text-blue-300 uppercase tracking-widest">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-              <span>A Growing Global Reach</span>
+              <span>PROVEN DIGITAL ENGINEERING</span>
             </div>
             
             <h2 className="font-heading text-section-title font-bold text-white tracking-[-0.025em] leading-[1.15]">
-              Working with ambitious businesses across borders.
+              Engineering software for ambitious businesses.
             </h2>
             
             <p className="font-body text-body-p text-slate-300 leading-[1.7] max-w-2xl mx-auto">
-              From high-growth local innovators to international corporate partners, we engineer high-resilience digital experiences that support exponential scale.
+              From high-growth innovators to expanding enterprise partners, we engineer high-resilience digital systems and custom software that drive measurable growth.
             </p>
           </div>
 
-          {/* Country Flags & Geographic Reach Pill */}
+          {/* Regional Reach Badge */}
           <div className="inline-flex flex-wrap items-center justify-center gap-2 px-4 py-2 rounded-full bg-white/[0.05] border border-white/15 text-xs text-slate-200 shadow-md">
-            <span className="flex items-center gap-1.5 text-base">
-              <span>🇦🇪</span>
-              <span>🇺🇸</span>
-              <span>🇸🇦</span>
-              <span>🇩🇪</span>
-              <span>🇬🇧</span>
-              <span>🇨🇦</span>
-              <span>🇸🇬</span>
-              <span>🇧🇩</span>
-            </span>
-            <span className="text-slate-400 font-mono text-[11px] ml-1">
-              • Clients across 12+ countries worldwide
+            <span className="text-base">🇧🇩</span>
+            <span className="text-slate-300 font-mono text-[11px] ml-1">
+              ✦ Delivering production-grade software across Bangladesh
             </span>
           </div>
 
-          {/* Client Brand Tags Row (Exact match to Video frame 28s) */}
+          {/* Client Brand Tags Row (Real Partners: AFC, Cholo Jai, etc.) */}
           <div className="flex flex-wrap items-center justify-center gap-2.5 max-w-4xl mx-auto">
             {[
-              'Apex Global Ventures',
-              'Gravity Xpeditions',
-              'Vero Italy',
-              'Bin Farash Group (UAE)',
-              'Staincode Labs',
-              'Mantara Cloud',
-              'Prospers Global',
-              'Dar Al Systems',
-              'Bennex Media',
-              'Atellex Enterprise',
-              'Wittelsbach Digital',
-              'and more...'
+              'AFC',
+              'Cholo Jai',
+              'GramAlo Solar Solution',
+              'Tutors Kushtia',
+              'Apex Global',
+              'TSS Systems',
+              'and growing partners...'
             ].map((client, idx) => (
               <span 
                 key={idx}
@@ -335,7 +326,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          {/* Stat Counter Grid (Matching Video Stats: 6+ yrs, 10x Peak Growth) */}
+          {/* Stat Counter Grid (6+ yrs experience, 5+ flagship products) */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-white/10 max-w-4xl mx-auto text-left">
             
             <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-5">
@@ -356,10 +347,10 @@ export default function LandingPage() {
 
             <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-5">
               <div className="text-3xl sm:text-4xl font-black text-sky-400 font-mono tracking-tight mb-1">
-                120+
+                5+
               </div>
-              <div className="text-xs font-semibold text-white">Platforms Deployed</div>
-              <p className="text-[11px] text-slate-400">Production web &amp; mobile solutions</p>
+              <div className="text-xs font-semibold text-white">Flagship Platforms</div>
+              <p className="text-[11px] text-slate-400">Engineered production web, mobile &amp; systems</p>
             </div>
 
             <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-5">
@@ -379,7 +370,6 @@ export default function LandingPage() {
               <span>• Distributed Cloud Infrastructure</span>
               <span>• Flutter &amp; React Native Mobile</span>
               <span>• Custom Enterprise Software</span>
-              <span>• Sub-50ms Global Edge Routing</span>
               <span>• Zero-Trust Data Confidentiality</span>
               <span>• 100% Full IP Handover</span>
               <span>• High-Concurrency SQL Replication</span>
@@ -387,7 +377,7 @@ export default function LandingPage() {
           </div>
 
         </div>
-      </section>
+      </motion.section>
 
       {/* =================================================================== */}
       {/* 3. SERVICES: "What we do, and do well."                             */}
