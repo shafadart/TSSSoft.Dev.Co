@@ -26,7 +26,6 @@ import {
   Users, 
   Activity,
   Laptop,
-  MapPin,
   Building2,
   PhoneCall
 } from 'lucide-react';
@@ -1038,7 +1037,7 @@ export default function HomePage() {
       </motion.section>
 
       {/* =================================================================== */}
-      {/* 8. WORLD MAP SECTION: "Where We Are Available" (GotMyHost Style)    */}
+      {/* 8. WORLD MAP SECTION: Direct on BG (No Card, Clean Ash, Blue BD)   */}
       {/* =================================================================== */}
       <motion.section 
         initial={{ opacity: 0, y: 35 }}
@@ -1047,173 +1046,90 @@ export default function HomePage() {
         transition={{ duration: 0.6 }}
         className="px-4 sm:px-8 max-w-[1400px] mx-auto relative z-10"
       >
-        <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/15 rounded-3xl p-8 sm:p-14 shadow-xl backdrop-blur-2xl">
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest">
+            <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+            <span>GLOBAL DELIVERY &amp; PHYSICAL PRESENCE</span>
+          </div>
+          <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-[-0.025em]">
+            Where We Are Available.
+          </h2>
+          <p className="font-body text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
+            Headquartered physically in Kushtia, Bangladesh — engineering custom enterprise systems and scalable digital platforms for businesses worldwide.
+          </p>
+        </div>
+
+        {/* Direct Ash World Map on BG — NO CARD, NO TEXT POPUPS, BANGLADESH IN BLUE */}
+        <div className="relative w-full max-w-5xl mx-auto py-6 select-none flex items-center justify-center">
+          <div className="relative w-full aspect-[876/533]">
+            {/* The Ash World Map Image with Bangladesh Filled in Blue */}
+            <img 
+              src="/world-map-ash.png" 
+              alt="World Map - TSS Soft Global Delivery" 
+              className="w-full h-auto object-contain transition-opacity duration-300 opacity-90 dark:opacity-80"
+            />
+
+            {/* Subtle Pulsing Beacon Ring over Bangladesh (Exact coordinates: left 72.83%, top 46.15%) */}
+            <div 
+              className="absolute pointer-events-none -translate-x-1/2 -translate-y-1/2 z-10"
+              style={{ left: '72.83%', top: '46.15%' }}
+            >
+              <span className="absolute -inset-3 rounded-full bg-blue-500/40 animate-ping" />
+              <span className="relative block w-3.5 h-3.5 rounded-full bg-blue-600 border-2 border-white shadow-lg" />
+            </div>
+          </div>
+        </div>
+
+        {/* Physical Office Footer Bar */}
+        <div className="mt-8 pt-8 border-t border-slate-200 dark:border-white/10 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
           
-          {/* Header */}
-          <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest">
-              <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-              <span>PHYSICAL PRESENCE &amp; GLOBAL DELIVERY</span>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-500/15 border border-blue-200 dark:border-blue-500/30 flex items-center justify-center text-blue-600 dark:text-blue-400 flex-shrink-0">
+              <Building2 className="w-6 h-6" />
             </div>
-            <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-[-0.025em]">
-              Where We Are Available.
-            </h2>
-            <p className="font-body text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
-              We are <strong>physically headquartered in Kushtia, Bangladesh</strong> with dedicated engineering pods on-site, delivering custom software, mobile apps, and enterprise cloud architecture across Bangladesh and worldwide.
-            </p>
+            <div>
+              <span className="text-[11px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 block font-semibold">
+                PHYSICAL HEADQUARTERS
+              </span>
+              <h4 className="font-heading font-bold text-slate-900 dark:text-white text-base">
+                Kushtia, Bangladesh
+              </h4>
+              <p className="text-xs text-slate-600 dark:text-slate-400">
+                Walk-in meetings &amp; engineering lab
+              </p>
+            </div>
           </div>
 
-          {/* Interactive World Map SVG Container (GotMyHost Style) */}
-          <div className="relative w-full rounded-2xl bg-slate-50/70 dark:bg-[#030717]/80 border border-slate-200/80 dark:border-white/10 p-6 sm:p-10 overflow-hidden shadow-inner">
-            
-            {/* World Map Vector Graphic */}
-            <div className="relative w-full aspect-[2/1] min-h-[320px] max-h-[550px] flex items-center justify-center">
-              
-              {/* Responsive SVG Continents Silhouette */}
-              <svg 
-                viewBox="0 0 1000 500" 
-                className="w-full h-full object-contain text-slate-300 dark:text-slate-800"
-                fill="currentColor"
-              >
-                {/* North America */}
-                <path d="M140,90 Q170,80 230,95 Q260,130 250,170 Q210,190 190,220 Q160,250 145,230 Q120,180 115,140 Z" />
-                <path d="M70,80 Q120,60 150,75 Q130,110 90,115 Z" />
-                {/* Central & South America */}
-                <path d="M220,260 Q260,260 270,300 Q280,360 260,420 Q240,440 225,410 Q215,340 210,300 Z" />
-                {/* Europe */}
-                <path d="M470,110 Q540,95 560,130 Q540,165 490,170 Q465,140 470,110 Z" />
-                <path d="M440,115 Q465,110 460,135 Q435,135 440,115 Z" />
-                {/* Africa */}
-                <path d="M470,190 Q545,185 565,245 Q565,330 520,380 Q480,360 465,290 Q450,225 470,190 Z" />
-                {/* Asia */}
-                <path d="M570,90 Q720,70 820,115 Q840,180 810,220 Q760,260 700,240 Q660,220 620,230 Q565,180 570,90 Z" />
-                {/* Australia */}
-                <path d="M770,320 Q850,310 870,360 Q850,420 790,410 Q760,370 770,320 Z" />
-              </svg>
-
-              {/* Pin 1: BANGLADESH (PROMINENT - PHYSICALLY AVAILABLE HERE) */}
-              <div className="absolute left-[68%] top-[45%] -translate-x-1/2 -translate-y-1/2 z-20 group">
-                {/* Pulsing Beacon Rings */}
-                <div className="absolute -inset-4 rounded-full bg-blue-500/30 animate-ping" />
-                <div className="absolute -inset-8 rounded-full bg-blue-500/15 animate-pulse" />
-                
-                {/* Center Pin Button */}
-                <div className="relative w-6 h-6 rounded-full bg-blue-600 border-2 border-white shadow-xl flex items-center justify-center text-white cursor-pointer transform group-hover:scale-125 transition-transform duration-200">
-                  <div className="w-2 h-2 rounded-full bg-white" />
-                </div>
-
-                {/* Always-Visible / High-Impact Tooltip Badge */}
-                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-64 bg-slate-950 text-white rounded-2xl p-3.5 shadow-2xl border border-blue-500/50 text-center pointer-events-none transform -translate-y-1 transition-all">
-                  <div className="flex items-center justify-center gap-1.5 text-xs font-mono font-bold text-emerald-400 mb-0.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>🇧🇩 BANGLADESH (HQ)</span>
-                  </div>
-                  <div className="text-xs font-bold text-white mb-0.5">
-                    Physically Available Here
-                  </div>
-                  <p className="text-[11px] text-slate-300 font-mono">
-                    Kushtia Physical Delivery Center
-                  </p>
-                  <div className="mt-1.5 pt-1.5 border-t border-white/10 text-[10px] text-blue-300 font-mono">
-                    On-Site Engineers &amp; Leadership
-                  </div>
-                </div>
-              </div>
-
-              {/* Pin 2: United States (Global Delivery) */}
-              <div className="absolute left-[20%] top-[34%] -translate-x-1/2 -translate-y-1/2 z-10 group">
-                <div className="w-3.5 h-3.5 rounded-full bg-slate-400 dark:bg-slate-600 border border-white dark:border-slate-800 shadow cursor-pointer group-hover:bg-blue-500 transition-colors" />
-                <div className="absolute top-5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900/90 text-white text-[10px] font-mono px-2.5 py-1 rounded-md shadow border border-white/10 opacity-80 group-hover:opacity-100 transition-opacity">
-                  <span>🇺🇸 United States (Global Delivery)</span>
-                </div>
-              </div>
-
-              {/* Pin 3: United Kingdom / Europe (Global Delivery) */}
-              <div className="absolute left-[49%] top-[25%] -translate-x-1/2 -translate-y-1/2 z-10 group">
-                <div className="w-3.5 h-3.5 rounded-full bg-slate-400 dark:bg-slate-600 border border-white dark:border-slate-800 shadow cursor-pointer group-hover:bg-blue-500 transition-colors" />
-                <div className="absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900/90 text-white text-[10px] font-mono px-2.5 py-1 rounded-md shadow border border-white/10 opacity-80 group-hover:opacity-100 transition-opacity">
-                  <span>🇬🇧 UK &amp; Europe</span>
-                </div>
-              </div>
-
-              {/* Pin 4: UAE / Middle East (Expanding Soon) */}
-              <div className="absolute left-[59%] top-[37%] -translate-x-1/2 -translate-y-1/2 z-10 group">
-                <div className="w-3.5 h-3.5 rounded-full bg-slate-400 dark:bg-slate-600 border border-white dark:border-slate-800 shadow cursor-pointer group-hover:bg-blue-500 transition-colors" />
-                <div className="absolute top-5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900/90 text-white text-[10px] font-mono px-2.5 py-1 rounded-md shadow border border-white/10 opacity-80 group-hover:opacity-100 transition-opacity">
-                  <span>🇦🇪 UAE (Expanding Soon)</span>
-                </div>
-              </div>
-
-              {/* Pin 5: Singapore / Southeast Asia (Expanding Soon) */}
-              <div className="absolute left-[74%] top-[56%] -translate-x-1/2 -translate-y-1/2 z-10 group">
-                <div className="w-3.5 h-3.5 rounded-full bg-slate-400 dark:bg-slate-600 border border-white dark:border-slate-800 shadow cursor-pointer group-hover:bg-blue-500 transition-colors" />
-                <div className="absolute top-5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900/90 text-white text-[10px] font-mono px-2.5 py-1 rounded-md shadow border border-white/10 opacity-80 group-hover:opacity-100 transition-opacity">
-                  <span>🇸🇬 Singapore (Edge Nodes)</span>
-                </div>
-              </div>
-
-              {/* Pin 6: Australia */}
-              <div className="absolute left-[82%] top-[74%] -translate-x-1/2 -translate-y-1/2 z-10 group">
-                <div className="w-3.5 h-3.5 rounded-full bg-slate-400 dark:bg-slate-600 border border-white dark:border-slate-800 shadow cursor-pointer group-hover:bg-blue-500 transition-colors" />
-                <div className="absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900/90 text-white text-[10px] font-mono px-2.5 py-1 rounded-md shadow border border-white/10 opacity-80 group-hover:opacity-100 transition-opacity">
-                  <span>🇦🇺 Australia</span>
-                </div>
-              </div>
-
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 flex-shrink-0">
+              <PhoneCall className="w-6 h-6" />
             </div>
-
+            <div>
+              <span className="text-[11px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 block font-semibold">
+                DIRECT PHONE &amp; WHATSAPP
+              </span>
+              <a href="tel:+8801870955900" className="font-heading font-bold text-slate-900 dark:text-white text-base hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                +880 1870 955 900
+              </a>
+              <p className="text-xs text-slate-600 dark:text-slate-400">
+                Sun - Thu: 9:00 AM - 6:00 PM (GMT+6)
+              </p>
+            </div>
           </div>
 
-          {/* Physical Headquarters Detail Banner */}
-          <div className="mt-8 pt-8 border-t border-slate-200 dark:border-white/10 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-            
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-500/15 border border-blue-200 dark:border-blue-500/30 flex items-center justify-center text-blue-600 dark:text-blue-400 flex-shrink-0">
-                <Building2 className="w-6 h-6" />
-              </div>
-              <div>
-                <span className="text-[11px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
-                  PHYSICAL HEADQUARTERS
-                </span>
-                <h4 className="font-heading font-bold text-slate-900 dark:text-white text-base">
-                  Kushtia, Bangladesh
-                </h4>
-                <p className="text-xs text-slate-600 dark:text-slate-400">
-                  Walk-in meetings &amp; engineering lab
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200 dark:border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 flex-shrink-0">
-                <PhoneCall className="w-6 h-6" />
-              </div>
-              <div>
-                <span className="text-[11px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 block">
-                  DIRECT PHONE &amp; WHATSAPP
-                </span>
-                <a href="tel:+8801870955900" className="font-heading font-bold text-slate-900 dark:text-white text-base hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                  +880 1870 955 900
-                </a>
-                <p className="text-xs text-slate-600 dark:text-slate-400">
-                  Sun - Thu: 9:00 AM - 6:00 PM (GMT+6)
-                </p>
-              </div>
-            </div>
-
-            <div className="flex justify-start md:justify-end">
-              <Link
-                href="/contact"
-                className="w-full md:w-auto text-center bg-blue-600 hover:bg-blue-700 text-white font-heading font-semibold text-sm px-7 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 flex items-center justify-center gap-2"
-              >
-                <span>Schedule an In-Person Meeting</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-
+          <div className="flex justify-start md:justify-end">
+            <Link
+              href="/contact"
+              className="w-full md:w-auto text-center bg-blue-600 hover:bg-blue-700 text-white font-heading font-semibold text-sm px-7 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 flex items-center justify-center gap-2"
+            >
+              <span>Schedule an In-Person Meeting</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
 
         </div>
+
       </motion.section>
 
     </div>
