@@ -27,7 +27,9 @@ import {
   Activity,
   Laptop,
   Building2,
-  PhoneCall
+  PhoneCall,
+  MapPin,
+  ExternalLink
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -1050,33 +1052,54 @@ export default function HomePage() {
         <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest">
             <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-            <span>GLOBAL DELIVERY &amp; PHYSICAL PRESENCE</span>
+            <span>PHYSICAL PRESENCE &amp; HEADQUARTERS</span>
           </div>
           <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-[-0.025em]">
-            Where We Are Available.
+            Where We Are Located.
           </h2>
           <p className="font-body text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
-            Headquartered physically in Kushtia, Bangladesh — engineering custom enterprise systems and scalable digital platforms for businesses worldwide.
+            Headquartered physically in Kushtia, Bangladesh — engineering custom enterprise systems and scalable digital platforms for businesses across Bangladesh and worldwide.
           </p>
         </div>
 
-        {/* Direct Ash World Map on BG — NO CARD, NO TEXT POPUPS, BANGLADESH IN BLUE */}
-        <div className="relative w-full max-w-5xl mx-auto py-6 select-none flex items-center justify-center">
-          <div className="relative w-full aspect-[876/533]">
-            {/* The Ash World Map Image with Bangladesh Filled in Blue */}
-            <img 
-              src="/world-map-ash.png" 
-              alt="World Map - TSS Soft Global Delivery" 
-              className="w-full h-auto object-contain transition-opacity duration-300 opacity-90 dark:opacity-80"
+        {/* Real Interactive Map Centered on Kushtia, Bangladesh */}
+        <div className="relative w-full max-w-5xl mx-auto my-6 rounded-3xl overflow-hidden border border-slate-200/90 dark:border-blue-500/25 shadow-xl bg-slate-100 dark:bg-[#070e24]">
+          <div className="relative w-full h-[420px] sm:h-[480px]">
+            <iframe
+              title="TSS Soft Kushtia Headquarters Location"
+              src="https://maps.google.com/maps?q=Kushtia,%20Bangladesh&t=&z=13&ie=UTF8&iwloc=&output=embed"
+              className="w-full h-full border-0"
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
             />
 
-            {/* Subtle Pulsing Beacon Ring over Bangladesh (Exact coordinates: left 72.83%, top 46.15%) */}
-            <div 
-              className="absolute pointer-events-none -translate-x-1/2 -translate-y-1/2 z-10"
-              style={{ left: '72.83%', top: '46.15%' }}
-            >
-              <span className="absolute -inset-3 rounded-full bg-blue-500/40 animate-ping" />
-              <span className="relative block w-3.5 h-3.5 rounded-full bg-blue-600 border-2 border-white shadow-lg" />
+            {/* Floating Location Card Over Map */}
+            <div className="absolute top-4 left-4 sm:top-6 sm:left-6 max-w-xs sm:max-w-sm p-4 rounded-2xl bg-white/95 dark:bg-[#070e24]/95 backdrop-blur-md border border-slate-200/90 dark:border-blue-500/30 shadow-lg pointer-events-auto">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="font-heading font-bold text-slate-900 dark:text-white text-sm">
+                  TSS Soft Headquarters
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                <span>Kushtia Sadar, Khulna Division, Bangladesh</span>
+              </p>
+              <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-white/10 flex items-center justify-between gap-2">
+                <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                  23.9015° N, 89.1205° E
+                </span>
+                <a
+                  href="https://maps.google.com/?q=Kushtia,+Bangladesh"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                >
+                  <span>Open in Maps</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
             </div>
           </div>
         </div>
