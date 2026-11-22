@@ -23,7 +23,7 @@ export default function Footer() {
                 />
               </div>
             </Link>
-            <p className="text-slate-400 text-sm leading-relaxed max-w-sm mb-6 font-light">
+            <p className="text-slate-400 text-sm leading-relaxed max-w-sm mb-6 font-normal">
               Crafting high-performance digital systems, custom web architectures, and native mobile platforms. From Kushtia to global enterprise scale.
             </p>
             <div className="flex gap-3">
@@ -44,17 +44,17 @@ export default function Footer() {
 
           {/* Nav Links Column */}
           <div>
-            <h3 className="text-white font-semibold mb-5 text-xs uppercase tracking-wider">Company</h3>
+            <h3 className="text-white font-heading font-semibold mb-5 text-xs uppercase tracking-wider">Company</h3>
             <ul className="space-y-3 text-sm">
               <li><Link href="/about" className="text-slate-400 hover:text-white transition-colors">About Us</Link></li>
               <li><Link href="/services" className="text-slate-400 hover:text-white transition-colors">Services</Link></li>
               <li><Link href="/portfolio" className="text-slate-400 hover:text-white transition-colors">Portfolio</Link></li>
-              <li><Link href="/careers" className="text-slate-400 hover:text-white transition-colors inline-flex items-center gap-2">Careers <span className="text-[10px] bg-white/10 text-slate-300 px-2 py-0.5 rounded-full uppercase tracking-wider">Hiring</span></Link></li>
+              <li><Link href="/careers" className="text-slate-400 hover:text-white transition-colors inline-flex items-center gap-2">Careers <span className="text-[10px] font-mono bg-white/10 text-slate-300 px-2 py-0.5 rounded-full uppercase tracking-wider">Hiring</span></Link></li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-white font-semibold mb-5 text-xs uppercase tracking-wider">Capabilities</h3>
+            <h3 className="text-white font-heading font-semibold mb-5 text-xs uppercase tracking-wider">Capabilities</h3>
             <ul className="space-y-3 text-sm">
               <li><Link href="/services" className="text-slate-400 hover:text-white transition-colors">Mobile Platforms</Link></li>
               <li><Link href="/services" className="text-slate-400 hover:text-white transition-colors">Web Architectures</Link></li>
@@ -64,19 +64,19 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="text-white font-semibold mb-5 text-xs uppercase tracking-wider">Direct Contact</h3>
-            <ul className="space-y-3 text-sm font-light">
+            <h3 className="text-white font-heading font-semibold mb-5 text-xs uppercase tracking-wider">Direct Contact</h3>
+            <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2.5 text-slate-300">
                 <Mail size={16} className="mt-0.5 flex-shrink-0 text-blue-400" />
-                <a href="mailto:hello@tsssoft.com" className="hover:text-white transition-colors font-mono text-xs">hello@tsssoft.com</a>
+                <a href="mailto:hello@tsssoft.com" className="hover:text-white transition-colors font-mono text-xs tracking-wider">hello@tsssoft.com</a>
               </li>
               <li className="flex items-start gap-2.5 text-slate-300">
                 <span className="material-symbols-outlined text-[16px] mt-0.5 text-blue-400">call</span>
-                <a href="tel:+8801870955900" className="hover:text-white transition-colors font-mono text-xs">+880 1870 955 900</a>
+                <a href="tel:+8801870955900" className="hover:text-white transition-colors font-mono text-xs tracking-wider">+880 1870 955 900</a>
               </li>
               <li className="flex items-start gap-2.5 text-slate-400">
                 <MapPin size={16} className="mt-0.5 flex-shrink-0 text-blue-400" />
-                <span className="text-xs">Kushtia, Bangladesh<br/><span className="text-slate-500">Operating Worldwide</span></span>
+                <span className="text-xs">Kushtia, Bangladesh<br/><span className="text-slate-500 font-mono text-[11px]">Operating Worldwide</span></span>
               </li>
             </ul>
           </div>

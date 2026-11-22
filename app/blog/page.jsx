@@ -32,10 +32,10 @@ export default function BlogPage() {
         <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-blue-400 mb-4 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">
           <Sparkles className="w-3.5 h-3.5" /> Technical Publications
         </div>
-        <h1 className="text-4xl sm:text-6xl font-black text-white leading-tight tracking-tight mb-6">
+        <h1 className="font-heading text-hero font-extrabold text-white leading-[1.08] tracking-[-0.035em] mb-6">
           Engineering Insights.
         </h1>
-        <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto font-light leading-relaxed">
+        <p className="font-body text-body-p text-slate-300 max-w-2xl mx-auto font-normal leading-[1.7]">
           Deep dives into modern tech, systems architecture, and design patterns by the TSS Soft engineering team.
         </p>
       </section>
@@ -60,9 +60,9 @@ export default function BlogPage() {
               </div>
               <div className="p-8 flex flex-col flex-grow">
                 <span className="text-blue-400 text-xs font-mono font-bold mb-3 uppercase tracking-wider">{blog.category}</span>
-                <h2 className="text-xl font-bold text-white mb-4 group-hover:text-blue-300 transition-colors">{blog.title}</h2>
+                <h2 className="font-heading text-card-title font-bold text-white mb-4 group-hover:text-blue-300 transition-colors">{blog.title}</h2>
                 <div className="mt-auto pt-4 border-t border-white/5">
-                  <span className="inline-flex items-center gap-2 text-sm text-slate-300 font-semibold group-hover:text-blue-400 transition-colors">
+                  <span className="inline-flex items-center gap-2 font-heading font-semibold text-sm text-slate-300 group-hover:text-blue-400 transition-colors">
                     Read Publication &rarr;
                   </span>
                 </div>

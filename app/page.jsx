@@ -233,7 +233,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
-            className="text-4xl sm:text-6xl lg:text-[4.75rem] font-black text-white tracking-tight leading-[1.06] mb-6 font-display-xl drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)]"
+            className="font-heading text-hero font-extrabold text-white tracking-[-0.035em] leading-[1.08] mb-6 drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)]"
           >
             Creative Intelligence in{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-200 to-emerald-300 drop-shadow-[0_0_40px_rgba(56,189,248,0.4)]">
@@ -246,7 +246,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-base sm:text-xl text-slate-300 max-w-2xl font-normal leading-relaxed mb-10 drop-shadow-[0_2px_14px_rgba(0,0,0,0.85)]"
+            className="font-body text-body-p text-slate-300 max-w-2xl font-normal leading-[1.7] mb-10 drop-shadow-[0_2px_14px_rgba(0,0,0,0.85)]"
           >
             No matter the industry you’re in, or the software asset you need, we design and engineer it for you with world-class craftsmanship.
           </motion.p>
@@ -261,7 +261,7 @@ export default function LandingPage() {
             {/* Primary Neon Pill Button (Matching Video's High-Energy Accent) */}
             <Link
               href="/contact"
-              className="bg-[#22c55e] hover:bg-[#16a34a] text-slate-950 font-bold px-8 py-3.5 rounded-full text-sm shadow-[0_0_30px_rgba(34,197,94,0.45)] hover:shadow-[0_0_45px_rgba(34,197,94,0.7)] transition-all duration-300 flex items-center gap-2 group active:scale-95 tracking-wide uppercase font-mono"
+              className="bg-[#22c55e] hover:bg-[#16a34a] text-slate-950 font-heading font-semibold text-[15px] px-8 py-3.5 rounded-full shadow-[0_0_30px_rgba(34,197,94,0.45)] hover:shadow-[0_0_45px_rgba(34,197,94,0.7)] transition-all duration-300 flex items-center gap-2 group active:scale-95 tracking-[-0.01em]"
             >
               <span>Start a Project</span>
               <ArrowUpRight className="w-4 h-4 stroke-[2.5] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -270,7 +270,7 @@ export default function LandingPage() {
             {/* Secondary Glass Pill Button */}
             <a
               href="#showcase"
-              className="bg-white/10 hover:bg-white/15 text-white font-medium px-7 py-3.5 rounded-full text-sm border border-white/20 backdrop-blur-xl hover:border-white/35 transition-all duration-200 flex items-center gap-2 active:scale-95"
+              className="bg-white/10 hover:bg-white/15 text-white font-heading font-medium text-[15px] px-7 py-3.5 rounded-full border border-white/20 backdrop-blur-xl hover:border-white/35 transition-all duration-200 flex items-center gap-2 active:scale-95 tracking-[-0.01em]"
             >
               <span>Explore Selected Works</span>
               <ChevronDown className="w-4 h-4 text-slate-400" />
@@ -393,11 +393,11 @@ export default function LandingPage() {
               <span>A Growing Global Reach</span>
             </div>
             
-            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+            <h2 className="font-heading text-section-title font-bold text-white tracking-[-0.025em] leading-[1.15]">
               Working with ambitious businesses across borders.
             </h2>
             
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
+            <p className="font-body text-body-p text-slate-300 leading-[1.7] max-w-2xl mx-auto">
               From high-growth local innovators to international corporate partners, we engineer high-resilience digital experiences that support exponential scale.
             </p>
           </div>
@@ -510,11 +510,11 @@ export default function LandingPage() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-mono text-blue-300 uppercase tracking-widest mb-3">
               <span>Capabilities &amp; Core Disciplines</span>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+            <h2 className="font-heading text-section-title font-bold text-white tracking-[-0.025em] leading-[1.15]">
               What we do, and do well.
             </h2>
           </div>
-          <p className="text-sm sm:text-base text-slate-300 max-w-md font-light leading-relaxed">
+          <p className="font-body text-body-p text-slate-300 max-w-md leading-[1.7]">
             We reject cookie-cutter templates. Every line of code and UI component is precision-engineered to drive tangible business metrics.
           </p>
         </div>
@@ -611,11 +611,11 @@ export default function LandingPage() {
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-mono text-emerald-300 uppercase tracking-widest mb-3">
                 <span>Selected Works &amp; Architecture</span>
               </div>
-              <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+              <h2 className="font-heading text-section-title font-bold text-white tracking-[-0.025em] leading-[1.15]">
                 Websites That Make an Impression.
               </h2>
             </div>
-            <p className="text-sm sm:text-base text-slate-300 max-w-md font-light leading-relaxed">
+            <p className="font-body text-body-p text-slate-300 max-w-md leading-[1.7]">
               A curated showcase of bespoke digital platforms engineered for enterprise clients worldwide.
             </p>
           </div>
@@ -736,11 +736,11 @@ export default function LandingPage() {
               <span>Our Process, Your Advantage</span>
             </div>
             
-            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+            <h2 className="font-heading text-section-title font-bold text-white tracking-[-0.025em] leading-[1.15]">
               From Idea To Execution.
             </h2>
             
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+            <p className="font-body text-body-p text-slate-300 leading-[1.7]">
               We have become experts in creating top-notch digital products. We design beautifully and develop excellently. And we care deeply about what we do.
             </p>
           </div>
@@ -880,14 +880,14 @@ export default function LandingPage() {
             <span>Competitive Matrix</span>
           </div>
           
-          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+          <h2 className="font-heading text-section-title font-bold text-white tracking-[-0.025em] leading-[1.15]">
             TSS Soft vs Alternatives? <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-sky-300 to-blue-400">
               Think One More Time!
             </span>
           </h2>
           
-          <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+          <p className="font-body text-body-p text-slate-300 leading-[1.7]">
             Why leading founders and enterprise teams choose TSS Soft instead of dealing with hiring overhead, sluggish agencies, or unpredictable freelancers.
           </p>
         </div>
@@ -980,12 +980,12 @@ export default function LandingPage() {
             <span>Client Stories &amp; Proof</span>
           </div>
           
-          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+          <h2 className="font-heading text-section-title font-bold text-white tracking-[-0.025em] leading-[1.15]">
             Don’t Take Our Word For It. <br />
             Hear From Our Clients.
           </h2>
           
-          <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+          <p className="font-body text-body-p text-slate-300 leading-[1.7]">
             From web platforms and mobile ecosystems to high-availability distributed systems, see what founders say about working with TSS Soft.
           </p>
         </div>
@@ -1098,10 +1098,10 @@ export default function LandingPage() {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-mono text-blue-300 uppercase tracking-widest">
             <span>Clarity &amp; Transparency</span>
           </div>
-          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+          <h2 className="font-heading text-section-title font-bold text-white tracking-[-0.025em] leading-[1.15]">
             Questions? We’ve Got Answers.
           </h2>
-          <p className="text-slate-300 text-sm sm:text-base">
+          <p className="font-body text-body-p text-slate-300">
             Everything you need to know about partnering with TSS Soft.
           </p>
         </div>
@@ -1160,14 +1160,14 @@ export default function LandingPage() {
               <span>Available for New Projects</span>
             </span>
 
-            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+            <h2 className="font-heading text-section-title font-bold text-white tracking-[-0.025em] leading-[1.15]">
               Have a project in mind? <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-sky-300 to-blue-400">
                 Let’s make it happen.
               </span>
             </h2>
 
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+            <p className="font-body text-body-p text-slate-300 leading-[1.7]">
               Book a direct architectural strategy session. We’ll review your vision, recommend optimal frameworks, and provide a fixed-price delivery roadmap within 24 hours.
             </p>
           </div>
@@ -1175,7 +1175,7 @@ export default function LandingPage() {
           <div className="relative z-10 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/contact"
-              className="bg-[#22c55e] hover:bg-[#16a34a] text-slate-950 font-bold px-8 py-4 rounded-full text-sm shadow-[0_0_35px_rgba(34,197,94,0.5)] hover:shadow-[0_0_50px_rgba(34,197,94,0.7)] transition-all duration-300 flex items-center gap-2 group active:scale-95 uppercase font-mono tracking-wide"
+              className="bg-[#22c55e] hover:bg-[#16a34a] text-slate-950 font-heading font-semibold text-[15px] px-8 py-4 rounded-full shadow-[0_0_35px_rgba(34,197,94,0.5)] hover:shadow-[0_0_50px_rgba(34,197,94,0.7)] transition-all duration-300 flex items-center gap-2 group active:scale-95 tracking-[-0.01em]"
             >
               <span>Start a Project</span>
               <ArrowUpRight className="w-4 h-4 stroke-[2.5] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -1183,7 +1183,7 @@ export default function LandingPage() {
 
             <Link
               href="/portfolio"
-              className="bg-white/10 hover:bg-white/15 text-white font-medium px-7 py-4 rounded-full text-sm border border-white/20 backdrop-blur-xl transition-all duration-200 flex items-center gap-2 active:scale-95"
+              className="bg-white/10 hover:bg-white/15 text-white font-heading font-medium text-[15px] px-7 py-4 rounded-full border border-white/20 backdrop-blur-xl transition-all duration-200 flex items-center gap-2 active:scale-95 tracking-[-0.01em]"
             >
               <span>Explore Selected Works</span>
             </Link>

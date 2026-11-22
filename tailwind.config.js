@@ -71,22 +71,37 @@ module.exports = {
         "container-padding": "2rem"
       },
       fontFamily: {
-        "body-md": ["Inter"],
-        "headline-lg": ["Hanken Grotesk"],
-        "display-xl": ["Hanken Grotesk"],
-        "display-xl-mobile": ["Hanken Grotesk"],
-        "label-caps": ["Geist"],
-        "headline-lg-mobile": ["Hanken Grotesk"],
-        "body-lg": ["Inter"]
+        heading: ['var(--font-heading)', 'Plus Jakarta Sans', 'sans-serif'],
+        sans: ['var(--font-body)', 'Inter', 'sans-serif'],
+        body: ['var(--font-body)', 'Inter', 'sans-serif'],
+        mono: ['var(--font-mono)', 'JetBrains Mono', 'monospace'],
+        // Legacy aliases mapped to the new system
+        'body-md': ['var(--font-body)', 'Inter', 'sans-serif'],
+        'body-lg': ['var(--font-body)', 'Inter', 'sans-serif'],
+        'headline-lg': ['var(--font-heading)', 'Plus Jakarta Sans', 'sans-serif'],
+        'headline-lg-mobile': ['var(--font-heading)', 'Plus Jakarta Sans', 'sans-serif'],
+        'display-xl': ['var(--font-heading)', 'Plus Jakarta Sans', 'sans-serif'],
+        'display-xl-mobile': ['var(--font-heading)', 'Plus Jakarta Sans', 'sans-serif'],
+        'label-caps': ['var(--font-mono)', 'JetBrains Mono', 'monospace'],
       },
       fontSize: {
-        "body-md": ["16px", { "lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400" }],
-        "headline-lg": ["48px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700" }],
-        "display-xl": ["72px", { "lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "800" }],
-        "display-xl-mobile": ["44px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
-        "label-caps": ["12px", { "lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "600" }],
-        "headline-lg-mobile": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700" }],
-        "body-lg": ["18px", { "lineHeight": "1.7", "letterSpacing": "0em", "fontWeight": "400" }]
+        // Professional Typography Fluid Scale Tokens
+        'hero': ['clamp(2.25rem, 5.5vw, 4.75rem)', { lineHeight: '1.08', letterSpacing: '-0.035em', fontWeight: '800' }],
+        'section-title': ['clamp(1.75rem, 3.5vw, 3rem)', { lineHeight: '1.15', letterSpacing: '-0.025em', fontWeight: '700' }],
+        'subheading': ['clamp(1.2rem, 2vw, 1.75rem)', { lineHeight: '1.3', letterSpacing: '-0.015em', fontWeight: '600' }],
+        'card-title': ['clamp(1.125rem, 1.5vw, 1.375rem)', { lineHeight: '1.35', letterSpacing: '-0.01em', fontWeight: '700' }],
+        'body-p': ['clamp(0.9375rem, 1.2vw, 1.0625rem)', { lineHeight: '1.7', letterSpacing: '0.005em', fontWeight: '400' }],
+        'body-sm': ['0.875rem', { lineHeight: '1.6', letterSpacing: '0em', fontWeight: '400' }],
+        'caption': ['0.8125rem', { lineHeight: '1.5', letterSpacing: '0em', fontWeight: '500' }],
+        'tech-label': ['0.75rem', { lineHeight: '1.4', letterSpacing: '0.06em', fontWeight: '500' }],
+        // Legacy mappings
+        'body-md': ['16px', { lineHeight: '1.7', letterSpacing: '0em', fontWeight: '400' }],
+        'body-lg': ['18px', { lineHeight: '1.7', letterSpacing: '0em', fontWeight: '400' }],
+        'headline-lg': ['48px', { lineHeight: '1.15', letterSpacing: '-0.025em', fontWeight: '700' }],
+        'headline-lg-mobile': ['32px', { lineHeight: '1.15', letterSpacing: '-0.02em', fontWeight: '700' }],
+        'display-xl': ['72px', { lineHeight: '1.08', letterSpacing: '-0.035em', fontWeight: '800' }],
+        'display-xl-mobile': ['44px', { lineHeight: '1.08', letterSpacing: '-0.025em', fontWeight: '800' }],
+        'label-caps': ['12px', { lineHeight: '1.4', letterSpacing: '0.06em', fontWeight: '500' }]
       }
     },
   },

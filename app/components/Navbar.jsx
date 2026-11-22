@@ -65,7 +65,7 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`relative px-4 py-1.5 rounded-full text-xs font-medium tracking-wide transition-all duration-200 flex items-center gap-1.5 ${
+                className={`relative px-4 py-1.5 rounded-full text-[14px] font-heading font-medium tracking-[-0.01em] transition-all duration-200 flex items-center gap-1.5 ${
                   active
                     ? 'text-white font-semibold'
                     : 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
@@ -90,10 +90,10 @@ export default function Navbar() {
           {/* Start Project Pill Button */}
           <Link
             href="/contact"
-            className="hidden sm:inline-flex items-center gap-1.5 bg-white text-slate-950 font-semibold px-4 sm:px-5 py-2 rounded-full text-xs hover:bg-slate-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.4)] transition-all duration-200 active:scale-95"
+            className="hidden sm:inline-flex items-center gap-1.5 bg-white text-slate-950 font-heading font-semibold text-[14px] leading-tight tracking-[-0.01em] px-5 py-2.5 rounded-full hover:bg-slate-100 hover:shadow-[0_0_25px_rgba(255,255,255,0.4)] transition-all duration-200 active:scale-95"
           >
             <span>Start a Project</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
+            <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
           </Link>
 
           {/* Mobile Menu Toggle */}
