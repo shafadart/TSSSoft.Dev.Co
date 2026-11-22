@@ -29,7 +29,8 @@ import {
   Building2,
   PhoneCall,
   MapPin,
-  ExternalLink
+  ExternalLink,
+  Palette
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -261,21 +262,25 @@ export default function HomePage() {
             </div>
 
             {/* Service Discovery Pills */}
-            <div className="pt-4 border-t border-slate-100 dark:border-white/5 flex flex-wrap items-center justify-center gap-2">
+            <div className="pt-4 border-t border-slate-100 dark:border-white/5 flex flex-wrap items-center justify-center gap-2.5">
               {[
-                '📱 Mobile Applications (Flutter / React Native)',
-                '🌐 Next.js Web Platforms',
-                '☁️ Enterprise Cloud & APIs',
-                '🖥️ Windows Desktop Systems',
-                '🎨 UI/UX Design Systems'
-              ].map((service, idx) => (
-                <span
-                  key={idx}
-                  className="px-3.5 py-1.5 rounded-xl text-xs font-medium font-mono bg-slate-50 dark:bg-white/5 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-white/10"
-                >
-                  {service}
-                </span>
-              ))}
+                { icon: Smartphone, label: 'Mobile Applications (Flutter / React Native)', color: 'text-blue-600 dark:text-blue-400' },
+                { icon: Globe, label: 'Next.js Web Platforms', color: 'text-cyan-600 dark:text-cyan-400' },
+                { icon: Cloud, label: 'Enterprise Cloud & APIs', color: 'text-indigo-600 dark:text-indigo-400' },
+                { icon: Laptop, label: 'Windows Desktop Systems', color: 'text-sky-600 dark:text-sky-400' },
+                { icon: Palette, label: 'UI/UX Design Systems', color: 'text-violet-600 dark:text-violet-400' }
+              ].map((service, idx) => {
+                const IconComp = service.icon;
+                return (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-medium font-mono bg-slate-50 dark:bg-white/5 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-white/10 hover:border-blue-500/40 transition-colors"
+                  >
+                    <IconComp className={`w-3.5 h-3.5 ${service.color} flex-shrink-0`} />
+                    <span>{service.label}</span>
+                  </span>
+                );
+              })}
             </div>
 
           </motion.div>
@@ -1136,7 +1141,7 @@ export default function HomePage() {
                 +880 1870 955 900
               </a>
               <p className="text-xs text-slate-600 dark:text-slate-400">
-                Sun - Thu: 9:00 AM - 6:00 PM (GMT+6)
+                24/7 Client Support &amp; Emergency Response
               </p>
             </div>
           </div>

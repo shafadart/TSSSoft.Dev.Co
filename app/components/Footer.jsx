@@ -118,15 +118,11 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-slate-400 text-xs font-normal">
+        <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4 text-slate-400 text-xs font-normal">
           <p>© {new Date().getFullYear()} TSS Soft. All rights reserved.</p>
-          <div className="flex gap-6">
+          <div className="flex items-center gap-6">
+            <Link href="/terms" className="hover:text-white transition-colors">Terms &amp; Conditions</Link>
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-          </div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-mono">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>All systems operational (99.98% SLA)</span>
           </div>
         </div>
       </div>
