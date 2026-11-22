@@ -41,7 +41,7 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
       </head>
-      <body className="bg-[#f8fafc] text-slate-900 dark:bg-[#050916] dark:text-slate-100 font-sans antialiased min-h-screen overflow-x-hidden selection:bg-blue-600 selection:text-white transition-colors duration-200 relative">
+      <body className="bg-white text-slate-900 dark:bg-[#050916] dark:text-slate-100 font-sans antialiased min-h-screen overflow-x-hidden selection:bg-blue-600 selection:text-white transition-colors duration-200 relative">
         <ClientShell>
           {children}
         </ClientShell>

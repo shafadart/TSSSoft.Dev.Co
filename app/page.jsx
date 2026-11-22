@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowUpRight, 
@@ -25,251 +26,300 @@ import {
   Clock, 
   Users, 
   Activity,
-  Laptop
+  Laptop,
+  Search,
+  CheckCircle,
+  ExternalLink
 } from 'lucide-react';
 
 export default function HomePage() {
-  // State for active FAQ accordion
+  const router = useRouter();
   const [openFaq, setOpenFaq] = useState(0);
+  const [selectedService, setSelectedService] = useState('web');
+  const [customRequirement, setCustomRequirement] = useState('');
 
   const toggleFaq = (idx) => {
     setOpenFaq(openFaq === idx ? null : idx);
   };
 
+  const handleEstimateSubmit = (e) => {
+    e.preventDefault();
+    router.push(`/contact?service=${encodeURIComponent(selectedService)}&note=${encodeURIComponent(customRequirement)}`);
+  };
+
   return (
-    <div className="space-y-24 sm:space-y-36 pb-24 overflow-x-hidden">
+    <div className="space-y-24 sm:space-y-36 pb-28 overflow-x-hidden bg-white dark:bg-[#050916] transition-colors duration-200">
 
       {/* =================================================================== */}
-      {/* 1. HERO SECTION: GotMyHost-inspired Human-Crafted Hero              */}
+      {/* 1. HERO SECTION: Full-Width Deep Blue Banner (GotMyHost Caliber)   */}
       {/* =================================================================== */}
-      <section className="min-h-[85vh] flex flex-col justify-center px-4 sm:px-8 max-w-7xl mx-auto pt-6 sm:pt-12 relative z-10">
+      <section className="relative w-full overflow-hidden">
         
-        {/* Main Header Text */}
-        <div className="flex flex-col items-center text-center max-w-4xl mx-auto mb-12 sm:mb-16">
+        {/* Full-Width Deep Royal Blue Banner Container */}
+        <div className="w-full bg-gradient-to-r from-[#031542] via-[#092978] to-[#041a4a] text-white pt-14 pb-28 sm:pb-36 relative overflow-hidden">
           
-          {/* Eyebrow Badge */}
-          <motion.div 
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full 
-              bg-blue-50 border border-blue-200/90 text-blue-700 shadow-sm
-              dark:bg-blue-950/70 dark:border-blue-800/80 dark:text-blue-300
-              text-xs font-semibold mb-6 backdrop-blur-md"
-          >
-            <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 animate-pulse" />
-            <span className="font-mono uppercase tracking-wider text-[11px]">
-              TSS Soft • Full-Cycle Software Architecture &amp; Development
-            </span>
-          </motion.div>
+          {/* Subtle Ambient Tech Mesh & Radial Accents */}
+          <div className="absolute inset-0 opacity-15 pointer-events-none"
+            style={{
+              backgroundImage: 'radial-gradient(rgba(255,255,255,0.2) 1px, transparent 1px)',
+              backgroundSize: '24px 24px'
+            }}
+          />
+          <div className="absolute top-0 right-1/4 w-[600px] h-[500px] bg-blue-500/20 rounded-full blur-[140px] pointer-events-none" />
+          <div className="absolute -bottom-20 left-10 w-[500px] h-[400px] bg-sky-400/15 rounded-full blur-[130px] pointer-events-none" />
 
-          {/* Master Headline */}
-          <motion.h1 
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1 }}
-            className="font-heading text-hero font-extrabold text-slate-900 dark:text-white tracking-[-0.035em] leading-[1.08] mb-6"
-          >
-            Engineering Scalable Software.{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 dark:from-blue-400 dark:via-sky-200 dark:to-emerald-300">
-              Built For Market Leaders.
-            </span>
-          </motion.h1>
+          {/* Banner Inner Content */}
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-8 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            {/* Left Column: Value Proposition & Action CTAs */}
+            <div className="lg:col-span-7 space-y-6 text-left">
+              
+              {/* Notification Badge Pill (GotMyHost 20% discount badge style) */}
+              <motion.div 
+                initial={{ opacity: 0, y: -12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/15 border border-white/20 text-xs font-mono text-sky-200 backdrop-blur-md shadow-sm"
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Onboarding New Enterprise &amp; High-Growth Projects for 2026</span>
+              </motion.div>
 
-          {/* Subtitle */}
-          <motion.p 
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2 }}
-            className="font-body text-body-p text-slate-600 dark:text-slate-300 max-w-2xl font-normal leading-[1.7] mb-10"
-          >
-            We partner with ambitious enterprises and high-growth innovators to design, build, and deploy production-grade web platforms, mobile applications, and resilient cloud systems.
-          </motion.p>
+              {/* Master Headline */}
+              <motion.h1 
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="font-heading text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-[-0.035em] leading-[1.08]"
+              >
+                Custom Software &amp; High-Impact Digital Platforms{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 via-blue-200 to-white">
+                  Built For Scale.
+                </span>
+              </motion.h1>
 
-          {/* Action CTAs */}
-          <motion.div 
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.3 }}
-            className="flex flex-wrap items-center justify-center gap-4 sm:gap-5 mb-10"
-          >
-            {/* Primary Action Button */}
-            <Link
-              href="/contact"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-heading font-semibold text-[15px] px-8 py-3.5 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-200 flex items-center gap-2 active:scale-95 tracking-[-0.01em]"
+              {/* Subtitle */}
+              <motion.p 
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="font-body text-base sm:text-lg text-slate-200 max-w-2xl leading-[1.7] font-normal"
+              >
+                From high-growth mobile applications to resilient cloud architectures, TSS Soft designs, engineers, and deploys production-grade digital assets that solve real-world problems.
+              </motion.p>
+
+              {/* CTA Buttons */}
+              <motion.div 
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3 }}
+                className="flex flex-wrap items-center gap-4 pt-2"
+              >
+                <Link
+                  href="/contact"
+                  className="bg-blue-500 hover:bg-blue-400 text-white font-heading font-semibold text-base px-8 py-4 rounded-xl shadow-xl shadow-blue-900/40 hover:shadow-blue-500/40 transition-all duration-200 flex items-center gap-2.5 active:scale-95"
+                >
+                  <span>Start Your Project</span>
+                  <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
+                </Link>
+
+                <a
+                  href="#showcase"
+                  className="bg-white/10 hover:bg-white/20 text-white border border-white/25 font-heading font-medium text-base px-7 py-4 rounded-xl backdrop-blur-xl transition-all duration-200 flex items-center gap-2 active:scale-95"
+                >
+                  <span>Explore Selected Works</span>
+                  <ChevronDown className="w-4 h-4 text-slate-300" />
+                </a>
+              </motion.div>
+
+              {/* Trust Guarantees */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                className="flex flex-wrap items-center gap-5 pt-3 text-xs sm:text-sm font-medium text-blue-100"
+              >
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                  <span>100% IP &amp; Code Ownership</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-sky-300 flex-shrink-0" />
+                  <span>99.98% High-Availability SLA</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                  <span>6+ Years Experience</span>
+                </div>
+              </motion.div>
+
+            </div>
+
+            {/* Right Column: High-End Technology & Systems Showcase Frame */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+              className="lg:col-span-5 relative hidden lg:block"
             >
-              <span>Start Your Project</span>
-              <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
-            </Link>
+              {/* Floating Technology Architecture Frame */}
+              <div className="relative rounded-2xl bg-[#030c24]/90 border border-white/20 p-6 shadow-2xl backdrop-blur-2xl space-y-5">
+                
+                {/* Header Strip */}
+                <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-rose-500 inline-block" />
+                    <span className="w-3 h-3 rounded-full bg-amber-500 inline-block" />
+                    <span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" />
+                    <span className="ml-2 font-mono text-[11px] text-blue-200">
+                      TSS Soft Core Architecture
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-400/30">
+                    Live Cluster
+                  </span>
+                </div>
 
-            {/* Secondary Action Button */}
-            <a
-              href="#showcase"
-              className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 shadow-sm
-                dark:bg-white/10 dark:hover:bg-white/15 dark:text-white dark:border-white/15
-                font-heading font-medium text-[15px] px-7 py-3.5 rounded-full backdrop-blur-xl transition-all duration-200 flex items-center gap-2 active:scale-95 tracking-[-0.01em]"
-            >
-              <span>Explore Selected Works</span>
-              <ChevronDown className="w-4 h-4 text-slate-400" />
-            </a>
-          </motion.div>
+                {/* Architecture Highlights */}
+                <div className="space-y-3">
+                  <div className="p-3.5 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-300">
+                        <Globe className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-white">Full-Stack Next.js 14</h4>
+                        <p className="text-[11px] text-slate-300">Sub-45ms Edge Response</p>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-mono text-emerald-300">✓ Healthy</span>
+                  </div>
 
-          {/* Value Guarantee Badges Row */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400"
-          >
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-              <span>100% IP &amp; Code Ownership</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0" />
-              <span>99.98% High-Availability SLA</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-indigo-500 flex-shrink-0" />
-              <span>6+ Years Engineering Experience</span>
-            </div>
-          </motion.div>
+                  <div className="p-3.5 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-300">
+                        <Smartphone className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-white">Flutter &amp; React Native Mobile</h4>
+                        <p className="text-[11px] text-slate-300">60 FPS Native Rendering</p>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-mono text-emerald-300">✓ Ready</span>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300">
+                        <Server className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-bold text-white">Distributed PostgreSQL &amp; Cloud</h4>
+                        <p className="text-[11px] text-slate-300">Zero-Loss Automatic Failover</p>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-mono text-emerald-300">99.98% SLA</span>
+                  </div>
+                </div>
+
+                {/* Footer Stat Row */}
+                <div className="pt-3 border-t border-white/10 flex items-center justify-between text-[11px] font-mono text-slate-300">
+                  <span>DEPLOYED: BANGLADESH</span>
+                  <span className="text-sky-300">ENTERPRISE GRADE</span>
+                </div>
+
+              </div>
+            </motion.div>
+
+          </div>
 
         </div>
 
         {/* ----------------------------------------------------------------- */}
-        {/* Hero Interactive Device / Live Agency Showcase Frame              */}
+        {/* Floating Overlapping Project Estimator Card (GotMyHost Search Bar) */}
         {/* ----------------------------------------------------------------- */}
-        <motion.div 
-          initial={{ opacity: 0, y: 35 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.35 }}
-          className="relative max-w-5xl mx-auto w-full"
-        >
-          {/* Outer Glass Card */}
-          <div className="bg-white/90 dark:bg-[#070e24]/90 border border-slate-200/90 dark:border-white/15 rounded-3xl p-4 sm:p-7 shadow-2xl backdrop-blur-2xl relative overflow-hidden transition-all duration-300">
-            
-            {/* Window Chrome Header Bar */}
-            <div className="flex items-center justify-between pb-4 mb-6 border-b border-slate-200/80 dark:border-white/10 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-rose-500/80 inline-block" />
-                <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block" />
-                <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
-                <span className="ml-3 font-mono text-[11px] text-slate-500 dark:text-slate-400 hidden sm:inline-block">
-                  https://tsssoft.com/systems/core
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 font-mono text-[11px] border border-emerald-200/70 dark:border-emerald-500/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Latency: 38ms Edge
-                </span>
-              </div>
+        <div className="max-w-4xl mx-auto px-4 -mt-14 sm:-mt-20 relative z-20">
+          <motion.div 
+            initial={{ opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.35 }}
+            className="bg-white dark:bg-[#080e22] border border-slate-200 dark:border-white/15 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-2xl"
+          >
+            <div className="text-center mb-5">
+              <span className="text-xs font-mono uppercase tracking-widest text-blue-600 dark:text-blue-400 font-semibold block mb-1">
+                INSTANT REQUIREMENT DISCOVERY
+              </span>
+              <h3 className="font-heading text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+                What Software Are You Looking To Build?
+              </h3>
             </div>
 
-            {/* 3 Real Product Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              
-              {/* Product 1: TSS PC Controller (Flagship Live Screen Control) */}
-              <Link 
-                href="/projects/tss-pc-controller"
-                className="group p-5 rounded-2xl bg-slate-50/90 dark:bg-[#091436] border border-slate-200/90 dark:border-blue-400/30 hover:border-blue-500 transition-all duration-200 flex flex-col justify-between hover:-translate-y-1 shadow-sm hover:shadow-md"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <img src="/projects/tss-pc-controller-logo.jpg" alt="TSS PC Controller" className="w-7 h-7 rounded-lg object-contain bg-white shadow-sm" />
-                      <span className="text-xs font-mono uppercase font-bold text-blue-600 dark:text-blue-300">Remote Tool</span>
-                    </div>
-                    <span className="text-[10px] font-mono bg-blue-600 text-white px-2 py-0.5 rounded-full">Flagship</span>
-                  </div>
-                  <h4 className="font-heading font-bold text-slate-900 dark:text-white text-base group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors mb-1.5">
-                    TSS PC Controller
-                  </h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                    Live Windows PC screen streaming directly onto smartphones. Remote mouse, keyboard, shutdown, and sleep control.
-                  </p>
+            {/* Quick Requirement Search & Submit Form */}
+            <form onSubmit={handleEstimateSubmit} className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={customRequirement}
+                    onChange={(e) => setCustomRequirement(e.target.value)}
+                    placeholder="e.g. Ride-sharing app, E-commerce flagship, or PC remote tool..."
+                    className="w-full pl-5 pr-4 py-4 rounded-2xl bg-slate-50 dark:bg-[#030614] border border-slate-200 dark:border-white/15 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 text-sm font-body transition-all"
+                  />
                 </div>
-                <div className="pt-3 mt-3 border-t border-slate-200/80 dark:border-white/10 flex items-center justify-between text-xs font-heading font-semibold text-blue-600 dark:text-blue-300">
-                  <span>View Case Study</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </Link>
+                <button
+                  type="submit"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-heading font-semibold text-sm px-8 py-4 rounded-2xl shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 flex-shrink-0 active:scale-95"
+                >
+                  <Search className="w-4 h-4" />
+                  <span>Get Architecture Estimate</span>
+                </button>
+              </div>
 
-              {/* Product 2: Tutors Kushtia (EdTech Platform) */}
-              <Link 
-                href="/projects/tutors-kushtia"
-                className="group p-5 rounded-2xl bg-slate-50/90 dark:bg-[#091436] border border-slate-200/90 dark:border-purple-400/30 hover:border-purple-500 transition-all duration-200 flex flex-col justify-between hover:-translate-y-1 shadow-sm hover:shadow-md"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <img src="/projects/tutors-kushtia-logo.jpg" alt="Tutors Kushtia" className="w-7 h-7 rounded-lg object-contain bg-white shadow-sm" />
-                      <span className="text-xs font-mono uppercase font-bold text-purple-600 dark:text-purple-300">EdTech</span>
-                    </div>
-                    <span className="text-[10px] font-mono bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 px-2 py-0.5 rounded-full border border-purple-200 dark:border-purple-800">Live</span>
-                  </div>
-                  <h4 className="font-heading font-bold text-slate-900 dark:text-white text-base group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors mb-1.5">
-                    Tutors Kushtia
-                  </h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                    Digital tuition marketplace connecting tutors and guardians across Kushtia with verified matching and role dashboards.
-                  </p>
-                </div>
-                <div className="pt-3 mt-3 border-t border-slate-200/80 dark:border-white/10 flex items-center justify-between text-xs font-heading font-semibold text-purple-600 dark:text-purple-300">
-                  <span>View Case Study</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </Link>
+              {/* Service Selection Tags (GotMyHost .com, .net, .BD pills style) */}
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                {[
+                  { id: 'web', label: 'Web Platform (Next.js)' },
+                  { id: 'mobile', label: 'Mobile App (Flutter / React Native)' },
+                  { id: 'enterprise', label: 'Enterprise Cloud & APIs' },
+                  { id: 'system', label: 'Windows & Desktop Systems' },
+                  { id: 'design', label: 'UI/UX Design Systems' }
+                ].map((item) => (
+                  <button
+                    type="button"
+                    key={item.id}
+                    onClick={() => setSelectedService(item.id)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-medium font-mono transition-all ${
+                      selectedService === item.id
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </form>
 
-              {/* Product 3: Cholo Jai (Mobility / Ride Sharing) */}
-              <Link 
-                href="/projects/cholo-jai"
-                className="group p-5 rounded-2xl bg-slate-50/90 dark:bg-[#091436] border border-slate-200/90 dark:border-emerald-400/30 hover:border-emerald-500 transition-all duration-200 flex flex-col justify-between hover:-translate-y-1 shadow-sm hover:shadow-md"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <img src="/projects/cholo-jai-logo.jpg" alt="Cholo Jai" className="w-7 h-7 rounded-lg object-contain bg-white shadow-sm" />
-                      <span className="text-xs font-mono uppercase font-bold text-emerald-600 dark:text-emerald-300">Mobility</span>
-                    </div>
-                    <span className="text-[10px] font-mono bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">Live</span>
-                  </div>
-                  <h4 className="font-heading font-bold text-slate-900 dark:text-white text-base group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors mb-1.5">
-                    Cholo Jai (চলো যায়)
-                  </h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                    Local ride-sharing and designated transit booking platform for Kushtia and connected routes with dual customer-rider apps.
-                  </p>
-                </div>
-                <div className="pt-3 mt-3 border-t border-slate-200/80 dark:border-white/10 flex items-center justify-between text-xs font-heading font-semibold text-emerald-600 dark:text-emerald-300">
-                  <span>View Case Study</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </Link>
-
-            </div>
-
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
 
       </section>
 
       {/* =================================================================== */}
-      {/* 2. TRUSTED PARTNERS & REAL IMPACT: Bangladesh Reach                 */}
+      {/* 2. TRUSTED PARTNERS & METRICS: Bangladesh Reach                     */}
       {/* =================================================================== */}
       <motion.section 
         initial={{ opacity: 0, y: 35 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.6 }}
-        className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10"
+        className="px-4 sm:px-8 max-w-[1400px] mx-auto relative z-10"
       >
-        <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200/90 dark:border-white/15 rounded-3xl p-8 sm:p-14 shadow-xl backdrop-blur-2xl text-center space-y-10">
+        <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/15 rounded-3xl p-8 sm:p-14 shadow-xl backdrop-blur-2xl text-center space-y-10">
           
           {/* Header */}
           <div className="max-w-3xl mx-auto space-y-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200/80 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
               <span>PROVEN DIGITAL ENGINEERING</span>
             </div>
@@ -284,7 +334,7 @@ export default function HomePage() {
           </div>
 
           {/* Regional Reach Badge */}
-          <div className="inline-flex flex-wrap items-center justify-center gap-2 px-4 py-2 rounded-full bg-slate-100/80 dark:bg-white/[0.05] border border-slate-200/80 dark:border-white/15 text-xs text-slate-700 dark:text-slate-200 shadow-sm">
+          <div className="inline-flex flex-wrap items-center justify-center gap-2 px-4 py-2 rounded-full bg-slate-50 dark:bg-white/[0.05] border border-slate-200 dark:border-white/15 text-xs text-slate-700 dark:text-slate-200 shadow-sm">
             <span className="text-base">🇧🇩</span>
             <span className="font-mono text-[11px] ml-1">
               ✦ Delivering production-grade software across Bangladesh
@@ -304,7 +354,7 @@ export default function HomePage() {
             ].map((client, idx) => (
               <span 
                 key={idx}
-                className="px-4 py-2 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 hover:border-blue-500/50 text-xs font-medium text-slate-800 dark:text-slate-200 transition-colors shadow-sm"
+                className="px-4 py-2 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 hover:border-blue-500 text-xs font-medium text-slate-800 dark:text-slate-200 transition-colors shadow-sm"
               >
                 {client}
               </span>
@@ -312,9 +362,9 @@ export default function HomePage() {
           </div>
 
           {/* Stat Counter Grid (6+ yrs experience, 5+ flagship products) */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-200/80 dark:border-white/10 max-w-4xl mx-auto text-left">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-200 dark:border-white/10 max-w-4xl mx-auto text-left">
             
-            <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/5 rounded-2xl p-5">
+            <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 rounded-2xl p-5">
               <div className="text-3xl sm:text-4xl font-black text-emerald-600 dark:text-emerald-400 font-mono tracking-tight mb-1">
                 6+ yrs
               </div>
@@ -322,7 +372,7 @@ export default function HomePage() {
               <p className="text-[11px] text-slate-500 dark:text-slate-400">Deep software engineering &amp; architecture</p>
             </div>
 
-            <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/5 rounded-2xl p-5">
+            <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 rounded-2xl p-5">
               <div className="text-3xl sm:text-4xl font-black text-blue-600 dark:text-blue-400 font-mono tracking-tight mb-1">
                 10x
               </div>
@@ -330,7 +380,7 @@ export default function HomePage() {
               <p className="text-[11px] text-slate-500 dark:text-slate-400">Average throughput scale for client systems</p>
             </div>
 
-            <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/5 rounded-2xl p-5">
+            <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 rounded-2xl p-5">
               <div className="text-3xl sm:text-4xl font-black text-indigo-600 dark:text-sky-400 font-mono tracking-tight mb-1">
                 5+
               </div>
@@ -338,7 +388,7 @@ export default function HomePage() {
               <p className="text-[11px] text-slate-500 dark:text-slate-400">Engineered production web, mobile &amp; systems</p>
             </div>
 
-            <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/5 rounded-2xl p-5">
+            <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 rounded-2xl p-5">
               <div className="text-3xl sm:text-4xl font-black text-cyan-600 dark:text-indigo-400 font-mono tracking-tight mb-1">
                 99.98%
               </div>
@@ -348,36 +398,24 @@ export default function HomePage() {
 
           </div>
 
-          {/* Marquee Ticker Strip */}
-          <div className="pt-2 border-t border-slate-200/80 dark:border-white/10 overflow-hidden relative">
-            <div className="flex gap-8 whitespace-nowrap text-xs font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400 py-1">
-              <span>• Next.js 14 Architecture</span>
-              <span>• Distributed Cloud Infrastructure</span>
-              <span>• Flutter &amp; React Native Mobile</span>
-              <span>• Custom Enterprise Software</span>
-              <span>• Zero-Trust Data Confidentiality</span>
-              <span>• 100% Full IP Handover</span>
-            </div>
-          </div>
-
         </div>
       </motion.section>
 
       {/* =================================================================== */}
-      {/* 3. CORE SERVICES: GotMyHost-style 6-Card Grid                       */}
+      {/* 3. CORE SERVICES: 6-Card Grid (Full Screen Width + Blue Hover)      */}
       {/* =================================================================== */}
       <motion.section 
         initial={{ opacity: 0, y: 35 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.6 }}
-        className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10" 
+        className="px-4 sm:px-8 max-w-[1400px] mx-auto relative z-10" 
         id="services"
       >
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 sm:mb-16 pb-6 border-b border-slate-200/80 dark:border-white/10 gap-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 sm:mb-16 pb-6 border-b border-slate-200 dark:border-white/10 gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200/80 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest mb-3">
               <span>Capabilities &amp; Core Disciplines</span>
             </div>
             <h2 className="font-heading text-section-title font-bold text-slate-900 dark:text-white tracking-[-0.025em] leading-[1.15]">
@@ -389,204 +427,216 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* 6-Card Services Grid */}
+        {/* 6-Card Services Grid with Powerful Blue Hover Elevation */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           
           {/* Card 1: Web Architecture */}
-          <div className="bg-white dark:bg-[#070e24]/80 border border-slate-200/90 dark:border-white/10 hover:border-blue-500 rounded-3xl p-7 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+          <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/10 hover:border-blue-600 hover:ring-2 hover:ring-blue-500/20 rounded-3xl p-8 shadow-sm hover:shadow-2xl hover:shadow-blue-500/15 hover:-translate-y-2.5 transition-all duration-300 flex flex-col justify-between group">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-500/15 border border-blue-200/80 dark:border-blue-400/25 flex items-center justify-center text-blue-600 dark:text-blue-300 mb-6 group-hover:scale-110 transition-transform">
+              <div className="w-13 h-13 p-3 rounded-2xl bg-blue-50 dark:bg-blue-500/15 border border-blue-200 dark:border-blue-400/25 flex items-center justify-center text-blue-600 dark:text-blue-300 mb-6 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                 <Globe className="w-6 h-6" />
               </div>
-              <span className="text-[11px] font-mono text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-1">Web Platform</span>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Custom Web Platforms &amp; Architecture</h3>
+              <span className="text-[11px] font-mono text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-1 font-semibold">Web Platform</span>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                Custom Web Platforms &amp; Architecture
+              </h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
                 SEO-dominant, high-concurrency web flagships engineered on Next.js 14, Node.js, and PostgreSQL. Engineered to handle traffic spikes with sub-50ms responsiveness.
               </p>
-              <ul className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
+              <ul className="space-y-2.5 mb-6 text-xs text-slate-700 dark:text-slate-300">
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span>Next.js 14 Server Actions &amp; SSR</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span>Sub-50ms Global Edge Performance</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span>Enterprise Security &amp; RBAC Auth</span>
                 </li>
               </ul>
             </div>
             <div className="pt-4 border-t border-slate-100 dark:border-white/10 flex flex-wrap gap-1.5 text-[10px] font-mono text-slate-500 dark:text-slate-400">
-              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Next.js</span>
-              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">TypeScript</span>
-              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">PostgreSQL</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-md">Next.js</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-md">TypeScript</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-md">PostgreSQL</span>
             </div>
           </div>
 
           {/* Card 2: Mobile Apps */}
-          <div className="bg-white dark:bg-[#070e24]/80 border border-slate-200/90 dark:border-white/10 hover:border-emerald-500 rounded-3xl p-7 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+          <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/10 hover:border-blue-600 hover:ring-2 hover:ring-blue-500/20 rounded-3xl p-8 shadow-sm hover:shadow-2xl hover:shadow-blue-500/15 hover:-translate-y-2.5 transition-all duration-300 flex flex-col justify-between group">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200/80 dark:border-emerald-400/25 flex items-center justify-center text-emerald-600 dark:text-emerald-300 mb-6 group-hover:scale-110 transition-transform">
+              <div className="w-13 h-13 p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200 dark:border-emerald-400/25 flex items-center justify-center text-emerald-600 dark:text-emerald-300 mb-6 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                 <Smartphone className="w-6 h-6" />
               </div>
-              <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block mb-1">Cross-Platform</span>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Mobile Applications (iOS &amp; Android)</h3>
+              <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block mb-1 font-semibold">Cross-Platform</span>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                Mobile Applications (iOS &amp; Android)
+              </h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
                 Fluid 60fps mobile applications engineered with Flutter and React Native. Offline-first data caching, biometric verification, and real-time push alerts.
               </p>
-              <ul className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
+              <ul className="space-y-2.5 mb-6 text-xs text-slate-700 dark:text-slate-300">
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span>Flutter &amp; React Native Core</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span>Offline-First Data Synchronization</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span>App Store &amp; Play Store Deployment</span>
                 </li>
               </ul>
             </div>
             <div className="pt-4 border-t border-slate-100 dark:border-white/10 flex flex-wrap gap-1.5 text-[10px] font-mono text-slate-500 dark:text-slate-400">
-              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Flutter</span>
-              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">React Native</span>
-              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">iOS / Android</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-md">Flutter</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-md">React Native</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-md">iOS / Android</span>
             </div>
           </div>
 
           {/* Card 3: Enterprise Cloud & APIs */}
-          <div className="bg-white dark:bg-[#070e24]/80 border border-slate-200/90 dark:border-white/10 hover:border-indigo-500 rounded-3xl p-7 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+          <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/10 hover:border-blue-600 hover:ring-2 hover:ring-blue-500/20 rounded-3xl p-8 shadow-sm hover:shadow-2xl hover:shadow-blue-500/15 hover:-translate-y-2.5 transition-all duration-300 flex flex-col justify-between group">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/15 border border-indigo-200/80 dark:border-indigo-400/25 flex items-center justify-center text-indigo-600 dark:text-indigo-300 mb-6 group-hover:scale-110 transition-transform">
+              <div className="w-13 h-13 p-3 rounded-2xl bg-indigo-50 dark:bg-indigo-500/15 border border-indigo-200 dark:border-indigo-400/25 flex items-center justify-center text-indigo-600 dark:text-indigo-300 mb-6 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                 <Server className="w-6 h-6" />
               </div>
-              <span className="text-[11px] font-mono text-indigo-600 dark:text-indigo-400 uppercase tracking-wider block mb-1">Backend &amp; DevOps</span>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Enterprise Backend &amp; Cloud APIs</h3>
+              <span className="text-[11px] font-mono text-indigo-600 dark:text-indigo-400 uppercase tracking-wider block mb-1 font-semibold">Backend &amp; DevOps</span>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                Enterprise Backend &amp; Cloud APIs
+              </h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
                 High-throughput microservices, REST &amp; GraphQL APIs, automated cloud pipelines (Docker, Kubernetes), and fault-tolerant multi-region replication.
               </p>
-              <ul className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
+              <ul className="space-y-2.5 mb-6 text-xs text-slate-700 dark:text-slate-300">
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span>High-Concurrency Microservices</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span>Automated CI/CD DevOps Pipelines</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span>Real-time WebSocket Streaming</span>
                 </li>
               </ul>
             </div>
             <div className="pt-4 border-t border-slate-100 dark:border-white/10 flex flex-wrap gap-1.5 text-[10px] font-mono text-slate-500 dark:text-slate-400">
-              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Docker</span>
-              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Node.js</span>
-              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Redis</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-md">Docker</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-md">Node.js</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-md">Redis</span>
             </div>
           </div>
 
           {/* Card 4: UI/UX & Design Systems */}
-          <div className="bg-white dark:bg-[#070e24]/80 border border-slate-200/90 dark:border-white/10 hover:border-purple-500 rounded-3xl p-7 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+          <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/10 hover:border-blue-600 hover:ring-2 hover:ring-blue-500/20 rounded-3xl p-8 shadow-sm hover:shadow-2xl hover:shadow-blue-500/15 hover:-translate-y-2.5 transition-all duration-300 flex flex-col justify-between group">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-500/15 border border-purple-200/80 dark:border-purple-400/25 flex items-center justify-center text-purple-600 dark:text-purple-300 mb-6 group-hover:scale-110 transition-transform">
+              <div className="w-13 h-13 p-3 rounded-2xl bg-purple-50 dark:bg-purple-500/15 border border-purple-200 dark:border-purple-400/25 flex items-center justify-center text-purple-600 dark:text-purple-300 mb-6 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                 <Layers className="w-6 h-6" />
               </div>
-              <span className="text-[11px] font-mono text-purple-600 dark:text-purple-400 uppercase tracking-wider block mb-1">Design System</span>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">UI/UX Design Systems &amp; Strategy</h3>
+              <span className="text-[11px] font-mono text-purple-600 dark:text-purple-400 uppercase tracking-wider block mb-1 font-semibold">Design System</span>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                UI/UX Design Systems &amp; Strategy
+              </h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
                 Conversion-focused digital experience design. Modular Figma component systems, accessible typography hierarchy, and effortless checkout flows.
               </p>
-              <ul className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
+              <ul className="space-y-2.5 mb-6 text-xs text-slate-700 dark:text-slate-300">
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span>Figma Design Tokens &amp; Components</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span>Conversion-Driven User Journeys</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span>Pixel-Perfect Component Handover</span>
                 </li>
               </ul>
             </div>
             <div className="pt-4 border-t border-slate-100 dark:border-white/10 flex flex-wrap gap-1.5 text-[10px] font-mono text-slate-500 dark:text-slate-400">
-              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Figma</span>
-              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Design Tokens</span>
-              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Storybook</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-md">Figma</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-md">Tokens</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-md">Storybook</span>
             </div>
           </div>
 
           {/* Card 5: Intelligent Automation & AI */}
-          <div className="bg-white dark:bg-[#070e24]/80 border border-slate-200/90 dark:border-white/10 hover:border-sky-500 rounded-3xl p-7 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+          <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/10 hover:border-blue-600 hover:ring-2 hover:ring-blue-500/20 rounded-3xl p-8 shadow-sm hover:shadow-2xl hover:shadow-blue-500/15 hover:-translate-y-2.5 transition-all duration-300 flex flex-col justify-between group">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-sky-50 dark:bg-sky-500/15 border border-sky-200/80 dark:border-sky-400/25 flex items-center justify-center text-sky-600 dark:text-sky-300 mb-6 group-hover:scale-110 transition-transform">
+              <div className="w-13 h-13 p-3 rounded-2xl bg-sky-50 dark:bg-sky-500/15 border border-sky-200 dark:border-sky-400/25 flex items-center justify-center text-sky-600 dark:text-sky-300 mb-6 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                 <Cpu className="w-6 h-6" />
               </div>
-              <span className="text-[11px] font-mono text-sky-600 dark:text-sky-400 uppercase tracking-wider block mb-1">Automation &amp; AI</span>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Intelligent Automation &amp; System Integration</h3>
+              <span className="text-[11px] font-mono text-sky-600 dark:text-sky-400 uppercase tracking-wider block mb-1 font-semibold">Automation &amp; AI</span>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                Intelligent Automation &amp; System Integration
+              </h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
                 Custom API integrations, workflow automation, payment gateways (bKash, Nagad, SSLCommerz, Stripe), and AI-augmented task pipelines.
               </p>
-              <ul className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
+              <ul className="space-y-2.5 mb-6 text-xs text-slate-700 dark:text-slate-300">
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-sky-500 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span>Payment Gateway &amp; MFS Integrations</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-sky-500 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span>Custom CRM &amp; ERP Workflow Hooks</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-sky-500 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span>LLM &amp; Intelligent Data Processing</span>
                 </li>
               </ul>
             </div>
             <div className="pt-4 border-t border-slate-100 dark:border-white/10 flex flex-wrap gap-1.5 text-[10px] font-mono text-slate-500 dark:text-slate-400">
-              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">MFS APIs</span>
-              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Webhooks</span>
-              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">AI Pipelines</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-md">MFS APIs</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-md">Webhooks</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-md">AI Pipelines</span>
             </div>
           </div>
 
           {/* Card 6: Dedicated Pods & Maintenance */}
-          <div className="bg-white dark:bg-[#070e24]/80 border border-slate-200/90 dark:border-white/10 hover:border-amber-500 rounded-3xl p-7 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+          <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/10 hover:border-blue-600 hover:ring-2 hover:ring-blue-500/20 rounded-3xl p-8 shadow-sm hover:shadow-2xl hover:shadow-blue-500/15 hover:-translate-y-2.5 transition-all duration-300 flex flex-col justify-between group">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-500/15 border border-amber-200/80 dark:border-amber-400/25 flex items-center justify-center text-amber-600 dark:text-amber-300 mb-6 group-hover:scale-110 transition-transform">
+              <div className="w-13 h-13 p-3 rounded-2xl bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-400/25 flex items-center justify-center text-amber-600 dark:text-amber-300 mb-6 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                 <ShieldCheck className="w-6 h-6" />
               </div>
-              <span className="text-[11px] font-mono text-amber-600 dark:text-amber-400 uppercase tracking-wider block mb-1">Ongoing SLA</span>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Dedicated Engineering Pods &amp; SLA Support</h3>
+              <span className="text-[11px] font-mono text-amber-600 dark:text-amber-400 uppercase tracking-wider block mb-1 font-semibold">Ongoing SLA</span>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                Dedicated Engineering Pods &amp; SLA Support
+              </h3>
               <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
                 Continuous software maintenance, 24/7 uptime monitoring, security patching, and on-demand feature expansion with dedicated senior developers.
               </p>
-              <ul className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
+              <ul className="space-y-2.5 mb-6 text-xs text-slate-700 dark:text-slate-300">
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span>Guaranteed SLA Incident Response</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span>Proactive Security &amp; Dependency Audits</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                  <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span>Direct Communication via Slack / WhatsApp</span>
                 </li>
               </ul>
             </div>
             <div className="pt-4 border-t border-slate-100 dark:border-white/10 flex flex-wrap gap-1.5 text-[10px] font-mono text-slate-500 dark:text-slate-400">
-              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">24/7 SLA</span>
-              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Direct Access</span>
-              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Dev Pods</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-md">24/7 SLA</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-md">Direct Access</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-md">Dev Pods</span>
             </div>
           </div>
 
@@ -595,20 +645,20 @@ export default function HomePage() {
       </motion.section>
 
       {/* =================================================================== */}
-      {/* 4. FEATURED CASE STUDIES: Real Flagship Products Showcase           */}
+      {/* 4. FEATURED CASE STUDIES: 3 Highlighted Projects + "See More"       */}
       {/* =================================================================== */}
       <motion.section 
         initial={{ opacity: 0, y: 35 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.6 }}
-        className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10" 
+        className="px-4 sm:px-8 max-w-[1400px] mx-auto relative z-10" 
         id="showcase"
       >
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 sm:mb-16 pb-6 border-b border-slate-200/80 dark:border-white/10 gap-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 sm:mb-16 pb-6 border-b border-slate-200 dark:border-white/10 gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200/80 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest mb-3">
               <span>SELECTED WORK — 2025–2026</span>
             </div>
             <h2 className="font-heading text-section-title font-bold text-slate-900 dark:text-white tracking-[-0.025em] leading-[1.15]">
@@ -624,7 +674,7 @@ export default function HomePage() {
         <div className="space-y-12">
           
           {/* Showcase Item 1: TSS PC Controller */}
-          <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200/90 dark:border-white/15 rounded-3xl overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 transition-all duration-300 hover:shadow-2xl">
+          <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/15 rounded-3xl overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 transition-all duration-300 hover:shadow-2xl hover:border-blue-500">
             <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-auto overflow-hidden bg-slate-950 flex items-center justify-center">
               <img 
                 src="/projects/tss-pc-controller-banner.jpg" 
@@ -637,7 +687,7 @@ export default function HomePage() {
             </div>
             <div className="lg:col-span-5 p-8 sm:p-10 flex flex-col justify-between">
               <div>
-                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-xs font-mono uppercase tracking-wider mb-2">
+                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-xs font-mono uppercase tracking-wider mb-2 font-semibold">
                   <span>System Utility</span>
                   <span>•</span>
                   <span>Low Latency</span>
@@ -653,11 +703,11 @@ export default function HomePage() {
                 </p>
                 <div className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
                   <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-blue-500" />
+                    <Check className="w-4 h-4 text-blue-600" />
                     <span>Real-Time Screen Mirroring (&lt; 50ms)</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-blue-500" />
+                    <Check className="w-4 h-4 text-blue-600" />
                     <span>Remote Windows Power &amp; Command Controls</span>
                   </div>
                 </div>
@@ -676,7 +726,7 @@ export default function HomePage() {
           </div>
 
           {/* Showcase Item 2: Tutors Kushtia */}
-          <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200/90 dark:border-white/15 rounded-3xl overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 transition-all duration-300 hover:shadow-2xl">
+          <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/15 rounded-3xl overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 transition-all duration-300 hover:shadow-2xl hover:border-purple-500">
             <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-auto overflow-hidden bg-slate-950 flex items-center justify-center">
               <img 
                 src="/projects/tutors-kushtia-banner.jpg" 
@@ -689,7 +739,7 @@ export default function HomePage() {
             </div>
             <div className="lg:col-span-5 p-8 sm:p-10 flex flex-col justify-between">
               <div>
-                <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 text-xs font-mono uppercase tracking-wider mb-2">
+                <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 text-xs font-mono uppercase tracking-wider mb-2 font-semibold">
                   <span>Education Technology</span>
                   <span>•</span>
                   <span>Active Ecosystem</span>
@@ -705,11 +755,11 @@ export default function HomePage() {
                 </p>
                 <div className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
                   <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-purple-500" />
+                    <Check className="w-4 h-4 text-purple-600" />
                     <span>Dedicated Tutor &amp; Guardian Dashboards</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-purple-500" />
+                    <Check className="w-4 h-4 text-purple-600" />
                     <span>Structured Tuition Post &amp; Booking Pipeline</span>
                   </div>
                 </div>
@@ -728,7 +778,7 @@ export default function HomePage() {
           </div>
 
           {/* Showcase Item 3: Cholo Jai */}
-          <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200/90 dark:border-white/15 rounded-3xl overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 transition-all duration-300 hover:shadow-2xl">
+          <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/15 rounded-3xl overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 transition-all duration-300 hover:shadow-2xl hover:border-emerald-500">
             <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-auto overflow-hidden bg-slate-950 flex items-center justify-center">
               <img 
                 src="/projects/cholo-jai-app-banner.jpg" 
@@ -741,7 +791,7 @@ export default function HomePage() {
             </div>
             <div className="lg:col-span-5 p-8 sm:p-10 flex flex-col justify-between">
               <div>
-                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-xs font-mono uppercase tracking-wider mb-2">
+                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-xs font-mono uppercase tracking-wider mb-2 font-semibold">
                   <span>Ride Sharing</span>
                   <span>•</span>
                   <span>Regional Transit</span>
@@ -757,11 +807,11 @@ export default function HomePage() {
                 </p>
                 <div className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
                   <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-500" />
+                    <Check className="w-4 h-4 text-emerald-600" />
                     <span>Real-Time Route &amp; Pickup Selection</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-500" />
+                    <Check className="w-4 h-4 text-emerald-600" />
                     <span>Transparent Fare Estimation &amp; Rider Dispatch</span>
                   </div>
                 </div>
@@ -781,6 +831,17 @@ export default function HomePage() {
 
         </div>
 
+        {/* Prominent "See More / View All 5 Projects" Button */}
+        <div className="pt-12 text-center">
+          <Link
+            href="/portfolio"
+            className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-heading font-semibold text-base shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/35 hover:-translate-y-1 active:scale-95 transition-all duration-200"
+          >
+            <span>View All 5 Projects in Portfolio</span>
+            <ArrowRight className="w-5 h-5" />
+          </Link>
+        </div>
+
       </motion.section>
 
       {/* =================================================================== */}
@@ -791,12 +852,12 @@ export default function HomePage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.6 }}
-        className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10"
+        className="px-4 sm:px-8 max-w-[1400px] mx-auto relative z-10"
       >
-        <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200/90 dark:border-white/15 rounded-3xl p-8 sm:p-12 shadow-xl backdrop-blur-2xl">
+        <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/15 rounded-3xl p-8 sm:p-12 shadow-xl backdrop-blur-2xl">
           
           <div className="text-center max-w-3xl mx-auto mb-12">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200/80 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest mb-3">
               <span>THE TSS ADVANTAGE</span>
             </div>
             <h2 className="font-heading text-section-title font-bold text-slate-900 dark:text-white tracking-[-0.025em] leading-[1.15] mb-4">
@@ -813,7 +874,7 @@ export default function HomePage() {
               <thead>
                 <tr className="border-b border-slate-200 dark:border-white/10 text-xs font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   <th className="py-4 px-4 sm:px-6">Critical Deliverables</th>
-                  <th className="py-4 px-4 sm:px-6 bg-blue-50/60 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-bold rounded-t-xl">TSS Soft</th>
+                  <th className="py-4 px-4 sm:px-6 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-bold rounded-t-xl">TSS Soft</th>
                   <th className="py-4 px-4 sm:px-6">Traditional Agencies</th>
                   <th className="py-4 px-4 sm:px-6">Freelance Marketplaces</th>
                 </tr>
@@ -821,31 +882,31 @@ export default function HomePage() {
               <tbody className="divide-y divide-slate-100 dark:divide-white/5 text-sm">
                 <tr>
                   <td className="py-4 px-4 sm:px-6 font-semibold text-slate-900 dark:text-white">IP &amp; Source Code Ownership</td>
-                  <td className="py-4 px-4 sm:px-6 bg-blue-50/40 dark:bg-blue-900/10 font-bold text-blue-600 dark:text-blue-400">✓ 100% Unrestricted Handover</td>
+                  <td className="py-4 px-4 sm:px-6 bg-blue-50/50 dark:bg-blue-900/10 font-bold text-blue-600 dark:text-blue-400">✓ 100% Unrestricted Handover</td>
                   <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">Often proprietary lock-in</td>
                   <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">Variable / Unverified</td>
                 </tr>
                 <tr>
                   <td className="py-4 px-4 sm:px-6 font-semibold text-slate-900 dark:text-white">Engineering Talent</td>
-                  <td className="py-4 px-4 sm:px-6 bg-blue-50/40 dark:bg-blue-900/10 font-bold text-blue-600 dark:text-blue-400">✓ Senior Architects Only</td>
+                  <td className="py-4 px-4 sm:px-6 bg-blue-50/50 dark:bg-blue-900/10 font-bold text-blue-600 dark:text-blue-400">✓ Senior Architects Only</td>
                   <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">Junior dev delegation</td>
                   <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">Unknown skill level</td>
                 </tr>
                 <tr>
                   <td className="py-4 px-4 sm:px-6 font-semibold text-slate-900 dark:text-white">Performance Guarantee</td>
-                  <td className="py-4 px-4 sm:px-6 bg-blue-50/40 dark:bg-blue-900/10 font-bold text-blue-600 dark:text-blue-400">✓ Sub-50ms SLA Uptime</td>
+                  <td className="py-4 px-4 sm:px-6 bg-blue-50/50 dark:bg-blue-900/10 font-bold text-blue-600 dark:text-blue-400">✓ Sub-50ms SLA Uptime</td>
                   <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">Standard shared hosting</td>
                   <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">No guarantee</td>
                 </tr>
                 <tr>
                   <td className="py-4 px-4 sm:px-6 font-semibold text-slate-900 dark:text-white">Direct Communication</td>
-                  <td className="py-4 px-4 sm:px-6 bg-blue-50/40 dark:bg-blue-900/10 font-bold text-blue-600 dark:text-blue-400">✓ Direct Slack &amp; Phone Access</td>
+                  <td className="py-4 px-4 sm:px-6 bg-blue-50/50 dark:bg-blue-900/10 font-bold text-blue-600 dark:text-blue-400">✓ Direct Slack &amp; Phone Access</td>
                   <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">Through account managers</td>
                   <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">Time-zone friction</td>
                 </tr>
                 <tr>
                   <td className="py-4 px-4 sm:px-6 font-semibold text-slate-900 dark:text-white">Post-Launch Warranty</td>
-                  <td className="py-4 px-4 sm:px-6 bg-blue-50/40 dark:bg-blue-900/10 font-bold text-blue-600 dark:text-blue-400">✓ Continuous Maintenance &amp; SLA</td>
+                  <td className="py-4 px-4 sm:px-6 bg-blue-50/50 dark:bg-blue-900/10 font-bold text-blue-600 dark:text-blue-400">✓ Continuous Maintenance &amp; SLA</td>
                   <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">Expensive add-on fees</td>
                   <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">Disappears after payment</td>
                 </tr>
@@ -857,17 +918,17 @@ export default function HomePage() {
       </motion.section>
 
       {/* =================================================================== */}
-      {/* 6. ENGINEERING WORKFLOW: 5-Step Delivery Lifecycle                  */}
+      {/* 6. ENGINEERING PROCESS: 5-Step Cards with Blue Lift Hover           */}
       {/* =================================================================== */}
       <motion.section 
         initial={{ opacity: 0, y: 35 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.6 }}
-        className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10"
+        className="px-4 sm:px-8 max-w-[1400px] mx-auto relative z-10"
       >
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200/80 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest mb-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest mb-3">
             <span>ENGINEERING PROCESS</span>
           </div>
           <h2 className="font-heading text-section-title font-bold text-slate-900 dark:text-white tracking-[-0.025em] leading-[1.15] mb-4">
@@ -878,7 +939,8 @@ export default function HomePage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        {/* 5-Step Cards with Interactive Blue Hover Lift (User's Image 2 feedback) */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-5">
           
           {[
             { step: '01', title: 'Discovery & Scope', desc: 'Domain analysis, technical architecture, and system specifications before touching code.' },
@@ -889,12 +951,26 @@ export default function HomePage() {
           ].map((item, idx) => (
             <div 
               key={idx}
-              className="bg-white dark:bg-[#070e24]/80 border border-slate-200/90 dark:border-white/10 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-blue-500 transition-all duration-200 flex flex-col justify-between"
+              className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/10 hover:border-blue-600 hover:ring-2 hover:ring-blue-500/25 rounded-3xl p-7 shadow-sm hover:shadow-2xl hover:shadow-blue-500/15 hover:-translate-y-3 transition-all duration-300 flex flex-col justify-between group cursor-pointer relative overflow-hidden"
             >
+              {/* Top Accent Blue Glow Line on Hover */}
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              
               <div>
-                <span className="text-2xl font-mono font-bold text-blue-600 dark:text-blue-400 block mb-3">{item.step}</span>
-                <h4 className="font-heading font-bold text-slate-900 dark:text-white text-base mb-2">{item.title}</h4>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{item.desc}</p>
+                <span className="text-3xl font-mono font-black text-blue-600 dark:text-blue-400 block mb-3 group-hover:translate-x-1 group-hover:scale-105 transition-transform duration-300">
+                  {item.step}
+                </span>
+                <h4 className="font-heading font-bold text-slate-900 dark:text-white text-base mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-300 group-hover:-translate-y-0.5 transition-all duration-300">
+                  {item.title}
+                </h4>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed group-hover:text-slate-800 dark:group-hover:text-slate-200 transition-colors duration-300">
+                  {item.desc}
+                </p>
+              </div>
+
+              <div className="pt-4 mt-4 border-t border-slate-100 dark:border-white/5 flex items-center text-[11px] font-mono font-semibold text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                <span>Phase {item.step} Complete</span>
+                <ArrowRight className="w-3.5 h-3.5 ml-1" />
               </div>
             </div>
           ))}
@@ -913,7 +989,7 @@ export default function HomePage() {
         className="px-4 sm:px-8 max-w-4xl mx-auto relative z-10"
       >
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200/80 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest mb-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest mb-3">
             <span>FREQUENTLY ASKED QUESTIONS</span>
           </div>
           <h2 className="font-heading text-section-title font-bold text-slate-900 dark:text-white tracking-[-0.025em] leading-[1.15] mb-3">
@@ -955,7 +1031,7 @@ export default function HomePage() {
             return (
               <div 
                 key={idx}
-                className="bg-white dark:bg-[#070e24]/90 border border-slate-200/90 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm transition-all"
+                className="bg-white dark:bg-[#070e24]/90 border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm transition-all"
               >
                 <button
                   type="button"
@@ -992,7 +1068,7 @@ export default function HomePage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.6 }}
-        className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10"
+        className="px-4 sm:px-8 max-w-[1400px] mx-auto relative z-10"
       >
         <div className="bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-950 text-white rounded-3xl p-8 sm:p-14 shadow-2xl relative overflow-hidden text-center space-y-8">
           
