@@ -8,122 +8,119 @@ export default function ServicesPage() {
     <main className="w-full relative z-10 px-4 sm:px-8 max-w-7xl mx-auto pb-24">
       {/* Hero */}
       <section className="pt-8 pb-16 text-center max-w-4xl mx-auto">
-        <div className="inline-flex items-center gap-2 text-tech-label font-mono uppercase tracking-widest text-blue-400 mb-4 bg-white/[0.06] border border-white/10 px-3.5 py-1.5 rounded-full backdrop-blur-md">
+        <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-blue-700 dark:text-blue-400 mb-4 bg-blue-50 dark:bg-white/[0.06] border border-blue-200/80 dark:border-white/10 px-3.5 py-1.5 rounded-full backdrop-blur-md">
           <Sparkles className="w-3.5 h-3.5" /> High-Performance Engineering
         </div>
         <div className="max-w-4xl mx-auto z-10">
-          <h1 className="font-heading text-hero font-extrabold text-white mb-6 tracking-tight leading-[1.08]">
+          <h1 className="font-heading text-hero font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight leading-[1.08]">
             World-Class Engineering.<br/>
-            <span className="text-slate-400 font-normal">Tailored Solutions.</span>
+            <span className="text-slate-500 dark:text-slate-400 font-normal">Tailored Solutions.</span>
           </h1>
-          <p className="font-body text-body-p text-slate-300 max-w-3xl mx-auto leading-[1.7] font-normal">
-            From cross-platform mobile apps to scalable cloud platforms, we engineer high-impact digital systems that drive long-term value.
+          <p className="font-body text-body-p text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-[1.7] font-normal">
+            From cross-platform mobile apps to scalable cloud platforms, we engineer high-impact digital systems that drive long-term business value.
           </p>
         </div>
       </section>
 
       {/* Service 1: Mobile */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
-            <span className="inline-block px-3.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 font-mono text-tech-label text-blue-400 uppercase tracking-widest">
+            <span className="inline-block px-3.5 py-1 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200/80 dark:border-blue-500/30 font-mono text-xs text-blue-700 dark:text-blue-400 uppercase tracking-widest">
               ANDROID &amp; IOS
             </span>
-            <h2 className="font-heading text-section-title font-bold text-white tracking-tight">
+            <h2 className="font-heading text-section-title font-bold text-slate-900 dark:text-white tracking-tight">
               Cross-Platform Mobile Applications
             </h2>
-            <p className="font-body text-slate-300 leading-[1.7] text-base">
+            <p className="font-body text-slate-600 dark:text-slate-300 leading-[1.7] text-base">
               We engineer robust, high-performance mobile applications using frameworks like Flutter and React Native, alongside native Swift and Kotlin. Our approach ensures smooth 60fps animations, intuitive gesture handling, and offline-first data synchronization.
             </p>
             <ul className="space-y-3 mt-6">
-              <li className="flex items-center gap-3 text-slate-200 font-body text-sm">
-                <CheckCircle2 className="w-5 h-5 text-blue-400 flex-shrink-0" />
+              <li className="flex items-center gap-3 text-slate-700 dark:text-slate-200 font-body text-sm">
+                <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                 <span>Immersive UI/UX Design &amp; Micro-Interactions</span>
               </li>
-              <li className="flex items-center gap-3 text-slate-200 font-body text-sm">
-                <CheckCircle2 className="w-5 h-5 text-blue-400 flex-shrink-0" />
+              <li className="flex items-center gap-3 text-slate-700 dark:text-slate-200 font-body text-sm">
+                <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                 <span>Robust API &amp; Realtime WebSocket Integration</span>
               </li>
-              <li className="flex items-center gap-3 text-slate-200 font-body text-sm">
-                <CheckCircle2 className="w-5 h-5 text-blue-400 flex-shrink-0" />
+              <li className="flex items-center gap-3 text-slate-700 dark:text-slate-200 font-body text-sm">
+                <CheckCircle2 className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                 <span>End-to-End App Store &amp; Play Store Deployment</span>
               </li>
             </ul>
           </div>
-          <div className="relative w-full h-[400px] md:h-[450px] rounded-3xl overflow-hidden backdrop-blur-md border border-blue-500/30 bg-[#0a0f24] p-4 flex items-center justify-center group shadow-[0_0_30px_rgba(37,99,235,0.2)]">
-            <img className="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500" alt="Mobile App Development" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsfS4TKGC3KNoTQXsDTbSkJ1dbWglPwikqDwv-wobRYt_jhvcrXBUma-fvEfSoMLpYdAXVe5B3iHLPkBYHBaOeiB9SiX7AuTvIpAeB_u7NfGVkNMGFoqD-Zskrl-4Qzlu5liI33ga_I0Q4ETd0nyo0RukjhkFMEWqDcDL1FwdOaVXx861diCSCPJMgBW1FBUiy5inb7xLH_xW8qbtF8ApxTE4uDLS-7E6VMdBOOVmAifphI65xqHpus_CHIC6dqYLzqfe1Zwehlab9"/>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* Service 2: Web */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="order-2 lg:order-1 relative w-full h-[400px] md:h-[450px] rounded-3xl overflow-hidden backdrop-blur-md border border-blue-500/30 bg-[#0a0f24] p-4 flex items-center justify-center group shadow-[0_0_30px_rgba(37,99,235,0.2)]">
-            <img className="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500" alt="Web Application Development" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4ZFZ7ZMun1XzMcdT5xtTTmXQPiIKv2pGOAz7__FMnKeHCQJe2EpRsjOxkmmAaCz-YXrDRVfirBg1MJIYpd0STIdgGFhaxjqAhdWh804gj2tRnMZIpq-GV4akGKc1zwl5mOi2Di8PWSZafZKHANs3B17N_k4hdZIEG2vdUL7fNyKC94Ax8Ajjlc-89ONSyLWBEcluhx5v4yXPAV7lFSIEL9dXy8HcwU3jXctZHb1mDJnsvYMmrCCzH9T9VwhFnX0u7lBRsrm2YbGqP"/>
-          </div>
-          <div className="order-1 lg:order-2 space-y-6">
-            <span className="inline-block px-3.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 font-mono text-tech-label text-blue-400 uppercase tracking-widest">
-              MODERN WEB
-            </span>
-            <h2 className="font-heading text-section-title font-bold text-white tracking-tight">
-              Scalable Web Platforms
-            </h2>
-            <p className="font-body text-slate-300 leading-[1.7] text-base">
-              Leveraging modern architectures like Next.js, React, Node.js, and TypeScript, we architect high-performance, SEO-optimized web applications designed for infinite scale.
-            </p>
-            <div className="grid grid-cols-2 gap-4 mt-6">
-              <div className="p-5 bg-[#0b1026] rounded-2xl border border-blue-500/20">
-                <span className="font-mono text-xl text-blue-400 font-bold block mb-1">99.9%</span>
-                <h4 className="font-heading font-bold text-white text-sm">High Performance SLA</h4>
-              </div>
-              <div className="p-5 bg-[#0b1026] rounded-2xl border border-blue-500/20">
-                <span className="font-mono text-xl text-blue-400 font-bold block mb-1">Zero Trust</span>
-                <h4 className="font-heading font-bold text-white text-sm">Enterprise Security</h4>
-              </div>
+          <div className="bg-white dark:bg-[#070e24]/80 backdrop-blur-2xl border border-slate-200/90 dark:border-white/10 rounded-3xl p-8 sm:p-12 shadow-sm dark:shadow-xl relative overflow-hidden group">
+            <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-500/15 border border-blue-200/80 dark:border-blue-400/30 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-6">
+              <Smartphone className="w-8 h-8" />
+            </div>
+            <h3 className="font-heading text-card-title font-bold text-slate-900 dark:text-white mb-4">Mobile Tech Stack</h3>
+            <div className="flex flex-wrap gap-2 text-xs font-mono text-slate-600 dark:text-slate-300">
+              <span className="bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 px-3 py-1.5 rounded-lg">Flutter</span>
+              <span className="bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 px-3 py-1.5 rounded-lg">React Native</span>
+              <span className="bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 px-3 py-1.5 rounded-lg">Swift</span>
+              <span className="bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 px-3 py-1.5 rounded-lg">Kotlin</span>
+              <span className="bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 px-3 py-1.5 rounded-lg">Firebase</span>
+              <span className="bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 px-3 py-1.5 rounded-lg">SQLite</span>
             </div>
           </div>
         </motion.div>
       </section>
 
-      {/* Service 3: Enterprise */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      {/* Service 2: Web */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
-            <span className="inline-block px-3.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 font-mono text-tech-label text-blue-400 uppercase tracking-widest">
-              CUSTOM SYSTEMS
-            </span>
-            <h2 className="font-heading text-section-title font-bold text-white tracking-tight">
-              Bespoke Software &amp; SaaS
-            </h2>
-            <p className="font-body text-slate-300 leading-[1.7] text-base">
-              We design and develop bespoke enterprise solutions, sophisticated SaaS products, and robust cloud architectures tailored to your operational requirements.
-            </p>
-            <Link href="/contact" className="inline-flex items-center gap-2 text-blue-400 font-heading font-semibold text-sm hover:text-blue-300 transition-colors group mt-2">
-              <span>Start an enterprise consultation</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
+          <div className="order-2 lg:order-1 bg-white dark:bg-[#070e24]/80 backdrop-blur-2xl border border-slate-200/90 dark:border-white/10 rounded-3xl p-8 sm:p-12 shadow-sm dark:shadow-xl relative overflow-hidden group">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200/80 dark:border-emerald-400/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-6">
+              <Globe className="w-8 h-8" />
+            </div>
+            <h3 className="font-heading text-card-title font-bold text-slate-900 dark:text-white mb-4">Web Architecture Stack</h3>
+            <div className="flex flex-wrap gap-2 text-xs font-mono text-slate-600 dark:text-slate-300">
+              <span className="bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 px-3 py-1.5 rounded-lg">Next.js 14</span>
+              <span className="bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 px-3 py-1.5 rounded-lg">React</span>
+              <span className="bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 px-3 py-1.5 rounded-lg">TypeScript</span>
+              <span className="bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 px-3 py-1.5 rounded-lg">Tailwind CSS</span>
+              <span className="bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 px-3 py-1.5 rounded-lg">Node.js</span>
+              <span className="bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 px-3 py-1.5 rounded-lg">PostgreSQL</span>
+            </div>
           </div>
-          <div className="relative w-full h-[400px] md:h-[450px] rounded-3xl overflow-hidden backdrop-blur-md border border-blue-500/30 bg-[#0a0f24] p-4 flex items-center justify-center group shadow-[0_0_30px_rgba(37,99,235,0.2)]">
-            <img className="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-500" alt="Custom Software Solutions" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOlf9WCWlAf8MKUq8CjzdnlJaxQdRPgEgIVRs6IOLuweZCNnlqc30w6fX3mEl2UdAV13rj4Bz1XNawuV8t6lQV8i_31P7obdDVVDDeeI9wEzmlnlgM1VQi3xiRx-V_cFiQmqT5ErLhbByNWu-JCSbA_BDeSAsuJ60AjA1EJVLjThXj-OBKbUrX54OpcVW59280wc_GQy9IW_bavW5bbzP-HJabOeYp4_6myFWwXHoobag9ZLoEGXDcLWyO1vmeCCjtvAVoSqT99anz"/>
+          <div className="order-1 lg:order-2 space-y-6">
+            <span className="inline-block px-3.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/80 dark:border-emerald-500/30 font-mono text-xs text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">
+              WEB ARCHITECTURE
+            </span>
+            <h2 className="font-heading text-section-title font-bold text-slate-900 dark:text-white tracking-tight">
+              Bespoke Web Platforms &amp; Architecture
+            </h2>
+            <p className="font-body text-slate-600 dark:text-slate-300 leading-[1.7] text-base">
+              From high-converting corporate flagships to complex SaaS platforms, we architect resilient web systems with Next.js, modern state management, and edge-optimized infrastructure.
+            </p>
+            <ul className="space-y-3 mt-6">
+              <li className="flex items-center gap-3 text-slate-700 dark:text-slate-200 font-body text-sm">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                <span>Server-Side Rendering &amp; Edge Optimization</span>
+              </li>
+              <li className="flex items-center gap-3 text-slate-700 dark:text-slate-200 font-body text-sm">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                <span>Deep Search Engine Optimization &amp; Sub-50ms TTFB</span>
+              </li>
+              <li className="flex items-center gap-3 text-slate-700 dark:text-slate-200 font-body text-sm">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                <span>Headless CMS &amp; Modular E-Commerce Integrations</span>
+              </li>
+            </ul>
           </div>
         </motion.div>
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-4 sm:px-6">
-        <div className="max-w-5xl mx-auto relative rounded-3xl overflow-hidden p-8 sm:p-14 text-center backdrop-blur-xl bg-gradient-to-r from-blue-900/30 via-[#0a0f26] to-blue-900/30 border border-blue-500/40 shadow-[0_0_50px_rgba(37,99,235,0.25)]">
-          <h2 className="font-heading text-section-title font-extrabold text-white relative z-10 mb-6">
-            Have a project in mind?
-          </h2>
-          <p className="font-body text-body-p text-slate-300 max-w-xl mx-auto mb-8 relative z-10 leading-[1.7]">
-            Tell us about your technical goals and our team will prepare a comprehensive proposal.
-          </p>
-          <Link href="/contact" className="relative z-10 inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 text-white hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] transition-all duration-300 px-8 py-4 rounded-full font-heading font-semibold text-[15px] leading-tight tracking-[-0.01em] shadow-lg transform hover:-translate-y-1 active:scale-95">
-            <span>Talk to Our Engineers</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
+      <section className="mt-16 text-center">
+        <Link
+          href="/contact"
+          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100 font-heading font-semibold text-[15px] px-8 py-3.5 rounded-full shadow-lg transition-all duration-200 active:scale-95"
+        >
+          <span>Discuss Your Architecture Needs</span>
+          <ArrowRight className="w-4 h-4" />
+        </Link>
       </section>
     </main>
   );

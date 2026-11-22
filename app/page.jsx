@@ -1,307 +1,292 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowUpRight, 
-  Sparkles, 
-  Smartphone, 
+  ArrowRight, 
+  CheckCircle2, 
+  ChevronDown, 
+  ChevronUp, 
   Globe, 
-  Palette, 
+  Smartphone, 
+  Code2, 
   Cloud, 
   ShieldCheck, 
-  Zap, 
-  Code2, 
-  CheckCircle2, 
-  Check, 
-  X, 
-  ChevronDown, 
-  Star, 
-  ExternalLink, 
   Cpu, 
-  TrendingUp, 
+  Layers, 
+  Sparkles, 
+  Terminal, 
+  Check, 
+  Zap, 
+  Server, 
+  Lock, 
+  Clock, 
   Users, 
-  Layers,
-  ArrowRight,
-  Terminal,
-  Monitor,
-  Layout,
-  Database,
-  Eye
+  Activity,
+  Laptop
 } from 'lucide-react';
-import Link from 'next/link';
-import { projectsData } from '../lib/projectsData';
 
-export default function LandingPage() {
-  // State for Showcase Filter
-  const [activeShowcaseFilter, setActiveShowcaseFilter] = useState('all');
-  const [previewModalProject, setPreviewModalProject] = useState(null);
+export default function HomePage() {
+  // State for active FAQ accordion
+  const [openFaq, setOpenFaq] = useState(0);
 
-  // State for FAQ Accordion
-  const [openFaqIndex, setOpenFaqIndex] = useState(0);
-
-  // --------------------------------------------------------------------------
-  // Showcase Projects Data (Using Official TSS Soft Portfolio)
-  // --------------------------------------------------------------------------
-  const filteredShowcase = activeShowcaseFilter === 'all'
-    ? projectsData
-    : projectsData.filter((p) => {
-        if (activeShowcaseFilter === 'mobile') return p.type === 'mobile' || p.type === 'mobile-web';
-        if (activeShowcaseFilter === 'web') return p.type === 'web';
-        if (activeShowcaseFilter === 'system') return p.type === 'system';
-        return true;
-      });
-
-  // --------------------------------------------------------------------------
-  // FAQ Data (Matching "Questions? We've Got Answers" in Video)
-  // --------------------------------------------------------------------------
-  const faqs = [
-    {
-      q: 'How fast can TSS Soft begin work, and what is the typical delivery timeframe?',
-      a: 'We can typically kick off within 48 to 72 hours of project alignment. A focused MVP or high-impact digital platform typically ships in 2 to 4 weeks, while complex enterprise distributed architectures range from 6 to 10 weeks with weekly staging demonstrations.'
-    },
-    {
-      q: 'Do we own 100% of the source code, design systems, and intellectual property?',
-      a: 'Yes, absolutely. From day one, you own 100% of the code, Figma design files, architectural documentation, and database schemas. We never enforce vendor lock-in or licensing fees.'
-    },
-    {
-      q: 'What technology stack and frameworks does TSS Soft specialize in?',
-      a: 'We specialize in Next.js 14/15, React, TypeScript, Node.js, PostgreSQL/Supabase, Flutter, React Native, Tailwind CSS, Docker, and distributed Cloudflare/AWS edge infrastructure. Everything is built bespoke without bloated page builders.'
-    },
-    {
-      q: 'Can you integrate with our existing backend, ERP, or legacy database systems?',
-      a: 'Yes. We frequently architect modern Next.js frontend platforms that seamlessly integrate with legacy SQL databases, third-party ERPs, CRM platforms, and payment gateways through secure, high-throughput REST or GraphQL APIs.'
-    },
-    {
-      q: 'What kind of support and maintenance do you provide post-launch?',
-      a: 'Every completed project includes dedicated post-launch support and warranty coverage. Additionally, we offer ongoing enterprise retainer agreements for active feature scaling, 24/7 server monitoring, and continuous performance optimization.'
-    }
-  ];
+  const toggleFaq = (idx) => {
+    setOpenFaq(openFaq === idx ? null : idx);
+  };
 
   return (
-    <div className="space-y-24 sm:space-y-36 pb-20 overflow-x-hidden">
+    <div className="space-y-24 sm:space-y-36 pb-24 overflow-x-hidden">
 
       {/* =================================================================== */}
-      {/* 1. HERO SECTION: "Creative Intelligence in Every Pixel"            */}
+      {/* 1. HERO SECTION: GotMyHost-inspired Human-Crafted Hero              */}
       {/* =================================================================== */}
-      <section className="min-h-[90vh] flex flex-col justify-center px-4 sm:px-8 max-w-7xl mx-auto pt-6 sm:pt-10 relative z-10">
+      <section className="min-h-[85vh] flex flex-col justify-center px-4 sm:px-8 max-w-7xl mx-auto pt-6 sm:pt-12 relative z-10">
         
-        {/* Main Hero Header */}
-        <div className="flex flex-col items-center text-center max-w-4xl mx-auto pt-4 sm:pt-8 mb-12 sm:mb-16">
+        {/* Main Header Text */}
+        <div className="flex flex-col items-center text-center max-w-4xl mx-auto mb-12 sm:mb-16">
           
-          {/* Subtle Agency Badge */}
+          {/* Eyebrow Badge */}
           <motion.div 
-            initial={{ opacity: 0, y: -15 }}
+            initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#081028]/90 border border-white/15 text-xs text-slate-200 font-medium mb-6 backdrop-blur-2xl shadow-[0_0_25px_rgba(59,130,246,0.2)]"
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full 
+              bg-blue-50 border border-blue-200/90 text-blue-700 shadow-sm
+              dark:bg-blue-950/70 dark:border-blue-800/80 dark:text-blue-300
+              text-xs font-semibold mb-6 backdrop-blur-md"
           >
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-mono uppercase tracking-wider text-[11px] text-slate-300">
-              TSS Soft • Digital Systems &amp; Software Architecture
+            <span className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400 animate-pulse" />
+            <span className="font-mono uppercase tracking-wider text-[11px]">
+              TSS Soft • Full-Cycle Software Architecture &amp; Development
             </span>
           </motion.div>
 
-          {/* Master Headline (Exact match to Reference Video) */}
+          {/* Master Headline */}
           <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
-            className="font-heading text-hero font-extrabold text-white tracking-[-0.035em] leading-[1.08] mb-6 drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)]"
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="font-heading text-hero font-extrabold text-slate-900 dark:text-white tracking-[-0.035em] leading-[1.08] mb-6"
           >
-            Creative Intelligence in{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-200 to-emerald-300 drop-shadow-[0_0_40px_rgba(56,189,248,0.4)]">
-              Every Pixel.
+            Engineering Scalable Software.{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 dark:from-blue-400 dark:via-sky-200 dark:to-emerald-300">
+              Built For Market Leaders.
             </span>
           </motion.h1>
 
-          {/* Subtitle (Exact match to Reference Video) */}
+          {/* Subtitle */}
           <motion.p 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="font-body text-body-p text-slate-300 max-w-2xl font-normal leading-[1.7] mb-10 drop-shadow-[0_2px_14px_rgba(0,0,0,0.85)]"
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="font-body text-body-p text-slate-600 dark:text-slate-300 max-w-2xl font-normal leading-[1.7] mb-10"
           >
-            No matter the industry you’re in, or the software asset you need, we design and engineer it for you with world-class craftsmanship.
+            We partner with ambitious enterprises and high-growth innovators to design, build, and deploy production-grade web platforms, mobile applications, and resilient cloud systems.
           </motion.p>
 
-          {/* High-Converting CTA Buttons */}
+          {/* Action CTAs */}
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="flex flex-wrap items-center justify-center gap-4 sm:gap-5"
+            transition={{ duration: 0.7, delay: 0.3 }}
+            className="flex flex-wrap items-center justify-center gap-4 sm:gap-5 mb-10"
           >
-            {/* Primary Neon Pill Button (Matching Video's High-Energy Accent) */}
+            {/* Primary Action Button */}
             <Link
               href="/contact"
-              className="bg-[#22c55e] hover:bg-[#16a34a] text-slate-950 font-heading font-semibold text-[15px] px-8 py-3.5 rounded-full shadow-[0_0_30px_rgba(34,197,94,0.45)] hover:shadow-[0_0_45px_rgba(34,197,94,0.7)] transition-all duration-300 flex items-center gap-2 group active:scale-95 tracking-[-0.01em]"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-heading font-semibold text-[15px] px-8 py-3.5 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-200 flex items-center gap-2 active:scale-95 tracking-[-0.01em]"
             >
-              <span>Start a Project</span>
-              <ArrowUpRight className="w-4 h-4 stroke-[2.5] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              <span>Start Your Project</span>
+              <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
             </Link>
 
-            {/* Secondary Glass Pill Button */}
+            {/* Secondary Action Button */}
             <a
               href="#showcase"
-              className="bg-white/10 hover:bg-white/15 text-white font-heading font-medium text-[15px] px-7 py-3.5 rounded-full border border-white/20 backdrop-blur-xl hover:border-white/35 transition-all duration-200 flex items-center gap-2 active:scale-95 tracking-[-0.01em]"
+              className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 shadow-sm
+                dark:bg-white/10 dark:hover:bg-white/15 dark:text-white dark:border-white/15
+                font-heading font-medium text-[15px] px-7 py-3.5 rounded-full backdrop-blur-xl transition-all duration-200 flex items-center gap-2 active:scale-95 tracking-[-0.01em]"
             >
               <span>Explore Selected Works</span>
               <ChevronDown className="w-4 h-4 text-slate-400" />
             </a>
           </motion.div>
 
+          {/* Value Guarantee Badges Row */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-400"
+          >
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+              <span>100% IP &amp; Code Ownership</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0" />
+              <span>99.98% High-Availability SLA</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+              <span>6+ Years Engineering Experience</span>
+            </div>
+          </motion.div>
+
         </div>
 
         {/* ----------------------------------------------------------------- */}
-        {/* Hero Interactive Device / Showcase Trio (Real TSS Soft Products)    */}
+        {/* Hero Interactive Device / Live Agency Showcase Frame              */}
         {/* ----------------------------------------------------------------- */}
         <motion.div 
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 35 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.4 }}
-          className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch max-w-6xl mx-auto w-full pt-4"
+          transition={{ duration: 0.8, delay: 0.35 }}
+          className="relative max-w-5xl mx-auto w-full"
         >
-          {/* Card 1: Cholo Jai Mobile Application (Left) */}
-          <Link
-            href="/projects/cholo-jai"
-            className="md:col-span-4 bg-[#061814]/85 border border-emerald-500/20 hover:border-emerald-400/50 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl relative overflow-hidden group transition-all duration-300 flex flex-col justify-between hover:-translate-y-1"
-          >
-            <div>
-              <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
-                <div className="flex items-center gap-2">
-                  <img src="/projects/cholo-jai-logo.jpg" alt="Cholo Jai" className="w-6 h-6 rounded-md object-contain bg-white/10" />
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400">Mobility Tech</span>
-                </div>
-                <span className="text-[10px] font-mono text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Flutter Mobile</span>
+          {/* Outer Glass Card */}
+          <div className="bg-white/90 dark:bg-[#070e24]/90 border border-slate-200/90 dark:border-white/15 rounded-3xl p-4 sm:p-7 shadow-2xl backdrop-blur-2xl relative overflow-hidden transition-all duration-300">
+            
+            {/* Window Chrome Header Bar */}
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-slate-200/80 dark:border-white/10 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-rose-500/80 inline-block" />
+                <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block" />
+                <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
+                <span className="ml-3 font-mono text-[11px] text-slate-500 dark:text-slate-400 hidden sm:inline-block">
+                  https://tsssoft.com/systems/core
+                </span>
               </div>
+              <div className="flex items-center gap-3">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 font-mono text-[11px] border border-emerald-200/70 dark:border-emerald-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Latency: 38ms Edge
+                </span>
+              </div>
+            </div>
+
+            {/* 3 Real Product Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               
-              <div className="bg-[#030d0a] border border-emerald-500/15 rounded-2xl p-4 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">Cholo Jai (চলো যায়)</h4>
-                  <span className="text-[10px] font-mono text-emerald-400">Kushtia</span>
+              {/* Product 1: TSS PC Controller (Flagship Live Screen Control) */}
+              <Link 
+                href="/projects/tss-pc-controller"
+                className="group p-5 rounded-2xl bg-slate-50/90 dark:bg-[#091436] border border-slate-200/90 dark:border-blue-400/30 hover:border-blue-500 transition-all duration-200 flex flex-col justify-between hover:-translate-y-1 shadow-sm hover:shadow-md"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <img src="/projects/tss-pc-controller-logo.jpg" alt="TSS PC Controller" className="w-7 h-7 rounded-lg object-contain bg-white shadow-sm" />
+                      <span className="text-xs font-mono uppercase font-bold text-blue-600 dark:text-blue-300">Remote Tool</span>
+                    </div>
+                    <span className="text-[10px] font-mono bg-blue-600 text-white px-2 py-0.5 rounded-full">Flagship</span>
+                  </div>
+                  <h4 className="font-heading font-bold text-slate-900 dark:text-white text-base group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors mb-1.5">
+                    TSS PC Controller
+                  </h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Live Windows PC screen streaming directly onto smartphones. Remote mouse, keyboard, shutdown, and sleep control.
+                  </p>
                 </div>
-                <p className="text-[11px] text-slate-300 leading-relaxed">
-                  Local smart ride-sharing connecting passengers and verified riders with transparent upfront route fares.
-                </p>
-                <div className="flex flex-wrap gap-1.5 pt-1 text-[10px] font-mono text-emerald-300">
-                  <span className="bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Ride Booking</span>
-                  <span className="bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Rider App</span>
+                <div className="pt-3 mt-3 border-t border-slate-200/80 dark:border-white/10 flex items-center justify-between text-xs font-heading font-semibold text-blue-600 dark:text-blue-300">
+                  <span>View Case Study</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                 </div>
-              </div>
+              </Link>
+
+              {/* Product 2: Tutors Kushtia (EdTech Platform) */}
+              <Link 
+                href="/projects/tutors-kushtia"
+                className="group p-5 rounded-2xl bg-slate-50/90 dark:bg-[#091436] border border-slate-200/90 dark:border-purple-400/30 hover:border-purple-500 transition-all duration-200 flex flex-col justify-between hover:-translate-y-1 shadow-sm hover:shadow-md"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <img src="/projects/tutors-kushtia-logo.jpg" alt="Tutors Kushtia" className="w-7 h-7 rounded-lg object-contain bg-white shadow-sm" />
+                      <span className="text-xs font-mono uppercase font-bold text-purple-600 dark:text-purple-300">EdTech</span>
+                    </div>
+                    <span className="text-[10px] font-mono bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 px-2 py-0.5 rounded-full border border-purple-200 dark:border-purple-800">Live</span>
+                  </div>
+                  <h4 className="font-heading font-bold text-slate-900 dark:text-white text-base group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors mb-1.5">
+                    Tutors Kushtia
+                  </h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Digital tuition marketplace connecting tutors and guardians across Kushtia with verified matching and role dashboards.
+                  </p>
+                </div>
+                <div className="pt-3 mt-3 border-t border-slate-200/80 dark:border-white/10 flex items-center justify-between text-xs font-heading font-semibold text-purple-600 dark:text-purple-300">
+                  <span>View Case Study</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </Link>
+
+              {/* Product 3: Cholo Jai (Mobility / Ride Sharing) */}
+              <Link 
+                href="/projects/cholo-jai"
+                className="group p-5 rounded-2xl bg-slate-50/90 dark:bg-[#091436] border border-slate-200/90 dark:border-emerald-400/30 hover:border-emerald-500 transition-all duration-200 flex flex-col justify-between hover:-translate-y-1 shadow-sm hover:shadow-md"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <img src="/projects/cholo-jai-logo.jpg" alt="Cholo Jai" className="w-7 h-7 rounded-lg object-contain bg-white shadow-sm" />
+                      <span className="text-xs font-mono uppercase font-bold text-emerald-600 dark:text-emerald-300">Mobility</span>
+                    </div>
+                    <span className="text-[10px] font-mono bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">Live</span>
+                  </div>
+                  <h4 className="font-heading font-bold text-slate-900 dark:text-white text-base group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors mb-1.5">
+                    Cholo Jai (চলো যায়)
+                  </h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Local ride-sharing and designated transit booking platform for Kushtia and connected routes with dual customer-rider apps.
+                  </p>
+                </div>
+                <div className="pt-3 mt-3 border-t border-slate-200/80 dark:border-white/10 flex items-center justify-between text-xs font-heading font-semibold text-emerald-600 dark:text-emerald-300">
+                  <span>View Case Study</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </Link>
+
             </div>
 
-            <div className="pt-3 mt-3 border-t border-white/10 flex items-center justify-between text-xs font-heading font-semibold text-emerald-400">
-              <span>View Case Study</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </Link>
-
-          {/* Card 2: Hero Centerpiece — TSS PC Controller (Center - Elevated) */}
-          <Link
-            href="/projects/tss-pc-controller"
-            className="md:col-span-4 bg-gradient-to-b from-[#091742] to-[#050b1e] border border-blue-400/40 hover:border-blue-400/70 rounded-3xl p-6 shadow-[0_25px_70px_rgba(37,99,235,0.3)] backdrop-blur-2xl relative overflow-hidden group transition-all duration-300 scale-100 md:scale-105 z-10 flex flex-col justify-between hover:-translate-y-1.5"
-          >
-            <div>
-              <div className="flex items-center justify-between pb-3 border-b border-white/15 mb-4">
-                <div className="flex items-center gap-2">
-                  <img src="/projects/tss-pc-controller-logo.jpg" alt="TSS PC Controller" className="w-7 h-7 rounded-lg object-contain bg-white/10 shadow" />
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-blue-300 font-bold">LIVE SCREEN CONTROL</span>
-                </div>
-                <span className="text-[10px] font-mono text-white bg-blue-600 px-2.5 py-0.5 rounded-full shadow">Flagship</span>
-              </div>
-
-              <div className="bg-[#030614] border border-white/15 rounded-2xl p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-bold text-white group-hover:text-blue-300 transition-colors">TSS PC Controller</h4>
-                  <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">Low Latency</span>
-                </div>
-                <p className="text-[11px] text-slate-200 leading-relaxed">
-                  Stream your live Windows PC screen directly onto your mobile phone. Control mouse, keyboard shortcuts, shutdown, and sleep remotely.
-                </p>
-                <div className="flex flex-wrap gap-1.5 pt-1 text-[10px] font-mono text-blue-200">
-                  <span className="bg-blue-500/15 px-2 py-0.5 rounded border border-blue-400/25">Live Screen Monitor</span>
-                  <span className="bg-blue-500/15 px-2 py-0.5 rounded border border-blue-400/25">Touchpad</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-3 mt-3 border-t border-white/10 flex items-center justify-between text-xs font-heading font-semibold text-blue-300">
-              <span>View Case Study</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </Link>
-
-          {/* Card 3: Tutors Kushtia Platform (Right) */}
-          <Link
-            href="/projects/tutors-kushtia"
-            className="md:col-span-4 bg-[#0e0a24]/85 border border-purple-500/20 hover:border-purple-400/50 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl relative overflow-hidden group transition-all duration-300 flex flex-col justify-between hover:-translate-y-1"
-          >
-            <div>
-              <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
-                <div className="flex items-center gap-2">
-                  <img src="/projects/tutors-kushtia-logo.jpg" alt="Tutors Kushtia" className="w-6 h-6 rounded-md object-contain bg-white/10" />
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-purple-300">EdTech Platform</span>
-                </div>
-                <span className="text-[10px] font-mono text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">Live System</span>
-              </div>
-
-              <div className="bg-[#080516] border border-purple-500/15 rounded-2xl p-4 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-bold text-white group-hover:text-purple-300 transition-colors">Tutors Kushtia</h4>
-                  <span className="text-[10px] font-mono text-purple-400">Tuition Hub</span>
-                </div>
-                <p className="text-[11px] text-slate-300 leading-relaxed">
-                  Connecting tutors, mentors and guardians in Kushtia with structured tuition listings, role dashboards, and verified matching.
-                </p>
-                <div className="flex flex-wrap gap-1.5 pt-1 text-[10px] font-mono text-purple-300">
-                  <span className="bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Tutor Portal</span>
-                  <span className="bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Guardian Booking</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-3 mt-3 border-t border-white/10 flex items-center justify-between text-xs font-heading font-semibold text-purple-300">
-              <span>View Case Study</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </Link>
+          </div>
         </motion.div>
 
       </section>
 
       {/* =================================================================== */}
-      {/* 2. TRUST & IMPACT: Engineering software for ambitious businesses   */}
+      {/* 2. TRUSTED PARTNERS & REAL IMPACT: Bangladesh Reach                 */}
       {/* =================================================================== */}
       <motion.section 
         initial={{ opacity: 0, y: 35 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.6 }}
         className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10"
       >
-        <div className="bg-gradient-to-b from-[#08102a]/90 via-[#060b1e]/90 to-[#040816]/95 border border-white/15 rounded-3xl p-8 sm:p-14 shadow-[0_25px_60px_rgba(0,0,0,0.8)] backdrop-blur-2xl text-center space-y-10">
+        <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200/90 dark:border-white/15 rounded-3xl p-8 sm:p-14 shadow-xl backdrop-blur-2xl text-center space-y-10">
           
           {/* Header */}
           <div className="max-w-3xl mx-auto space-y-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-mono text-blue-300 uppercase tracking-widest">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200/80 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
               <span>PROVEN DIGITAL ENGINEERING</span>
             </div>
             
-            <h2 className="font-heading text-section-title font-bold text-white tracking-[-0.025em] leading-[1.15]">
+            <h2 className="font-heading text-section-title font-bold text-slate-900 dark:text-white tracking-[-0.025em] leading-[1.15]">
               Engineering software for ambitious businesses.
             </h2>
             
-            <p className="font-body text-body-p text-slate-300 leading-[1.7] max-w-2xl mx-auto">
-              From high-growth innovators to expanding enterprise partners, we engineer high-resilience digital systems and custom software that drive measurable growth.
+            <p className="font-body text-body-p text-slate-600 dark:text-slate-300 leading-[1.7] max-w-2xl mx-auto">
+              From high-growth local innovators to expanding enterprise partners, we engineer high-resilience digital systems and custom software that drive measurable growth.
             </p>
           </div>
 
           {/* Regional Reach Badge */}
-          <div className="inline-flex flex-wrap items-center justify-center gap-2 px-4 py-2 rounded-full bg-white/[0.05] border border-white/15 text-xs text-slate-200 shadow-md">
+          <div className="inline-flex flex-wrap items-center justify-center gap-2 px-4 py-2 rounded-full bg-slate-100/80 dark:bg-white/[0.05] border border-slate-200/80 dark:border-white/15 text-xs text-slate-700 dark:text-slate-200 shadow-sm">
             <span className="text-base">🇧🇩</span>
-            <span className="text-slate-300 font-mono text-[11px] ml-1">
+            <span className="font-mono text-[11px] ml-1">
               ✦ Delivering production-grade software across Bangladesh
             </span>
           </div>
@@ -313,13 +298,13 @@ export default function LandingPage() {
               'Cholo Jai',
               'GramAlo Solar Solution',
               'Tutors Kushtia',
-              'Apex Global',
+              'Apex Global Technologies',
               'TSS Systems',
               'and growing partners...'
             ].map((client, idx) => (
               <span 
                 key={idx}
-                className="px-4 py-2 rounded-xl bg-white/[0.04] border border-white/10 hover:border-white/25 text-xs font-medium text-slate-200 transition-colors shadow-sm"
+                className="px-4 py-2 rounded-xl bg-slate-50 dark:bg-white/[0.04] border border-slate-200/80 dark:border-white/10 hover:border-blue-500/50 text-xs font-medium text-slate-800 dark:text-slate-200 transition-colors shadow-sm"
               >
                 {client}
               </span>
@@ -327,52 +312,51 @@ export default function LandingPage() {
           </div>
 
           {/* Stat Counter Grid (6+ yrs experience, 5+ flagship products) */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-white/10 max-w-4xl mx-auto text-left">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-200/80 dark:border-white/10 max-w-4xl mx-auto text-left">
             
-            <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-5">
-              <div className="text-3xl sm:text-4xl font-black text-emerald-400 font-mono tracking-tight mb-1">
+            <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/5 rounded-2xl p-5">
+              <div className="text-3xl sm:text-4xl font-black text-emerald-600 dark:text-emerald-400 font-mono tracking-tight mb-1">
                 6+ yrs
               </div>
-              <div className="text-xs font-semibold text-white">Experience</div>
-              <p className="text-[11px] text-slate-400">Deep software engineering &amp; architecture</p>
+              <div className="text-xs font-semibold text-slate-900 dark:text-white">Experience</div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Deep software engineering &amp; architecture</p>
             </div>
 
-            <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-5">
-              <div className="text-3xl sm:text-4xl font-black text-blue-400 font-mono tracking-tight mb-1">
+            <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/5 rounded-2xl p-5">
+              <div className="text-3xl sm:text-4xl font-black text-blue-600 dark:text-blue-400 font-mono tracking-tight mb-1">
                 10x
               </div>
-              <div className="text-xs font-semibold text-white">Peak Growth</div>
-              <p className="text-[11px] text-slate-400">Average throughput scale for client systems</p>
+              <div className="text-xs font-semibold text-slate-900 dark:text-white">Peak Growth</div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Average throughput scale for client systems</p>
             </div>
 
-            <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-5">
-              <div className="text-3xl sm:text-4xl font-black text-sky-400 font-mono tracking-tight mb-1">
+            <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/5 rounded-2xl p-5">
+              <div className="text-3xl sm:text-4xl font-black text-indigo-600 dark:text-sky-400 font-mono tracking-tight mb-1">
                 5+
               </div>
-              <div className="text-xs font-semibold text-white">Flagship Platforms</div>
-              <p className="text-[11px] text-slate-400">Engineered production web, mobile &amp; systems</p>
+              <div className="text-xs font-semibold text-slate-900 dark:text-white">Flagship Platforms</div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Engineered production web, mobile &amp; systems</p>
             </div>
 
-            <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-5">
-              <div className="text-3xl sm:text-4xl font-black text-indigo-400 font-mono tracking-tight mb-1">
+            <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200/80 dark:border-white/5 rounded-2xl p-5">
+              <div className="text-3xl sm:text-4xl font-black text-cyan-600 dark:text-indigo-400 font-mono tracking-tight mb-1">
                 99.98%
               </div>
-              <div className="text-xs font-semibold text-white">Uptime SLA</div>
-              <p className="text-[11px] text-slate-400">Fault-tolerant distributed edge uptime</p>
+              <div className="text-xs font-semibold text-slate-900 dark:text-white">Uptime SLA</div>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">Fault-tolerant distributed edge uptime</p>
             </div>
 
           </div>
 
-          {/* Infinite Marquee Ticker Strip */}
-          <div className="pt-2 border-t border-white/10 overflow-hidden relative">
-            <div className="flex gap-8 whitespace-nowrap text-xs font-mono uppercase tracking-widest text-slate-400 py-1">
+          {/* Marquee Ticker Strip */}
+          <div className="pt-2 border-t border-slate-200/80 dark:border-white/10 overflow-hidden relative">
+            <div className="flex gap-8 whitespace-nowrap text-xs font-mono uppercase tracking-widest text-slate-500 dark:text-slate-400 py-1">
               <span>• Next.js 14 Architecture</span>
               <span>• Distributed Cloud Infrastructure</span>
               <span>• Flutter &amp; React Native Mobile</span>
               <span>• Custom Enterprise Software</span>
               <span>• Zero-Trust Data Confidentiality</span>
               <span>• 100% Full IP Handover</span>
-              <span>• High-Concurrency SQL Replication</span>
             </div>
           </div>
 
@@ -380,672 +364,677 @@ export default function LandingPage() {
       </motion.section>
 
       {/* =================================================================== */}
-      {/* 3. SERVICES: "What we do, and do well."                             */}
-      {/*    (Exact match to Reference Video & brandyfy.in section 4)        */}
+      {/* 3. CORE SERVICES: GotMyHost-style 6-Card Grid                       */}
       {/* =================================================================== */}
-      <section className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10" id="services">
-        
+      <motion.section 
+        initial={{ opacity: 0, y: 35 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.6 }}
+        className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10" 
+        id="services"
+      >
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 sm:mb-16 pb-6 border-b border-white/10 gap-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 sm:mb-16 pb-6 border-b border-slate-200/80 dark:border-white/10 gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-mono text-blue-300 uppercase tracking-widest mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200/80 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest mb-3">
               <span>Capabilities &amp; Core Disciplines</span>
             </div>
-            <h2 className="font-heading text-section-title font-bold text-white tracking-[-0.025em] leading-[1.15]">
-              What we do, and do well.
+            <h2 className="font-heading text-section-title font-bold text-slate-900 dark:text-white tracking-[-0.025em] leading-[1.15]">
+              What we do, and do exceptionally well.
             </h2>
           </div>
-          <p className="font-body text-body-p text-slate-300 max-w-md leading-[1.7]">
-            We reject cookie-cutter templates. Every line of code and UI component is precision-engineered to drive tangible business metrics.
+          <p className="font-body text-body-p text-slate-600 dark:text-slate-300 max-w-md leading-[1.7]">
+            We reject fragile templates. Every architecture and UI component is precision-engineered to deliver reliable, long-term business value.
           </p>
         </div>
 
-        {/* 5 Core Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* 6-Card Services Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           
-          {/* Service 1: Web Architecture */}
-          <div className="bg-[#070e28]/70 border border-white/10 hover:border-white/25 rounded-3xl p-8 backdrop-blur-xl shadow-lg transition-all duration-300 group md:col-span-2">
-            <div className="w-12 h-12 rounded-2xl bg-blue-500/15 border border-blue-400/25 flex items-center justify-center text-blue-300 mb-6 group-hover:scale-110 transition-transform">
-              <Globe className="w-6 h-6" />
-            </div>
-            <span className="text-[11px] font-mono text-blue-400 uppercase tracking-wider block mb-1">Flagship Discipline</span>
-            <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">Website Design &amp; Full-Stack Architecture</h3>
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-6 max-w-xl">
-              Lightning-fast, SEO-dominant digital flagships engineered on Next.js 14, Node.js, and modern distributed databases. Engineered to handle intense global spikes with sub-50ms responsiveness.
-            </p>
-            <div className="flex flex-wrap gap-2 pt-4 border-t border-white/10 text-[11px] font-mono text-slate-300">
-              <span className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">Next.js 14</span>
-              <span className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">TypeScript</span>
-              <span className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">PostgreSQL</span>
-              <span className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">Tailwind CSS</span>
-              <span className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">Server Actions</span>
-            </div>
-          </div>
-
-          {/* Service 2: Mobile Ecosystems */}
-          <div className="bg-[#070e28]/70 border border-white/10 hover:border-white/25 rounded-3xl p-8 backdrop-blur-xl shadow-lg transition-all duration-300 group">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-400/25 flex items-center justify-center text-emerald-300 mb-6 group-hover:scale-110 transition-transform">
-              <Smartphone className="w-6 h-6" />
-            </div>
-            <span className="text-[11px] font-mono text-emerald-400 uppercase tracking-wider block mb-1">Native &amp; Cross-Platform</span>
-            <h3 className="text-2xl font-bold text-white mb-3">Mobile Applications</h3>
-            <p className="text-slate-300 text-sm leading-relaxed mb-6">
-              Fluid 60fps mobile platforms built with Flutter and React Native. Offline-first architecture, push notifications, and biometric verification.
-            </p>
-            <div className="flex flex-wrap gap-2 pt-4 border-t border-white/10 text-[11px] font-mono text-slate-300">
-              <span className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">Flutter</span>
-              <span className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">React Native</span>
-              <span className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">iOS / Android</span>
-            </div>
-          </div>
-
-          {/* Service 3: Branding & UI/UX Design Systems */}
-          <div className="bg-[#070e28]/70 border border-white/10 hover:border-white/25 rounded-3xl p-8 backdrop-blur-xl shadow-lg transition-all duration-300 group">
-            <div className="w-12 h-12 rounded-2xl bg-purple-500/15 border border-purple-400/25 flex items-center justify-center text-purple-300 mb-6 group-hover:scale-110 transition-transform">
-              <Palette className="w-6 h-6" />
-            </div>
-            <span className="text-[11px] font-mono text-purple-400 uppercase tracking-wider block mb-1">Visual Identity</span>
-            <h3 className="text-2xl font-bold text-white mb-3">Branding &amp; Design Systems</h3>
-            <p className="text-slate-300 text-sm leading-relaxed mb-6">
-              Comprehensive brand architecture, typography standards, and modular Figma component libraries focused on effortless conversion.
-            </p>
-            <div className="flex flex-wrap gap-2 pt-4 border-t border-white/10 text-[11px] font-mono text-slate-300">
-              <span className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">Figma Tokens</span>
-              <span className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">Design Systems</span>
-              <span className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">Interactive UX</span>
-            </div>
-          </div>
-
-          {/* Service 4: Distributed Cloud & DevOps */}
-          <div className="bg-[#070e28]/70 border border-white/10 hover:border-white/25 rounded-3xl p-8 backdrop-blur-xl shadow-lg transition-all duration-300 group md:col-span-2">
-            <div className="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-400/25 flex items-center justify-center text-sky-300 mb-6 group-hover:scale-110 transition-transform">
-              <Cloud className="w-6 h-6" />
-            </div>
-            <span className="text-[11px] font-mono text-sky-400 uppercase tracking-wider block mb-1">Enterprise Resilience</span>
-            <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">Cloud Infrastructure &amp; DevOps Pipelines</h3>
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-6 max-w-xl">
-              Automated continuous integration, Docker container orchestration, and zero-downtime edge caching. We engineer backends that never fall under traffic.
-            </p>
-            <div className="flex flex-wrap gap-2 pt-4 border-t border-white/10 text-[11px] font-mono text-slate-300">
-              <span className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">Docker</span>
-              <span className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">Cloudflare Workers</span>
-              <span className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">AWS / GCP</span>
-              <span className="bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">CI/CD Pipelines</span>
-            </div>
-          </div>
-
-        </div>
-
-      </section>
-
-      {/* =================================================================== */}
-      {/* 4. FEATURED PROJECTS: "Turning Ideas Into Digital Products."         */}
-      {/*    (Selected Work 2025-2026 — 5 Real TSS Soft Software Products)     */}
-      {/* =================================================================== */}
-      <section className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10" id="showcase">
-        
-        {/* Header with Filter Tabs */}
-        <div className="space-y-6 mb-12">
-          
-          <div className="flex flex-col md:flex-row md:items-end justify-between pb-6 border-b border-white/10 gap-4">
+          {/* Card 1: Web Architecture */}
+          <div className="bg-white dark:bg-[#070e24]/80 border border-slate-200/90 dark:border-white/10 hover:border-blue-500 rounded-3xl p-7 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-mono text-emerald-300 uppercase tracking-widest mb-3">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>SELECTED WORK — 2025–2026</span>
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-500/15 border border-blue-200/80 dark:border-blue-400/25 flex items-center justify-center text-blue-600 dark:text-blue-300 mb-6 group-hover:scale-110 transition-transform">
+                <Globe className="w-6 h-6" />
               </div>
-              <h2 className="font-heading text-section-title font-bold text-white tracking-[-0.025em] leading-[1.15]">
-                Turning Ideas Into Digital Products.
-              </h2>
+              <span className="text-[11px] font-mono text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-1">Web Platform</span>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Custom Web Platforms &amp; Architecture</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
+                SEO-dominant, high-concurrency web flagships engineered on Next.js 14, Node.js, and PostgreSQL. Engineered to handle traffic spikes with sub-50ms responsiveness.
+              </p>
+              <ul className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                  <span>Next.js 14 Server Actions &amp; SSR</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                  <span>Sub-50ms Global Edge Performance</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                  <span>Enterprise Security &amp; RBAC Auth</span>
+                </li>
+              </ul>
             </div>
-            <p className="font-body text-body-p text-slate-300 max-w-md leading-[1.7]">
-              From innovative platforms to powerful software solutions, we design and develop technology that solves real-world problems.
+            <div className="pt-4 border-t border-slate-100 dark:border-white/10 flex flex-wrap gap-1.5 text-[10px] font-mono text-slate-500 dark:text-slate-400">
+              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Next.js</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">TypeScript</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">PostgreSQL</span>
+            </div>
+          </div>
+
+          {/* Card 2: Mobile Apps */}
+          <div className="bg-white dark:bg-[#070e24]/80 border border-slate-200/90 dark:border-white/10 hover:border-emerald-500 rounded-3xl p-7 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200/80 dark:border-emerald-400/25 flex items-center justify-center text-emerald-600 dark:text-emerald-300 mb-6 group-hover:scale-110 transition-transform">
+                <Smartphone className="w-6 h-6" />
+              </div>
+              <span className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block mb-1">Cross-Platform</span>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Mobile Applications (iOS &amp; Android)</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
+                Fluid 60fps mobile applications engineered with Flutter and React Native. Offline-first data caching, biometric verification, and real-time push alerts.
+              </p>
+              <ul className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                  <span>Flutter &amp; React Native Core</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                  <span>Offline-First Data Synchronization</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                  <span>App Store &amp; Play Store Deployment</span>
+                </li>
+              </ul>
+            </div>
+            <div className="pt-4 border-t border-slate-100 dark:border-white/10 flex flex-wrap gap-1.5 text-[10px] font-mono text-slate-500 dark:text-slate-400">
+              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Flutter</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">React Native</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">iOS / Android</span>
+            </div>
+          </div>
+
+          {/* Card 3: Enterprise Cloud & APIs */}
+          <div className="bg-white dark:bg-[#070e24]/80 border border-slate-200/90 dark:border-white/10 hover:border-indigo-500 rounded-3xl p-7 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-500/15 border border-indigo-200/80 dark:border-indigo-400/25 flex items-center justify-center text-indigo-600 dark:text-indigo-300 mb-6 group-hover:scale-110 transition-transform">
+                <Server className="w-6 h-6" />
+              </div>
+              <span className="text-[11px] font-mono text-indigo-600 dark:text-indigo-400 uppercase tracking-wider block mb-1">Backend &amp; DevOps</span>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Enterprise Backend &amp; Cloud APIs</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
+                High-throughput microservices, REST &amp; GraphQL APIs, automated cloud pipelines (Docker, Kubernetes), and fault-tolerant multi-region replication.
+              </p>
+              <ul className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                  <span>High-Concurrency Microservices</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                  <span>Automated CI/CD DevOps Pipelines</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+                  <span>Real-time WebSocket Streaming</span>
+                </li>
+              </ul>
+            </div>
+            <div className="pt-4 border-t border-slate-100 dark:border-white/10 flex flex-wrap gap-1.5 text-[10px] font-mono text-slate-500 dark:text-slate-400">
+              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Docker</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Node.js</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Redis</span>
+            </div>
+          </div>
+
+          {/* Card 4: UI/UX & Design Systems */}
+          <div className="bg-white dark:bg-[#070e24]/80 border border-slate-200/90 dark:border-white/10 hover:border-purple-500 rounded-3xl p-7 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-500/15 border border-purple-200/80 dark:border-purple-400/25 flex items-center justify-center text-purple-600 dark:text-purple-300 mb-6 group-hover:scale-110 transition-transform">
+                <Layers className="w-6 h-6" />
+              </div>
+              <span className="text-[11px] font-mono text-purple-600 dark:text-purple-400 uppercase tracking-wider block mb-1">Design System</span>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">UI/UX Design Systems &amp; Strategy</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
+                Conversion-focused digital experience design. Modular Figma component systems, accessible typography hierarchy, and effortless checkout flows.
+              </p>
+              <ul className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                  <span>Figma Design Tokens &amp; Components</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                  <span>Conversion-Driven User Journeys</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                  <span>Pixel-Perfect Component Handover</span>
+                </li>
+              </ul>
+            </div>
+            <div className="pt-4 border-t border-slate-100 dark:border-white/10 flex flex-wrap gap-1.5 text-[10px] font-mono text-slate-500 dark:text-slate-400">
+              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Figma</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Design Tokens</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Storybook</span>
+            </div>
+          </div>
+
+          {/* Card 5: Intelligent Automation & AI */}
+          <div className="bg-white dark:bg-[#070e24]/80 border border-slate-200/90 dark:border-white/10 hover:border-sky-500 rounded-3xl p-7 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-sky-50 dark:bg-sky-500/15 border border-sky-200/80 dark:border-sky-400/25 flex items-center justify-center text-sky-600 dark:text-sky-300 mb-6 group-hover:scale-110 transition-transform">
+                <Cpu className="w-6 h-6" />
+              </div>
+              <span className="text-[11px] font-mono text-sky-600 dark:text-sky-400 uppercase tracking-wider block mb-1">Automation &amp; AI</span>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Intelligent Automation &amp; System Integration</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
+                Custom API integrations, workflow automation, payment gateways (bKash, Nagad, SSLCommerz, Stripe), and AI-augmented task pipelines.
+              </p>
+              <ul className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-sky-500 flex-shrink-0" />
+                  <span>Payment Gateway &amp; MFS Integrations</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-sky-500 flex-shrink-0" />
+                  <span>Custom CRM &amp; ERP Workflow Hooks</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-sky-500 flex-shrink-0" />
+                  <span>LLM &amp; Intelligent Data Processing</span>
+                </li>
+              </ul>
+            </div>
+            <div className="pt-4 border-t border-slate-100 dark:border-white/10 flex flex-wrap gap-1.5 text-[10px] font-mono text-slate-500 dark:text-slate-400">
+              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">MFS APIs</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Webhooks</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">AI Pipelines</span>
+            </div>
+          </div>
+
+          {/* Card 6: Dedicated Pods & Maintenance */}
+          <div className="bg-white dark:bg-[#070e24]/80 border border-slate-200/90 dark:border-white/10 hover:border-amber-500 rounded-3xl p-7 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group">
+            <div>
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-500/15 border border-amber-200/80 dark:border-amber-400/25 flex items-center justify-center text-amber-600 dark:text-amber-300 mb-6 group-hover:scale-110 transition-transform">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <span className="text-[11px] font-mono text-amber-600 dark:text-amber-400 uppercase tracking-wider block mb-1">Ongoing SLA</span>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">Dedicated Engineering Pods &amp; SLA Support</h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
+                Continuous software maintenance, 24/7 uptime monitoring, security patching, and on-demand feature expansion with dedicated senior developers.
+              </p>
+              <ul className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                  <span>Guaranteed SLA Incident Response</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                  <span>Proactive Security &amp; Dependency Audits</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                  <span>Direct Communication via Slack / WhatsApp</span>
+                </li>
+              </ul>
+            </div>
+            <div className="pt-4 border-t border-slate-100 dark:border-white/10 flex flex-wrap gap-1.5 text-[10px] font-mono text-slate-500 dark:text-slate-400">
+              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">24/7 SLA</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Direct Access</span>
+              <span className="bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded">Dev Pods</span>
+            </div>
+          </div>
+
+        </div>
+
+      </motion.section>
+
+      {/* =================================================================== */}
+      {/* 4. FEATURED CASE STUDIES: Real Flagship Products Showcase           */}
+      {/* =================================================================== */}
+      <motion.section 
+        initial={{ opacity: 0, y: 35 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.6 }}
+        className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10" 
+        id="showcase"
+      >
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 sm:mb-16 pb-6 border-b border-slate-200/80 dark:border-white/10 gap-6">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200/80 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest mb-3">
+              <span>SELECTED WORK — 2025–2026</span>
+            </div>
+            <h2 className="font-heading text-section-title font-bold text-slate-900 dark:text-white tracking-[-0.025em] leading-[1.15]">
+              Turning Ideas Into Digital Products.
+            </h2>
+          </div>
+          <p className="font-body text-body-p text-slate-600 dark:text-slate-300 max-w-md leading-[1.7]">
+            From local mobility systems to live PC streaming tools, we design and engineer proprietary software that solves real-world challenges.
+          </p>
+        </div>
+
+        {/* 3 Featured Products Showcase */}
+        <div className="space-y-12">
+          
+          {/* Showcase Item 1: TSS PC Controller */}
+          <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200/90 dark:border-white/15 rounded-3xl overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 transition-all duration-300 hover:shadow-2xl">
+            <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-auto overflow-hidden bg-slate-950 flex items-center justify-center">
+              <img 
+                src="/projects/tss-pc-controller-banner.jpg" 
+                alt="TSS PC Controller Banner" 
+                className="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute top-4 left-4 bg-blue-600 text-white text-xs font-mono px-3 py-1 rounded-full shadow-md">
+                Live Screen Control
+              </div>
+            </div>
+            <div className="lg:col-span-5 p-8 sm:p-10 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-xs font-mono uppercase tracking-wider mb-2">
+                  <span>System Utility</span>
+                  <span>•</span>
+                  <span>Low Latency</span>
+                </div>
+                <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-3">
+                  TSS PC Controller
+                </h3>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-4">
+                  "Your PC. Your Control. Anywhere."
+                </p>
+                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6">
+                  Engineered to stream live Windows PC screens directly to smartphones over Wi-Fi. Features low-latency touchpad mouse, virtual keyboard, shutdown, sleep, and system commands.
+                </p>
+                <div className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-blue-500" />
+                    <span>Real-Time Screen Mirroring (&lt; 50ms)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-blue-500" />
+                    <span>Remote Windows Power &amp; Command Controls</span>
+                  </div>
+                </div>
+              </div>
+              <div className="pt-6 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
+                <Link
+                  href="/projects/tss-pc-controller"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  <span>Read Full Case Study</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">Desktop + Mobile</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Showcase Item 2: Tutors Kushtia */}
+          <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200/90 dark:border-white/15 rounded-3xl overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 transition-all duration-300 hover:shadow-2xl">
+            <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-auto overflow-hidden bg-slate-950 flex items-center justify-center">
+              <img 
+                src="/projects/tutors-kushtia-banner.jpg" 
+                alt="Tutors Kushtia Banner" 
+                className="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute top-4 left-4 bg-purple-600 text-white text-xs font-mono px-3 py-1 rounded-full shadow-md">
+                EdTech Platform
+              </div>
+            </div>
+            <div className="lg:col-span-5 p-8 sm:p-10 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 text-xs font-mono uppercase tracking-wider mb-2">
+                  <span>Education Technology</span>
+                  <span>•</span>
+                  <span>Active Ecosystem</span>
+                </div>
+                <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-3">
+                  Tutors Kushtia
+                </h3>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-4">
+                  "Connecting Tutors, Guardians &amp; Opportunities."
+                </p>
+                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6">
+                  A centralized tuition connection platform designed to organize education opportunities in Kushtia. Guardians post requirements while verified mentors offer teaching services.
+                </p>
+                <div className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-purple-500" />
+                    <span>Dedicated Tutor &amp; Guardian Dashboards</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-purple-500" />
+                    <span>Structured Tuition Post &amp; Booking Pipeline</span>
+                  </div>
+                </div>
+              </div>
+              <div className="pt-6 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
+                <Link
+                  href="/projects/tutors-kushtia"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-purple-600 dark:text-purple-400 hover:underline"
+                >
+                  <span>Read Full Case Study</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">Web App Platform</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Showcase Item 3: Cholo Jai */}
+          <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200/90 dark:border-white/15 rounded-3xl overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12 transition-all duration-300 hover:shadow-2xl">
+            <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-auto overflow-hidden bg-slate-950 flex items-center justify-center">
+              <img 
+                src="/projects/cholo-jai-app-banner.jpg" 
+                alt="Cholo Jai Banner" 
+                className="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute top-4 left-4 bg-emerald-600 text-white text-xs font-mono px-3 py-1 rounded-full shadow-md">
+                Mobility &amp; Transit
+              </div>
+            </div>
+            <div className="lg:col-span-5 p-8 sm:p-10 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-xs font-mono uppercase tracking-wider mb-2">
+                  <span>Ride Sharing</span>
+                  <span>•</span>
+                  <span>Regional Transit</span>
+                </div>
+                <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-3">
+                  Cholo Jai (চলো যায়)
+                </h3>
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-4">
+                  "Your Journey, Made Simpler."
+                </p>
+                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6">
+                  Developed by TSS Soft to make transportation convenient, predictable, and fair in Kushtia and its surrounding designated routes with dual passenger and rider applications.
+                </p>
+                <div className="space-y-2 mb-6 text-xs text-slate-700 dark:text-slate-300">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-emerald-500" />
+                    <span>Real-Time Route &amp; Pickup Selection</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-emerald-500" />
+                    <span>Transparent Fare Estimation &amp; Rider Dispatch</span>
+                  </div>
+                </div>
+              </div>
+              <div className="pt-6 border-t border-slate-100 dark:border-white/10 flex items-center justify-between">
+                <Link
+                  href="/projects/cholo-jai"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+                >
+                  <span>Read Full Case Study</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">Mobile + Backend</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </motion.section>
+
+      {/* =================================================================== */}
+      {/* 5. COMPARISON MATRIX: Why TSS Soft (GotMyHost-style Table)          */}
+      {/* =================================================================== */}
+      <motion.section 
+        initial={{ opacity: 0, y: 35 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.6 }}
+        className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10"
+      >
+        <div className="bg-white dark:bg-[#070e24]/90 border border-slate-200/90 dark:border-white/15 rounded-3xl p-8 sm:p-12 shadow-xl backdrop-blur-2xl">
+          
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200/80 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest mb-3">
+              <span>THE TSS ADVANTAGE</span>
+            </div>
+            <h2 className="font-heading text-section-title font-bold text-slate-900 dark:text-white tracking-[-0.025em] leading-[1.15] mb-4">
+              Why Leaders Build With TSS Soft.
+            </h2>
+            <p className="font-body text-body-p text-slate-600 dark:text-slate-300 leading-[1.7]">
+              Compare our dedicated engineering approach against legacy agencies and unpredictable freelance platforms.
             </p>
           </div>
 
-          {/* Filter Pills */}
-          <div className="flex flex-wrap items-center gap-2">
-            {[
-              { id: 'all', label: 'All Products (5)' },
-              { id: 'mobile', label: 'Mobile Apps (2)' },
-              { id: 'web', label: 'Web Platforms (2)' },
-              { id: 'system', label: 'Windows & Systems (1)' }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveShowcaseFilter(tab.id)}
-                className={`px-4 py-2 rounded-full text-xs font-heading font-semibold transition-all ${
-                  activeShowcaseFilter === tab.id
-                    ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]'
-                    : 'bg-white/[0.05] text-slate-300 hover:text-white hover:bg-white/10 border border-white/10'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-        </div>
-
-        {/* Showcase Grid (5 Real Products from projectsData) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-          <AnimatePresence mode="popLayout">
-            {filteredShowcase.map((project) => (
-              <motion.div
-                key={project.id}
-                layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.35 }}
-                className="bg-[#070e28]/85 border border-white/15 hover:border-white/35 rounded-3xl overflow-hidden shadow-xl backdrop-blur-xl group transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.85)]"
-              >
-                <div>
-                  
-                  {/* Banner Image Frame */}
-                  <div className="relative aspect-video w-full overflow-hidden bg-[#030612]">
-                    <img 
-                      src={project.banner} 
-                      alt={project.name} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                    />
-                    
-                    {/* Floating Product Badge */}
-                    <div className="absolute top-3 left-3 bg-slate-950/85 backdrop-blur-md border border-white/15 px-3 py-1 rounded-full flex items-center gap-2">
-                      <img 
-                        src={project.logo} 
-                        alt={project.name} 
-                        className="w-4 h-4 rounded object-cover" 
-                      />
-                      <span className="text-[10px] font-mono text-slate-200 uppercase tracking-wider">
-                        {project.badge}
-                      </span>
-                    </div>
-
-                    <div className="absolute top-3 right-3 bg-emerald-500/20 backdrop-blur-md border border-emerald-400/30 px-2.5 py-0.5 rounded-full text-[10px] font-mono text-emerald-300">
-                      TSS Soft
-                    </div>
-                  </div>
-
-                  {/* Details */}
-                  <div className="p-6 space-y-3">
-                    <div>
-                      <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block mb-1">
-                        {project.category}
-                      </span>
-                      <h3 className="font-heading text-lg font-bold text-white group-hover:text-blue-300 transition-colors">
-                        {project.name}
-                      </h3>
-                      <p className="text-xs font-mono text-emerald-400/90 mt-0.5">
-                        {project.tagline}
-                      </p>
-                    </div>
-
-                    <p className="font-body text-xs text-slate-300 leading-relaxed line-clamp-3">
-                      {project.shortDescription}
-                    </p>
-
-                    {/* Features list */}
-                    <div className="space-y-1 pt-2 border-t border-white/5">
-                      {project.keyFeatures.slice(0, 3).map((feat, fIdx) => (
-                        <div key={fIdx} className="flex items-center gap-1.5 text-[11px] text-slate-300">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0" />
-                          <span className="truncate">{feat.title}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* Bottom Actions */}
-                <div className="p-6 pt-0 mt-auto">
-                  <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setPreviewModalProject(project)}
-                      className="inline-flex items-center gap-1.5 text-xs font-heading font-medium text-slate-300 hover:text-white bg-white/[0.05] hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-xl transition-all active:scale-95"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>Explore</span>
-                    </button>
-
-                    <Link
-                      href={`/projects/${project.slug}`}
-                      className="inline-flex items-center gap-1.5 text-xs font-heading font-semibold text-slate-950 bg-[#22c55e] hover:bg-[#16a34a] px-3.5 py-1.5 rounded-xl shadow-[0_0_15px_rgba(34,197,94,0.3)] transition-all active:scale-95 group/btn"
-                    >
-                      <span>View Case Study</span>
-                      <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
-                    </Link>
-                  </div>
-
-                  <div className="text-[10px] font-mono text-slate-400 text-center mt-2.5 pt-1.5 border-t border-white/5">
-                    ✦ {project.developerBadge}
-                  </div>
-                </div>
-
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-
-      </section>
-
-      {/* =================================================================== */}
-      {/* 5. COMPARISON: "TSS Soft vs Alternatives — Think One More Time!"    */}
-      {/*    (Exact match to Reference Video frame 45s & brandyfy.in)        */}
-      {/* =================================================================== */}
-      <section className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10">
-        
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-mono text-blue-300 uppercase tracking-widest">
-            <span>Competitive Matrix</span>
-          </div>
-          
-          <h2 className="font-heading text-section-title font-bold text-white tracking-[-0.025em] leading-[1.15]">
-            TSS Soft vs Alternatives? <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-sky-300 to-blue-400">
-              Think One More Time!
-            </span>
-          </h2>
-          
-          <p className="font-body text-body-p text-slate-300 leading-[1.7]">
-            Why leading founders and enterprise teams choose TSS Soft instead of dealing with hiring overhead, sluggish agencies, or unpredictable freelancers.
-          </p>
-        </div>
-
-        {/* Matrix Comparison Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[700px] bg-[#070e28]/80 border border-white/15 rounded-3xl overflow-hidden backdrop-blur-2xl shadow-2xl">
-            <thead>
-              <tr className="border-b border-white/10 bg-white/[0.02]">
-                <th className="p-5 sm:p-6 text-xs font-mono uppercase tracking-wider text-slate-400">Features &amp; Guarantees</th>
-                <th className="p-5 sm:p-6 text-sm font-black text-emerald-400 bg-emerald-500/10 border-x border-emerald-500/20">
-                  ✦ TSS Soft (Us)
-                </th>
-                <th className="p-5 sm:p-6 text-xs font-mono uppercase tracking-wider text-slate-400">In-House Team</th>
-                <th className="p-5 sm:p-6 text-xs font-mono uppercase tracking-wider text-slate-400">Traditional Agencies</th>
-                <th className="p-5 sm:p-6 text-xs font-mono uppercase tracking-wider text-slate-400">Freelancers</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/5 text-xs sm:text-sm">
-              {[
-                {
-                  metric: 'Speed to Production',
-                  tss: '2 - 4 Weeks Launch',
-                  inhouse: '3 - 6 Months Hiring',
-                  agency: '3 - 5 Months',
-                  freelancer: 'Unpredictable'
-                },
-                {
-                  metric: '100% Custom Architecture',
-                  tss: 'Yes (Zero Templates)',
-                  inhouse: 'Yes (High Salary Cost)',
-                  agency: 'Often Recycled Templates',
-                  freelancer: 'Varies Widely'
-                },
-                {
-                  metric: 'Direct Access to Principal Engineers',
-                  tss: 'Yes (Direct & Dedicated)',
-                  inhouse: 'Yes',
-                  agency: 'No (Layered Account Reps)',
-                  freelancer: 'Yes (Single Point Failure)'
-                },
-                {
-                  metric: 'Total IP & Full Code Handover',
-                  tss: '100% Clean Ownership',
-                  inhouse: '100%',
-                  agency: 'Often Proprietary Lock-in',
-                  freelancer: 'Disorganized Handover'
-                },
-                {
-                  metric: '99.98% High-Concurrency SLA',
-                  tss: 'Guaranteed in Writing',
-                  inhouse: 'Internal Responsibility',
-                  agency: 'Costly Add-On Retainer',
-                  freelancer: 'No SLA Protection'
-                },
-                {
-                  metric: 'Pricing Model',
-                  tss: 'Fixed & Transparent',
-                  inhouse: '$120k+/yr per engineer + tax',
-                  agency: 'High Hourly Markups',
-                  freelancer: 'Hidden Scope Creep'
-                }
-              ].map((row, idx) => (
-                <tr key={idx} className="hover:bg-white/[0.02] transition-colors">
-                  <td className="p-5 sm:p-6 font-semibold text-white">{row.metric}</td>
-                  <td className="p-5 sm:p-6 font-bold text-emerald-300 bg-emerald-500/[0.06] border-x border-emerald-500/20 flex items-center gap-1.5">
-                    <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    <span>{row.tss}</span>
-                  </td>
-                  <td className="p-5 sm:p-6 text-slate-300">{row.inhouse}</td>
-                  <td className="p-5 sm:p-6 text-slate-400">{row.agency}</td>
-                  <td className="p-5 sm:p-6 text-slate-400">{row.freelancer}</td>
+          {/* Comparison Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-white/10 text-xs font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <th className="py-4 px-4 sm:px-6">Critical Deliverables</th>
+                  <th className="py-4 px-4 sm:px-6 bg-blue-50/60 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-bold rounded-t-xl">TSS Soft</th>
+                  <th className="py-4 px-4 sm:px-6">Traditional Agencies</th>
+                  <th className="py-4 px-4 sm:px-6">Freelance Marketplaces</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-      </section>
-
-      {/* =================================================================== */}
-      {/* 7. CLIENT TESTIMONIALS: "Don't Take Our Word For It"                */}
-      {/*    (Exact match to Reference Video frame 45s & brandyfy.in)        */}
-      {/* =================================================================== */}
-      <section className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10">
-        
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-mono text-emerald-300 uppercase tracking-widest">
-            <span>Client Stories &amp; Proof</span>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-white/5 text-sm">
+                <tr>
+                  <td className="py-4 px-4 sm:px-6 font-semibold text-slate-900 dark:text-white">IP &amp; Source Code Ownership</td>
+                  <td className="py-4 px-4 sm:px-6 bg-blue-50/40 dark:bg-blue-900/10 font-bold text-blue-600 dark:text-blue-400">✓ 100% Unrestricted Handover</td>
+                  <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">Often proprietary lock-in</td>
+                  <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">Variable / Unverified</td>
+                </tr>
+                <tr>
+                  <td className="py-4 px-4 sm:px-6 font-semibold text-slate-900 dark:text-white">Engineering Talent</td>
+                  <td className="py-4 px-4 sm:px-6 bg-blue-50/40 dark:bg-blue-900/10 font-bold text-blue-600 dark:text-blue-400">✓ Senior Architects Only</td>
+                  <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">Junior dev delegation</td>
+                  <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">Unknown skill level</td>
+                </tr>
+                <tr>
+                  <td className="py-4 px-4 sm:px-6 font-semibold text-slate-900 dark:text-white">Performance Guarantee</td>
+                  <td className="py-4 px-4 sm:px-6 bg-blue-50/40 dark:bg-blue-900/10 font-bold text-blue-600 dark:text-blue-400">✓ Sub-50ms SLA Uptime</td>
+                  <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">Standard shared hosting</td>
+                  <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">No guarantee</td>
+                </tr>
+                <tr>
+                  <td className="py-4 px-4 sm:px-6 font-semibold text-slate-900 dark:text-white">Direct Communication</td>
+                  <td className="py-4 px-4 sm:px-6 bg-blue-50/40 dark:bg-blue-900/10 font-bold text-blue-600 dark:text-blue-400">✓ Direct Slack &amp; Phone Access</td>
+                  <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">Through account managers</td>
+                  <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">Time-zone friction</td>
+                </tr>
+                <tr>
+                  <td className="py-4 px-4 sm:px-6 font-semibold text-slate-900 dark:text-white">Post-Launch Warranty</td>
+                  <td className="py-4 px-4 sm:px-6 bg-blue-50/40 dark:bg-blue-900/10 font-bold text-blue-600 dark:text-blue-400">✓ Continuous Maintenance &amp; SLA</td>
+                  <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">Expensive add-on fees</td>
+                  <td className="py-4 px-4 sm:px-6 text-slate-500 dark:text-slate-400">Disappears after payment</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-          
-          <h2 className="font-heading text-section-title font-bold text-white tracking-[-0.025em] leading-[1.15]">
-            Don’t Take Our Word For It. <br />
-            Hear From Our Clients.
+
+        </div>
+      </motion.section>
+
+      {/* =================================================================== */}
+      {/* 6. ENGINEERING WORKFLOW: 5-Step Delivery Lifecycle                  */}
+      {/* =================================================================== */}
+      <motion.section 
+        initial={{ opacity: 0, y: 35 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.6 }}
+        className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10"
+      >
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200/80 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest mb-3">
+            <span>ENGINEERING PROCESS</span>
+          </div>
+          <h2 className="font-heading text-section-title font-bold text-slate-900 dark:text-white tracking-[-0.025em] leading-[1.15] mb-4">
+            From Architecture Concept to Production Launch.
           </h2>
-          
-          <p className="font-body text-body-p text-slate-300 leading-[1.7]">
-            From web platforms and mobile ecosystems to high-availability distributed systems, see what founders say about working with TSS Soft.
+          <p className="font-body text-body-p text-slate-600 dark:text-slate-300 leading-[1.7]">
+            A disciplined, transparent 5-step development lifecycle engineered for zero surprises and rapid delivery.
           </p>
         </div>
 
-        {/* Testimonials Grid (Exact match to Video frame 45s) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           
-          {/* Review 1 */}
-          <div className="bg-[#070e28]/80 border border-white/10 hover:border-white/25 rounded-3xl p-8 backdrop-blur-xl shadow-lg flex flex-col justify-between transition-all duration-300">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono text-blue-400 uppercase tracking-widest bg-blue-500/10 px-2.5 py-0.5 rounded-full border border-blue-500/20">
-                  • Web Architecture
-                </span>
-                <div className="flex text-amber-400">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                  ))}
-                </div>
-              </div>
-
-              <p className="text-slate-300 text-sm leading-relaxed italic">
-                “TSS Soft completely transformed our online platform and corporate infrastructure. The new website looks ultra-premium, loads in under 40 milliseconds, and has made our brand instantly credible to international partners.”
-              </p>
-            </div>
-
-            <div className="pt-6 border-t border-white/10 flex items-center gap-3 mt-6">
-              <div className="w-10 h-10 rounded-full bg-blue-600/20 border border-blue-400/30 flex items-center justify-center font-bold text-blue-300 text-xs">
-                MR
-              </div>
+          {[
+            { step: '01', title: 'Discovery & Scope', desc: 'Domain analysis, technical architecture, and system specifications before touching code.' },
+            { step: '02', title: 'Prototyping', desc: 'Figma interactive component tokens, user journeys, and architectural wireframes.' },
+            { step: '03', title: 'High-Velocity Dev', desc: 'Rapid 2-week agile sprints with continuous GitHub commits and live staging previews.' },
+            { step: '04', title: 'Rigorous QA', desc: 'Automated unit tests, load stress benchmarks, and zero-defect security validation.' },
+            { step: '05', title: 'Launch & SLA', desc: 'Zero-downtime deployment, DNS configuration, and 24/7 SLA production monitoring.' },
+          ].map((item, idx) => (
+            <div 
+              key={idx}
+              className="bg-white dark:bg-[#070e24]/80 border border-slate-200/90 dark:border-white/10 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-blue-500 transition-all duration-200 flex flex-col justify-between"
+            >
               <div>
-                <h4 className="text-xs font-bold text-white">Mahfuzur Rahman</h4>
-                <p className="text-[10px] text-slate-400">Managing Director, Apex Global</p>
+                <span className="text-2xl font-mono font-bold text-blue-600 dark:text-blue-400 block mb-3">{item.step}</span>
+                <h4 className="font-heading font-bold text-slate-900 dark:text-white text-base mb-2">{item.title}</h4>
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{item.desc}</p>
               </div>
             </div>
-          </div>
-
-          {/* Review 2 */}
-          <div className="bg-[#070e28]/80 border border-white/10 hover:border-white/25 rounded-3xl p-8 backdrop-blur-xl shadow-lg flex flex-col justify-between transition-all duration-300">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
-                  • Mobile &amp; Cloud
-                </span>
-                <div className="flex text-amber-400">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                  ))}
-                </div>
-              </div>
-
-              <p className="text-slate-300 text-sm leading-relaxed italic">
-                “What stood out was their extraordinary attention to detail. From the brand identity to the final digital presence, everything was consistent, clean, and delivered ahead of our strict deadline.”
-              </p>
-            </div>
-
-            <div className="pt-6 border-t border-white/10 flex items-center gap-3 mt-6">
-              <div className="w-10 h-10 rounded-full bg-emerald-600/20 border border-emerald-400/30 flex items-center justify-center font-bold text-emerald-300 text-xs">
-                ER
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-white">Elena Rossi</h4>
-                <p className="text-[10px] text-slate-400">Head of Digital, Vero Italy</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Review 3 */}
-          <div className="bg-[#070e28]/80 border border-white/10 hover:border-white/25 rounded-3xl p-8 backdrop-blur-xl shadow-lg flex flex-col justify-between transition-all duration-300">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono text-purple-400 uppercase tracking-widest bg-purple-500/10 px-2.5 py-0.5 rounded-full border border-purple-500/20">
-                  • Enterprise Scaling
-                </span>
-                <div className="flex text-amber-400">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                  ))}
-                </div>
-              </div>
-
-              <p className="text-slate-300 text-sm leading-relaxed italic">
-                “TSS Soft isn’t just an agency; they act as our principal technology architects. Our transaction handling scaled tenfold with zero downtime. Easily the most competent engineering partner we’ve hired.”
-              </p>
-            </div>
-
-            <div className="pt-6 border-t border-white/10 flex items-center gap-3 mt-6">
-              <div className="w-10 h-10 rounded-full bg-purple-600/20 border border-purple-400/30 flex items-center justify-center font-bold text-purple-300 text-xs">
-                TB
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-white">Tariq Bin Farash</h4>
-                <p className="text-[10px] text-slate-400">Founder, Bin Farash Group (Dubai)</p>
-              </div>
-            </div>
-          </div>
+          ))}
 
         </div>
-
-      </section>
+      </motion.section>
 
       {/* =================================================================== */}
-      {/* 8. FAQ: "Questions? We've Got Answers"                              */}
-      {/*    (Exact match to Reference Video & brandyfy.in section 9)        */}
+      {/* 7. TRANSPARENT FAQ: GotMyHost-style Accordion                       */}
       {/* =================================================================== */}
-      <section className="px-4 sm:px-8 max-w-4xl mx-auto relative z-10">
-        
-        {/* Header */}
-        <div className="text-center mb-12 space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-mono text-blue-300 uppercase tracking-widest">
-            <span>Clarity &amp; Transparency</span>
+      <motion.section 
+        initial={{ opacity: 0, y: 35 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.6 }}
+        className="px-4 sm:px-8 max-w-4xl mx-auto relative z-10"
+      >
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300 border border-blue-200/80 dark:border-blue-500/20 text-xs font-mono uppercase tracking-widest mb-3">
+            <span>FREQUENTLY ASKED QUESTIONS</span>
           </div>
-          <h2 className="font-heading text-section-title font-bold text-white tracking-[-0.025em] leading-[1.15]">
-            Questions? We’ve Got Answers.
+          <h2 className="font-heading text-section-title font-bold text-slate-900 dark:text-white tracking-[-0.025em] leading-[1.15] mb-3">
+            Everything You Need To Know.
           </h2>
-          <p className="font-body text-body-p text-slate-300">
-            Everything you need to know about partnering with TSS Soft.
+          <p className="font-body text-body-p text-slate-600 dark:text-slate-300 leading-[1.7]">
+            Clear, transparent answers about our engineering agreements, IP ownership, timelines, and support.
           </p>
         </div>
 
-        {/* Accordion List */}
-        <div className="space-y-3">
-          {faqs.map((faq, idx) => {
-            const isOpen = openFaqIndex === idx;
+        <div className="space-y-4">
+          {[
+            {
+              q: 'Do we own 100% of the source code and intellectual property?',
+              a: 'Yes, absolutely. Once final deliverables are approved, complete intellectual property, git repositories, design assets, and database schemas are transferred to your organization with zero proprietary licensing lock-ins.'
+            },
+            {
+              q: 'How long does a typical software project take from start to launch?',
+              a: 'A focused MVP or production web platform typically ships in 4 to 8 weeks. Comprehensive mobile ecosystems or enterprise architectures with complex integrations usually range between 8 to 14 weeks, structured in bi-weekly agile review sprints.'
+            },
+            {
+              q: 'What technologies and frameworks does TSS Soft specialize in?',
+              a: 'Our core technology stack focuses on high-performance frameworks: Next.js 14, React, Node.js, TypeScript, PostgreSQL, Redis, Flutter, and React Native. We deploy on distributed cloud providers like AWS, Vercel, and Cloudflare with containerized Docker infrastructure.'
+            },
+            {
+              q: 'How do you handle client communication during engineering sprints?',
+              a: 'You receive a private Slack or WhatsApp channel directly connected to your lead software architects. You also get 24/7 access to live staging environments so you can test features as they are built.'
+            },
+            {
+              q: 'Do you provide post-launch maintenance and SLA support?',
+              a: 'Yes. We offer continuous SLA agreements covering 24/7 server monitoring, security patching, database optimization, and on-demand feature expansion.'
+            },
+            {
+              q: 'How do we get started on our project?',
+              a: 'Simply click "Start a Project" or call us directly. We will schedule a 30-minute discovery consultation to understand your business objectives, review your technical scope, and provide an honest estimate.'
+            }
+          ].map((item, idx) => {
+            const isOpen = openFaq === idx;
             return (
-              <div
+              <div 
                 key={idx}
-                className="bg-[#070e28]/80 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl transition-colors"
+                className="bg-white dark:bg-[#070e24]/90 border border-slate-200/90 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm transition-all"
               >
                 <button
-                  onClick={() => setOpenFaqIndex(isOpen ? -1 : idx)}
-                  className="w-full text-left p-5 sm:p-6 flex items-center justify-between gap-4"
+                  type="button"
+                  onClick={() => toggleFaq(idx)}
+                  className="w-full p-5 text-left flex items-center justify-between gap-4 font-heading font-semibold text-slate-900 dark:text-white text-base hover:text-blue-600 dark:hover:text-blue-300 transition-colors"
                 >
-                  <span className="text-sm sm:text-base font-bold text-white">
-                    {faq.q}
-                  </span>
-                  <div className={`w-7 h-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 flex-shrink-0 transition-transform ${isOpen ? 'rotate-180 text-white' : ''}`}>
-                    <ChevronDown className="w-4 h-4" />
-                  </div>
+                  <span>{item.q}</span>
+                  {isOpen ? <ChevronUp className="w-5 h-5 flex-shrink-0 text-blue-600" /> : <ChevronDown className="w-5 h-5 flex-shrink-0 text-slate-400" />}
                 </button>
-
-                {isOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="px-5 sm:px-6 pb-6 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-white/5 pt-3"
-                  >
-                    {faq.a}
-                  </motion.div>
-                )}
+                <AnimatePresence>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="px-5 pb-5 text-sm text-slate-600 dark:text-slate-300 leading-relaxed border-t border-slate-100 dark:border-white/5 pt-3"
+                    >
+                      {item.a}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             );
           })}
         </div>
-
-      </section>
+      </motion.section>
 
       {/* =================================================================== */}
-      {/* 9. BOTTOM CONVERSION CTA: "Have a project in mind? Let's make it"  */}
-      {/*    (Exact match to Reference Video frame 61s & brandyfy.in)        */}
+      {/* 8. BOTTOM CONVERSION CTA: GotMyHost-style Deep Blue Banner          */}
       {/* =================================================================== */}
-      <section className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10">
-        <div className="relative rounded-3xl overflow-hidden p-8 sm:p-16 bg-gradient-to-r from-blue-900/60 via-[#0a1847]/80 to-[#04091c]/95 border border-white/20 shadow-[0_30px_90px_rgba(37,99,235,0.35)] backdrop-blur-2xl text-center space-y-8">
+      <motion.section 
+        initial={{ opacity: 0, y: 35 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-60px" }}
+        transition={{ duration: 0.6 }}
+        className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10"
+      >
+        <div className="bg-gradient-to-br from-blue-700 via-blue-800 to-indigo-950 text-white rounded-3xl p-8 sm:p-14 shadow-2xl relative overflow-hidden text-center space-y-8">
           
-          {/* Ambient Lighting Orbs */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[300px] bg-blue-500/20 rounded-full blur-[140px] pointer-events-none" />
+          {/* Subtle Ambient Radial Rings */}
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/10 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-sky-400/15 rounded-full blur-[90px] pointer-events-none" />
 
-          <div className="relative z-10 max-w-2xl mx-auto space-y-4">
-            <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-mono text-emerald-300 uppercase tracking-widest">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Available for New Projects</span>
+          <div className="relative z-10 max-w-3xl mx-auto space-y-4">
+            <span className="inline-block px-3.5 py-1 rounded-full bg-white/15 text-white text-xs font-mono uppercase tracking-widest border border-white/20">
+              LET'S BUILD TOGETHER
             </span>
-
-            <h2 className="font-heading text-section-title font-bold text-white tracking-[-0.025em] leading-[1.15]">
-              Have a project in mind? <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-sky-300 to-blue-400">
-                Let’s make it happen.
-              </span>
+            <h2 className="font-heading text-section-title font-extrabold tracking-[-0.025em] leading-[1.15]">
+              Ready to turn your vision into production-ready software?
             </h2>
-
-            <p className="font-body text-body-p text-slate-300 leading-[1.7]">
-              Book a direct architectural strategy session. We’ll review your vision, recommend optimal frameworks, and provide a fixed-price delivery roadmap within 24 hours.
+            <p className="font-body text-body-p text-blue-100 leading-[1.7] max-w-2xl mx-auto">
+              Schedule a discovery session directly with our lead software architects. Clear scope, realistic timelines, and zero sales fluff.
             </p>
           </div>
 
           <div className="relative z-10 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/contact"
-              className="bg-[#22c55e] hover:bg-[#16a34a] text-slate-950 font-heading font-semibold text-[15px] px-8 py-4 rounded-full shadow-[0_0_35px_rgba(34,197,94,0.5)] hover:shadow-[0_0_50px_rgba(34,197,94,0.7)] transition-all duration-300 flex items-center gap-2 group active:scale-95 tracking-[-0.01em]"
+              className="bg-white hover:bg-slate-100 text-slate-950 font-heading font-semibold text-[15px] px-8 py-3.5 rounded-full shadow-xl transition-all duration-200 flex items-center gap-2 active:scale-95"
             >
-              <span>Start a Project</span>
-              <ArrowUpRight className="w-4 h-4 stroke-[2.5] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              <span>Schedule a Discovery Call</span>
+              <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
             </Link>
-
-            <Link
-              href="/portfolio"
-              className="bg-white/10 hover:bg-white/15 text-white font-heading font-medium text-[15px] px-7 py-4 rounded-full border border-white/20 backdrop-blur-xl transition-all duration-200 flex items-center gap-2 active:scale-95 tracking-[-0.01em]"
+            <a
+              href="tel:+8801870955900"
+              className="bg-white/15 hover:bg-white/20 text-white border border-white/25 font-heading font-medium text-[15px] px-7 py-3.5 rounded-full backdrop-blur-xl transition-all duration-200 flex items-center gap-2 active:scale-95"
             >
-              <span>Explore Selected Works</span>
-            </Link>
+              <span>Call: +880 1870 955 900</span>
+            </a>
           </div>
 
-          <div className="relative z-10 pt-4 flex flex-wrap items-center justify-center gap-6 text-xs font-mono text-slate-400">
-            <span>• Kushtia • Global Delivery</span>
-            <span>• 100% IP Handover</span>
-            <span>• Direct Principal Engineer Access</span>
+          <div className="relative z-10 pt-4 text-xs font-mono text-blue-200 flex items-center justify-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Currently onboarding new client partners for Q1/Q2 2026</span>
           </div>
 
         </div>
-      </section>
-
-      {/* =================================================================== */}
-      {/* QUICK EXPLORE MODAL                                                 */}
-      {/* =================================================================== */}
-      <AnimatePresence>
-        {previewModalProject && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-2xl bg-[#080e28] border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto"
-            >
-              <button
-                onClick={() => setPreviewModalProject(null)}
-                className="absolute top-5 right-5 p-2 rounded-full bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              <div className="flex items-center gap-3 mb-4">
-                <img 
-                  src={previewModalProject.logo} 
-                  alt={previewModalProject.name} 
-                  className="w-12 h-12 rounded-xl object-cover border border-white/15"
-                />
-                <div>
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400">
-                    {previewModalProject.category}
-                  </span>
-                  <h3 className="font-heading text-xl font-bold text-white">
-                    {previewModalProject.name}
-                  </h3>
-                </div>
-              </div>
-
-              <div className="rounded-2xl overflow-hidden border border-white/10 aspect-video mb-5">
-                <img 
-                  src={previewModalProject.banner} 
-                  alt={previewModalProject.name} 
-                  className="w-full h-full object-cover" 
-                />
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1">
-                    About This Product
-                  </span>
-                  <p className="font-body text-xs text-slate-300 leading-[1.7]">
-                    {previewModalProject.shortDescription}
-                  </p>
-                </div>
-
-                <div className="bg-white/[0.03] p-4 rounded-xl border border-white/5">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-2">
-                    Key Features Highlight
-                  </span>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-200">
-                    {previewModalProject.keyFeatures.slice(0, 6).map((feat, idx) => (
-                      <div key={idx} className="flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0" />
-                        <span className="truncate">{feat.title}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t border-white/10">
-                  <span className="text-xs font-mono text-emerald-400">
-                    ✦ {previewModalProject.developerBadge}
-                  </span>
-                  <Link
-                    href={`/projects/${previewModalProject.slug}`}
-                    onClick={() => setPreviewModalProject(null)}
-                    className="inline-flex items-center gap-1.5 text-xs font-heading font-semibold text-slate-950 bg-[#22c55e] hover:bg-[#16a34a] px-5 py-2.5 rounded-xl shadow-lg transition-all"
-                  >
-                    <span>Read Full Case Study</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
-              </div>
-
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      </motion.section>
 
     </div>
   );

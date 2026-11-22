@@ -13,8 +13,23 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="dark scroll-smooth">
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <head>
+        {/* Anti-Flicker Theme Script: Default to Light mode, load dark only if explicitly chosen */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'dark') {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -26,7 +41,7 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
       </head>
-      <body className="bg-[#050916] text-slate-100 font-sans antialiased min-h-screen overflow-x-hidden selection:bg-blue-600 selection:text-white relative">
+      <body className="bg-[#f8fafc] text-slate-900 dark:bg-[#050916] dark:text-slate-100 font-sans antialiased min-h-screen overflow-x-hidden selection:bg-blue-600 selection:text-white transition-colors duration-200 relative">
         <ClientShell>
           {children}
         </ClientShell>
