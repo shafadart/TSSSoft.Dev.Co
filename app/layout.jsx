@@ -2,6 +2,7 @@ import './globals.css';
 import ClientShell from './components/ClientShell';
 
 export const metadata = {
+  metadataBase: new URL('https://tsssoft.com'),
   title: 'TSS Soft. | Digital Systems & Software Architecture',
   description: 'Enterprise software, modern web platforms, and mobile applications engineered by TSS Soft.',
   icons: {

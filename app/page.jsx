@@ -26,9 +26,11 @@ import {
   Terminal,
   Monitor,
   Layout,
-  Database
+  Database,
+  Eye
 } from 'lucide-react';
 import Link from 'next/link';
+import { projectsData } from '../lib/projectsData';
 
 export default function LandingPage() {
   // State for Interactive Process Stepper (From Idea to Execution)
@@ -36,6 +38,7 @@ export default function LandingPage() {
 
   // State for Showcase Filter
   const [activeShowcaseFilter, setActiveShowcaseFilter] = useState('all');
+  const [previewModalProject, setPreviewModalProject] = useState(null);
 
   // State for FAQ Accordion
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
@@ -97,86 +100,16 @@ export default function LandingPage() {
   ];
 
   // --------------------------------------------------------------------------
-  // Showcase Projects Data (Matching "Websites That Make an Impression")
+  // Showcase Projects Data (Using Official TSS Soft Portfolio)
   // --------------------------------------------------------------------------
-  const showcaseProjects = [
-    {
-      id: 1,
-      title: 'Apex Global Ventures',
-      category: 'web',
-      categoryLabel: 'Web Platform',
-      tagline: 'Enterprise Financial Clearing & Venture Portal',
-      metrics: '+340% User Velocity • < 40ms Edge Latency',
-      description: 'High-concurrency investment portal built on Next.js 14 with real-time financial telemetry, automated portfolio tracking, and sub-second global database replication.',
-      tech: ['Next.js 14', 'PostgreSQL', 'Tailwind', 'Cloudflare Edge'],
-      color: 'from-blue-600/30 via-sky-500/20 to-transparent',
-      borderColor: 'border-blue-500/30'
-    },
-    {
-      id: 2,
-      title: 'Willionaire Network',
-      category: 'mobile',
-      categoryLabel: 'Mobile App & SaaS',
-      tagline: 'Global Network & Asset Management for Founders',
-      metrics: '4.9★ Store Rating • 120k Active Sessions',
-      description: 'Bespoke iOS and Android mobile ecosystem designed for high-net-worth entrepreneurs, private community networking, and instant deal syndication.',
-      tech: ['React Native', 'TypeScript', 'Node.js', 'Redis Cache'],
-      color: 'from-emerald-600/30 via-teal-500/20 to-transparent',
-      borderColor: 'border-emerald-500/30'
-    },
-    {
-      id: 3,
-      title: 'ChinaSoko Logistics',
-      category: 'cloud',
-      categoryLabel: 'Cloud & Logistics',
-      tagline: 'Real-Time Cross-Border Freight & Cargo Tracking',
-      metrics: '15k Daily Waybills • Zero Lost Dispatches',
-      description: 'Automated end-to-end container tracking dashboard featuring live GPS geofencing, multi-currency customs clearance, and instant client invoice delivery.',
-      tech: ['Next.js', 'Docker', 'AWS ECS', 'Supabase SQL'],
-      color: 'from-rose-600/30 via-orange-500/20 to-transparent',
-      borderColor: 'border-rose-500/30'
-    },
-    {
-      id: 4,
-      title: 'Plutope Digital Capital',
-      category: 'fintech',
-      categoryLabel: 'Fintech & Web3',
-      tagline: 'Empowering Communities with Frictionless Payments',
-      metrics: '$42M+ Transacted • Bank-Grade Cryptography',
-      description: 'Ultra-secure payment routing gateway featuring biometric authentication, zero-knowledge settlement protocols, and instant multi-fiat merchant payouts.',
-      tech: ['Node.js', 'PostgreSQL', 'Next.js Core', 'Docker'],
-      color: 'from-violet-600/30 via-purple-500/20 to-transparent',
-      borderColor: 'border-violet-500/30'
-    },
-    {
-      id: 5,
-      title: 'Vero Italian Heritage',
-      category: 'web',
-      categoryLabel: 'E-Commerce Core',
-      tagline: 'Luxury Milan Fashion & Direct-to-Consumer Engine',
-      metrics: '2.8x Conversion Lift • 99 Lighthouse Score',
-      description: 'Luxury digital storefront featuring 3D product previews, instant checkout orchestration, and multi-warehouse inventory synchronization across Europe.',
-      tech: ['Next.js 14', 'Tailwind', 'Stripe API', 'Vercel Edge'],
-      color: 'from-amber-600/30 via-yellow-500/20 to-transparent',
-      borderColor: 'border-amber-500/30'
-    },
-    {
-      id: 6,
-      title: 'Tomahawk Power Tools',
-      category: 'cloud',
-      categoryLabel: 'Industrial SaaS',
-      tagline: 'Heavy Machinery Dealer & Telemetry Portal',
-      metrics: '850+ Enterprise Dealers • 100% SLA',
-      description: 'Industrial-grade equipment telemetry portal handling automated warranty claims, dealer parts distribution, and scheduled field service dispatch.',
-      tech: ['TypeScript', 'Tailwind', 'PostgreSQL', 'REST APIs'],
-      color: 'from-cyan-600/30 via-blue-500/20 to-transparent',
-      borderColor: 'border-cyan-500/30'
-    }
-  ];
-
   const filteredShowcase = activeShowcaseFilter === 'all'
-    ? showcaseProjects
-    : showcaseProjects.filter(p => p.category === activeShowcaseFilter);
+    ? projectsData
+    : projectsData.filter((p) => {
+        if (activeShowcaseFilter === 'mobile') return p.type === 'mobile' || p.type === 'mobile-web';
+        if (activeShowcaseFilter === 'web') return p.type === 'web';
+        if (activeShowcaseFilter === 'system') return p.type === 'system';
+        return true;
+      });
 
   // --------------------------------------------------------------------------
   // FAQ Data (Matching "Questions? We've Got Answers" in Video)
@@ -280,101 +213,118 @@ export default function LandingPage() {
         </div>
 
         {/* ----------------------------------------------------------------- */}
-        {/* Hero Interactive Device / Showcase Trio (Matching Video frame 16s) */}
+        {/* Hero Interactive Device / Showcase Trio (Real TSS Soft Products)    */}
         {/* ----------------------------------------------------------------- */}
         <motion.div 
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.4 }}
-          className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center max-w-6xl mx-auto w-full pt-4"
+          className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch max-w-6xl mx-auto w-full pt-4"
         >
-          {/* Card 1: Mobile UI Mockup (Left) */}
-          <div className="md:col-span-4 bg-[#070e28]/85 border border-white/15 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl relative overflow-hidden group hover:border-white/30 transition-all duration-300">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400">Mobile Ecosystem</span>
-              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">60 FPS Native</span>
-            </div>
-            
-            {/* Phone Frame Illustration */}
-            <div className="bg-[#030612] border border-white/10 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
+          {/* Card 1: Cholo Jai Mobile Application (Left) */}
+          <Link
+            href="/projects/cholo-jai"
+            className="md:col-span-4 bg-[#061814]/85 border border-emerald-500/20 hover:border-emerald-400/50 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl relative overflow-hidden group transition-all duration-300 flex flex-col justify-between hover:-translate-y-1"
+          >
+            <div>
+              <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                  <span className="text-xs font-semibold text-white">CargoTrack Pro</span>
+                  <img src="/projects/cholo-jai-logo.jpg" alt="Cholo Jai" className="w-6 h-6 rounded-md object-contain bg-white/10" />
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400">Mobility Tech</span>
                 </div>
-                <span className="text-[10px] font-mono text-slate-400">LIVE GPS</span>
+                <span className="text-[10px] font-mono text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Flutter Mobile</span>
               </div>
-              <div className="bg-white/[0.04] rounded-xl p-3 border border-white/5 space-y-1.5">
-                <div className="flex justify-between text-[11px]">
-                  <span className="text-slate-400">Current Transit</span>
-                  <span className="text-emerald-400 font-mono">In Transit</span>
+              
+              <div className="bg-[#030d0a] border border-emerald-500/15 rounded-2xl p-4 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">Cholo Jai (চলো যায়)</h4>
+                  <span className="text-[10px] font-mono text-emerald-400">Kushtia</span>
                 </div>
-                <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full w-3/4 animate-pulse" />
-                </div>
-                <span className="text-[10px] text-slate-400 block pt-0.5">ETA: 4h 12m • Vessel MSC Oscar</span>
-              </div>
-            </div>
-            <p className="text-xs text-slate-300 font-medium mt-3">Cross-platform iOS &amp; Android freight fleet tracking app.</p>
-          </div>
-
-          {/* Card 2: Hero Centerpiece Web Application (Center - Elevated) */}
-          <div className="md:col-span-4 bg-gradient-to-b from-[#09143c] to-[#060c22] border border-blue-400/30 rounded-3xl p-6 shadow-[0_25px_70px_rgba(37,99,235,0.25)] backdrop-blur-2xl relative overflow-hidden group hover:border-blue-400/50 transition-all duration-300 scale-100 md:scale-105 z-10">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                <span className="text-[10px] font-mono uppercase tracking-wider text-blue-300">FLAGSHIP CORE</span>
-              </div>
-              <span className="text-[10px] font-mono text-white bg-blue-600 px-2.5 py-0.5 rounded-full">Next.js 14</span>
-            </div>
-
-            <div className="bg-[#030614] border border-white/15 rounded-2xl p-4 space-y-3.5">
-              <div className="flex items-center gap-1.5 pb-2 border-b border-white/10">
-                <div className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
-                <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
-                <span className="text-[10px] font-mono text-slate-400 ml-2">https://tsssoft.com/core</span>
-              </div>
-              <div className="space-y-2">
-                <div className="text-xs font-bold text-white">Distributed Architecture Engine</div>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  Sub-50ms edge computing with multi-region database caching and 99.98% uptime SLA.
+                  Local smart ride-sharing connecting passengers and verified riders with transparent upfront route fares.
                 </p>
-                <div className="flex items-center gap-2 pt-1">
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300">TypeScript</span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300">PostgreSQL</span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300">Tailwind</span>
+                <div className="flex flex-wrap gap-1.5 pt-1 text-[10px] font-mono text-emerald-300">
+                  <span className="bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Ride Booking</span>
+                  <span className="bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Rider App</span>
                 </div>
               </div>
-            </div>
-            <p className="text-xs text-blue-200 font-semibold mt-3">High-concurrency enterprise web application architecture.</p>
-          </div>
-
-          {/* Card 3: SaaS Dashboard (Right) */}
-          <div className="md:col-span-4 bg-[#070e28]/85 border border-white/15 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl relative overflow-hidden group hover:border-white/30 transition-all duration-300">
-            <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400">Enterprise SaaS</span>
-              <span className="text-[10px] font-mono text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-full border border-sky-500/20">Realtime</span>
             </div>
 
-            <div className="bg-[#030612] border border-white/10 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-white">Revenue Telemetry</span>
-                <span className="text-xs font-mono text-emerald-400 font-bold">+148.6%</span>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="bg-white/[0.04] p-2 rounded-lg border border-white/5">
-                  <span className="text-[9px] text-slate-400 block">Total Volume</span>
-                  <span className="text-xs font-mono font-bold text-white">৳ 2.48M</span>
+            <div className="pt-3 mt-3 border-t border-white/10 flex items-center justify-between text-xs font-heading font-semibold text-emerald-400">
+              <span>View Case Study</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
+
+          {/* Card 2: Hero Centerpiece — TSS PC Controller (Center - Elevated) */}
+          <Link
+            href="/projects/tss-pc-controller"
+            className="md:col-span-4 bg-gradient-to-b from-[#091742] to-[#050b1e] border border-blue-400/40 hover:border-blue-400/70 rounded-3xl p-6 shadow-[0_25px_70px_rgba(37,99,235,0.3)] backdrop-blur-2xl relative overflow-hidden group transition-all duration-300 scale-100 md:scale-105 z-10 flex flex-col justify-between hover:-translate-y-1.5"
+          >
+            <div>
+              <div className="flex items-center justify-between pb-3 border-b border-white/15 mb-4">
+                <div className="flex items-center gap-2">
+                  <img src="/projects/tss-pc-controller-logo.jpg" alt="TSS PC Controller" className="w-7 h-7 rounded-lg object-contain bg-white/10 shadow" />
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-blue-300 font-bold">LIVE SCREEN CONTROL</span>
                 </div>
-                <div className="bg-white/[0.04] p-2 rounded-lg border border-white/5">
-                  <span className="text-[9px] text-slate-400 block">Active Users</span>
-                  <span className="text-xs font-mono font-bold text-white">18,420</span>
+                <span className="text-[10px] font-mono text-white bg-blue-600 px-2.5 py-0.5 rounded-full shadow">Flagship</span>
+              </div>
+
+              <div className="bg-[#030614] border border-white/15 rounded-2xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-white group-hover:text-blue-300 transition-colors">TSS PC Controller</h4>
+                  <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">Low Latency</span>
+                </div>
+                <p className="text-[11px] text-slate-200 leading-relaxed">
+                  Stream your live Windows PC screen directly onto your mobile phone. Control mouse, keyboard shortcuts, shutdown, and sleep remotely.
+                </p>
+                <div className="flex flex-wrap gap-1.5 pt-1 text-[10px] font-mono text-blue-200">
+                  <span className="bg-blue-500/15 px-2 py-0.5 rounded border border-blue-400/25">Live Screen Monitor</span>
+                  <span className="bg-blue-500/15 px-2 py-0.5 rounded border border-blue-400/25">Touchpad</span>
                 </div>
               </div>
             </div>
-            <p className="text-xs text-slate-300 font-medium mt-3">All-in-one financial clearing and client management dashboard.</p>
-          </div>
+
+            <div className="pt-3 mt-3 border-t border-white/10 flex items-center justify-between text-xs font-heading font-semibold text-blue-300">
+              <span>View Case Study</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
+
+          {/* Card 3: Tutors Kushtia Platform (Right) */}
+          <Link
+            href="/projects/tutors-kushtia"
+            className="md:col-span-4 bg-[#0e0a24]/85 border border-purple-500/20 hover:border-purple-400/50 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl relative overflow-hidden group transition-all duration-300 flex flex-col justify-between hover:-translate-y-1"
+          >
+            <div>
+              <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
+                <div className="flex items-center gap-2">
+                  <img src="/projects/tutors-kushtia-logo.jpg" alt="Tutors Kushtia" className="w-6 h-6 rounded-md object-contain bg-white/10" />
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-purple-300">EdTech Platform</span>
+                </div>
+                <span className="text-[10px] font-mono text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">Live System</span>
+              </div>
+
+              <div className="bg-[#080516] border border-purple-500/15 rounded-2xl p-4 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-white group-hover:text-purple-300 transition-colors">Tutors Kushtia</h4>
+                  <span className="text-[10px] font-mono text-purple-400">Tuition Hub</span>
+                </div>
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  Connecting tutors, mentors and guardians in Kushtia with structured tuition listings, role dashboards, and verified matching.
+                </p>
+                <div className="flex flex-wrap gap-1.5 pt-1 text-[10px] font-mono text-purple-300">
+                  <span className="bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Tutor Portal</span>
+                  <span className="bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">Guardian Booking</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-3 mt-3 border-t border-white/10 flex items-center justify-between text-xs font-heading font-semibold text-purple-300">
+              <span>View Case Study</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </div>
+          </Link>
         </motion.div>
 
       </section>
@@ -598,8 +548,8 @@ export default function LandingPage() {
       </section>
 
       {/* =================================================================== */}
-      {/* 4. SHOWCASE: "Websites That Make an Impression"                    */}
-      {/*    (Exact match to Reference Video frame 50s & 56s)                */}
+      {/* 4. FEATURED PROJECTS: "Turning Ideas Into Digital Products."         */}
+      {/*    (Selected Work 2025-2026 — 5 Real TSS Soft Software Products)     */}
       {/* =================================================================== */}
       <section className="px-4 sm:px-8 max-w-7xl mx-auto relative z-10" id="showcase">
         
@@ -609,30 +559,30 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between pb-6 border-b border-white/10 gap-4">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-mono text-emerald-300 uppercase tracking-widest mb-3">
-                <span>Selected Works &amp; Architecture</span>
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>SELECTED WORK — 2025–2026</span>
               </div>
               <h2 className="font-heading text-section-title font-bold text-white tracking-[-0.025em] leading-[1.15]">
-                Websites That Make an Impression.
+                Turning Ideas Into Digital Products.
               </h2>
             </div>
             <p className="font-body text-body-p text-slate-300 max-w-md leading-[1.7]">
-              A curated showcase of bespoke digital platforms engineered for enterprise clients worldwide.
+              From innovative platforms to powerful software solutions, we design and develop technology that solves real-world problems.
             </p>
           </div>
 
-          {/* Filter Pills (Matching Video frame 50s) */}
+          {/* Filter Pills */}
           <div className="flex flex-wrap items-center gap-2">
             {[
-              { id: 'all', label: 'All Architecture' },
-              { id: 'web', label: 'Web Design' },
-              { id: 'mobile', label: 'Mobile Apps' },
-              { id: 'cloud', label: 'Cloud & SaaS' },
-              { id: 'fintech', label: 'Fintech' }
+              { id: 'all', label: 'All Products (5)' },
+              { id: 'mobile', label: 'Mobile Apps (2)' },
+              { id: 'web', label: 'Web Platforms (2)' },
+              { id: 'system', label: 'Windows & Systems (1)' }
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveShowcaseFilter(tab.id)}
-                className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${
+                className={`px-4 py-2 rounded-full text-xs font-heading font-semibold transition-all ${
                   activeShowcaseFilter === tab.id
                     ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]'
                     : 'bg-white/[0.05] text-slate-300 hover:text-white hover:bg-white/10 border border-white/10'
@@ -645,8 +595,8 @@ export default function LandingPage() {
 
         </div>
 
-        {/* Showcase Grid (Matching Video frame 50s & 56s) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Showcase Grid (5 Real Products from projectsData) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
           <AnimatePresence mode="popLayout">
             {filteredShowcase.map((project) => (
               <motion.div
@@ -656,64 +606,90 @@ export default function LandingPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.35 }}
-                className={`bg-[#070e28]/85 border ${project.borderColor} rounded-3xl p-6 flex flex-col justify-between shadow-xl backdrop-blur-xl group hover:border-white/40 transition-all duration-300`}
+                className="bg-[#070e28]/85 border border-white/15 hover:border-white/35 rounded-3xl overflow-hidden shadow-xl backdrop-blur-xl group transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(0,0,0,0.85)]"
               >
                 <div>
                   
-                  {/* Browser Chrome Mockup Frame */}
-                  <div className="bg-[#030612] border border-white/10 rounded-2xl p-3 mb-5 shadow-inner">
-                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10">
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-rose-500/80" />
-                        <span className="w-2 h-2 rounded-full bg-amber-500/80" />
-                        <span className="w-2 h-2 rounded-full bg-emerald-500/80" />
-                      </div>
-                      <span className="text-[10px] font-mono text-slate-400 truncate max-w-[150px]">
-                        {project.title.toLowerCase().replace(/\s+/g, '')}.com
-                      </span>
-                      <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                        SECURE
+                  {/* Banner Image Frame */}
+                  <div className="relative aspect-video w-full overflow-hidden bg-[#030612]">
+                    <img 
+                      src={project.banner} 
+                      alt={project.name} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                    />
+                    
+                    {/* Floating Product Badge */}
+                    <div className="absolute top-3 left-3 bg-slate-950/85 backdrop-blur-md border border-white/15 px-3 py-1 rounded-full flex items-center gap-2">
+                      <img 
+                        src={project.logo} 
+                        alt={project.name} 
+                        className="w-4 h-4 rounded object-cover" 
+                      />
+                      <span className="text-[10px] font-mono text-slate-200 uppercase tracking-wider">
+                        {project.badge}
                       </span>
                     </div>
 
-                    <div className={`h-36 rounded-xl bg-gradient-to-br ${project.color} p-4 flex flex-col justify-end border border-white/5 relative overflow-hidden`}>
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-slate-300 bg-black/40 px-2 py-0.5 rounded backdrop-blur-md w-fit mb-1">
-                        {project.categoryLabel}
-                      </span>
-                      <h4 className="text-white text-base font-bold drop-shadow-md">{project.title}</h4>
-                      <p className="text-[11px] text-slate-200 line-clamp-1">{project.tagline}</p>
+                    <div className="absolute top-3 right-3 bg-emerald-500/20 backdrop-blur-md border border-emerald-400/30 px-2.5 py-0.5 rounded-full text-[10px] font-mono text-emerald-300">
+                      TSS Soft
                     </div>
                   </div>
 
-                  {/* Project Details */}
-                  <div className="space-y-2 mb-4">
-                    <div className="text-[11px] font-mono text-emerald-400 font-semibold">
-                      {project.metrics}
+                  {/* Details */}
+                  <div className="p-6 space-y-3">
+                    <div>
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 block mb-1">
+                        {project.category}
+                      </span>
+                      <h3 className="font-heading text-lg font-bold text-white group-hover:text-blue-300 transition-colors">
+                        {project.name}
+                      </h3>
+                      <p className="text-xs font-mono text-emerald-400/90 mt-0.5">
+                        {project.tagline}
+                      </p>
                     </div>
-                    <p className="text-xs text-slate-300 leading-relaxed">
-                      {project.description}
+
+                    <p className="font-body text-xs text-slate-300 leading-relaxed line-clamp-3">
+                      {project.shortDescription}
                     </p>
+
+                    {/* Features list */}
+                    <div className="space-y-1 pt-2 border-t border-white/5">
+                      {project.keyFeatures.slice(0, 3).map((feat, fIdx) => (
+                        <div key={fIdx} className="flex items-center gap-1.5 text-[11px] text-slate-300">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                          <span className="truncate">{feat.title}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                 </div>
 
-                {/* Bottom Tech Tags & Action Button */}
-                <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-2 mt-2">
-                  <div className="flex flex-wrap gap-1">
-                    {project.tech.slice(0, 2).map((t, idx) => (
-                      <span key={idx} className="text-[10px] font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded">
-                        {t}
-                      </span>
-                    ))}
+                {/* Bottom Actions */}
+                <div className="p-6 pt-0 mt-auto">
+                  <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewModalProject(project)}
+                      className="inline-flex items-center gap-1.5 text-xs font-heading font-medium text-slate-300 hover:text-white bg-white/[0.05] hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-xl transition-all active:scale-95"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Explore</span>
+                    </button>
+
+                    <Link
+                      href={`/projects/${project.slug}`}
+                      className="inline-flex items-center gap-1.5 text-xs font-heading font-semibold text-slate-950 bg-[#22c55e] hover:bg-[#16a34a] px-3.5 py-1.5 rounded-xl shadow-[0_0_15px_rgba(34,197,94,0.3)] transition-all active:scale-95 group/btn"
+                    >
+                      <span>View Case Study</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
+                    </Link>
                   </div>
 
-                  <Link
-                    href="/contact"
-                    className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-slate-950 bg-[#22c55e] hover:bg-[#16a34a] px-3 py-1.5 rounded-full transition-all active:scale-95 shadow-[0_0_15px_rgba(34,197,94,0.3)]"
-                  >
-                    <span>View Project</span>
-                    <ArrowUpRight className="w-3 h-3" />
-                  </Link>
+                  <div className="text-[10px] font-mono text-slate-400 text-center mt-2.5 pt-1.5 border-t border-white/5">
+                    ✦ {project.developerBadge}
+                  </div>
                 </div>
 
               </motion.div>
@@ -1197,6 +1173,93 @@ export default function LandingPage() {
 
         </div>
       </section>
+
+      {/* =================================================================== */}
+      {/* QUICK EXPLORE MODAL                                                 */}
+      {/* =================================================================== */}
+      <AnimatePresence>
+        {previewModalProject && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative w-full max-w-2xl bg-[#080e28] border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl max-h-[90vh] overflow-y-auto"
+            >
+              <button
+                onClick={() => setPreviewModalProject(null)}
+                className="absolute top-5 right-5 p-2 rounded-full bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center gap-3 mb-4">
+                <img 
+                  src={previewModalProject.logo} 
+                  alt={previewModalProject.name} 
+                  className="w-12 h-12 rounded-xl object-cover border border-white/15"
+                />
+                <div>
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400">
+                    {previewModalProject.category}
+                  </span>
+                  <h3 className="font-heading text-xl font-bold text-white">
+                    {previewModalProject.name}
+                  </h3>
+                </div>
+              </div>
+
+              <div className="rounded-2xl overflow-hidden border border-white/10 aspect-video mb-5">
+                <img 
+                  src={previewModalProject.banner} 
+                  alt={previewModalProject.name} 
+                  className="w-full h-full object-cover" 
+                />
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-1">
+                    About This Product
+                  </span>
+                  <p className="font-body text-xs text-slate-300 leading-[1.7]">
+                    {previewModalProject.shortDescription}
+                  </p>
+                </div>
+
+                <div className="bg-white/[0.03] p-4 rounded-xl border border-white/5">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-2">
+                    Key Features Highlight
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-200">
+                    {previewModalProject.keyFeatures.slice(0, 6).map((feat, idx) => (
+                      <div key={idx} className="flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                        <span className="truncate">{feat.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                  <span className="text-xs font-mono text-emerald-400">
+                    ✦ {previewModalProject.developerBadge}
+                  </span>
+                  <Link
+                    href={`/projects/${previewModalProject.slug}`}
+                    onClick={() => setPreviewModalProject(null)}
+                    className="inline-flex items-center gap-1.5 text-xs font-heading font-semibold text-slate-950 bg-[#22c55e] hover:bg-[#16a34a] px-5 py-2.5 rounded-xl shadow-lg transition-all"
+                  >
+                    <span>Read Full Case Study</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
